@@ -1,0 +1,35 @@
+https://docs.equalizer.finance/getting-started/how-do-i-borrow-a-flash-loan-a-deep-dive
+
+
+export SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID
+export PRIVATE_KEY=YOUR_WALLET_PRIVATE_KEY
+
+
+[default]
+rpc_url = "${SEPOLIA_RPC_URL}"
+
+
+forge test --fork-url $SEPOLIA_RPC_URL
+forge script MyScript --fork-url $SEPOLIA_RPC_URL --broadcast
+forge test --fork-url $SEPOLIA_RPC_URL --fork-block-number <BLOCK_NUMBER>
+
+
+Mainnet: Ethereum
+VaultFactory
+
+0xd811FBCE60218B214Cbdc972140F1a89D26e44F7
+
+FlashLoanProvider
+
+0x4EAF187ad4cE325bF6C84070b51c2f7224A51321
+
+
+Testnet: Ethereum (Sepolia)
+Contract Name	SC Address
+Vault Factory
+
+0xea281a04cf517aa0D4645bDDA0353b0958E4B1b4
+
+Flash loan provider
+
+0x0837b2aCcF87De52a099409863CDb5f3588342AD
