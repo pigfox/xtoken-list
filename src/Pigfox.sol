@@ -5,6 +5,23 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 //import "equalizer/contracts/interfaces/IEqualizerLender.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
+interface IERC3156FlashLender {
+    /**
+     * @dev The amount of currency available to be lent.
+     * @param token The loan currency.
+     * @return The amount of `token` that can be borrowed.
+     */
+    function maxFlashLoan(address token) external view returns (uint256);
+
+    /**
+     * @dev The fee to be charged for a given loan.
+     * @param token The loan currency.
+     * @param amount The amount of tokens lent.
+     * @return The amount of `token` to be charged for the loan, on top of the returned principal.
+     */
+    function flashFee(address token, uint256 amount) external view returns (uint256);
+}
+
 interface IERC3156FlashBorrower {
     /**
      * @dev Receive a flash loan.
@@ -30,6 +47,18 @@ interface IERC3156FlashBorrower {
 */
 contract Pigfox is IERC3156FlashBorrower {
     uint256 MAX_INT = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    IERC3156FlashLender public lender;
+    address public owner;
+
+    constructor(address _lender) {
+        owner = msg.sender;
+        lender = IERC3156FlashLender(_lender);
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");
+        _;
+    }
 
     // @dev ERC-3156 Flash loan callback
     function onFlashLoan(
@@ -39,8 +68,9 @@ contract Pigfox is IERC3156FlashBorrower {
         uint256 fee,
         bytes calldata data
     ) external override returns (bytes32) {
-        require(msg.sender == initiator, "Unauthorized lender");
+        require(msg.sender == address(lender), "Unauthorized lender");
         (address buyDexAddress, address sellDexAddress, address tokenAddress) = abi.decode(data, (address, address, address));
+        //lender.flashLoan(address(this), tokenAddress, amount, data);
         console.log("Flash loan initiated by: ", initiator);
         console.log("Token: ", token);
         console.log("Amount: ", amount);
@@ -61,4 +91,10 @@ contract Pigfox is IERC3156FlashBorrower {
 
         return keccak256("IEqualizerFlashBorrower.onFlashLoan");
     }
+/*
+    function initiateFlashLoan(uint256 amount) external onlyOwner {
+        bytes memory data = ""; // Additional data if needed
+        lender.flashLoan(address(this), token, amount, data);
+    }
+    */
 }
