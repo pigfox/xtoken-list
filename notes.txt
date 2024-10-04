@@ -11,7 +11,7 @@ rpc_url = "${SEPOLIA_RPC_URL}"
 
 forge test --fork-url $SEPOLIA_RPC_URL
 forge script MyScript --fork-url $SEPOLIA_RPC_URL --broadcast
-forge test --fork-url $SEPOLIA_RPC_URL --fork-block-number <BLOCK_NUMBER>
+forge test --fork-url $SEPOLIA_RPC_URL --fork-block-number <BLOCK_NUMBER
 
 
 Mainnet: Ethereum
