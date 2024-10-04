@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
+//import "equalizer/contracts/interfaces/IEqualizerLender.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
 interface IERC3156FlashBorrower {
@@ -37,6 +39,7 @@ contract Pigfox is IERC3156FlashBorrower {
         uint256 fee,
         bytes calldata data
     ) external override returns (bytes32) {
+        require(msg.sender == initiator, "Unauthorized lender");
         (address buyDexAddress, address sellDexAddress, address tokenAddress) = abi.decode(data, (address, address, address));
         console.log("Flash loan initiated by: ", initiator);
         console.log("Token: ", token);
@@ -53,7 +56,9 @@ contract Pigfox is IERC3156FlashBorrower {
         // e.g., sell on uniswapv2
         // e.g., buy on uniswapv3
 
-        // Return success to the lender, he will transfer get the funds back if allowance is set accordingly
-        return keccak256('ERC3156FlashBorrower.onFlashLoan');
+        uint256 amountOwing = amount + fee;
+        IERC20(tokenAddress).transfer(initiator, amountOwing); // Repay the loan
+
+        return keccak256("IEqualizerFlashBorrower.onFlashLoan");
     }
 }
