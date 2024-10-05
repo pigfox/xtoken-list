@@ -22,8 +22,7 @@ contract PigfoxTest is Test {
     }
 
     function test_pigfox() public {
-        address equalizerLenderAddress = vm.envAddress("EQUALIZER_LENDER");
-        console.log("Pigfox test");
+        address equalizerLenderAddress = vm.envAddress("SEPOLIA_EQUALIZER_LENDER");
         pigfox = new Pigfox(equalizerLenderAddress);
         bytes memory data = abi.encode(address(dex1), address(dex2), address(erc20Token));
         bytes32 dataBytes = pigfox.onFlashLoan(address(this), address(erc20Token), maxTokenSupply, 0, data);

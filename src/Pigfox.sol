@@ -67,8 +67,8 @@ contract Pigfox is IERC3156FlashBorrower {
         uint256 amount,
         uint256 fee,
         bytes calldata data
-    ) external override returns (bytes32) {
-        require(msg.sender == address(lender), "Unauthorized lender");
+    ) external override onlyOwner returns (bytes32)  {
+        //require(msg.sender == address(lender), "Unauthorized lender");
         (address buyDexAddress, address sellDexAddress, address tokenAddress) = abi.decode(data, (address, address, address));
         //lender.flashLoan(address(this), tokenAddress, amount, data);
         console.log("Flash loan initiated by: ", initiator);
@@ -89,7 +89,7 @@ contract Pigfox is IERC3156FlashBorrower {
         uint256 amountOwing = amount + fee;
         IERC20(tokenAddress).transfer(initiator, amountOwing); // Repay the loan
 
-        return keccak256("IEqualizerFlashBorrower.onFlashLoan");
+        return keccak256("IERC3156FlashBorrower.onFlashLoan");
     }
 /*
     function initiateFlashLoan(uint256 amount) external onlyOwner {
