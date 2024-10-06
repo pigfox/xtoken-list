@@ -12,7 +12,11 @@ contract ERC20Token is ERC20 {
 
     constructor(uint256 _initialSupply) ERC20("XToken", "XTK") {
         owner = msg.sender;
-        _mint(address(this), _initialSupply);
+        _mint(owner, _initialSupply);
         console.log("_initialSupply", _initialSupply);
+    }
+
+    function getSuppy() public view returns (uint256) {
+        return this.totalSupply();
     }
 }

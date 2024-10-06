@@ -83,7 +83,7 @@ contract Pigfox is IERC3156FlashBorrower {
         console.log("assetTokenAddress: ", tokenAddress);
 
         // Set the allowance to payback the flash loan
-        IERC20(address(tokenAddress)).approve(msg.sender, MAX_INT);
+        IERC20(address(tokenAddress)).approve(initiator, MAX_INT);
 
         // Build your trading business logic here
         // e.g., sell on uniswapv2
