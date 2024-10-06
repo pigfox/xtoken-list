@@ -25,6 +25,8 @@ contract PigfoxTest is Test {
         erc20Token.transfer(address(vault), maxTokenSupply);
         erc20Token.supplyToken(address(dex1), 5000000000);
         erc20Token.supplyToken(address(dex2), 3000000000);
+        console.log("erc20Token.balanceOf(address(dex1)):", erc20Token.balanceOf(address(dex1)));
+        console.log("erc20Token.balanceOf(address(dex2)):", erc20Token.balanceOf(address(dex2)));
     }
 
     function test_pigfox() public {
