@@ -30,6 +30,10 @@ contract PigfoxTest is Test {
         address equalizerLenderAddress = vm.envAddress("SEPOLIA_EQUALIZER_LENDER");
         pigfox = new Pigfox(equalizerLenderAddress);
         vault.transerToken(address(erc20Token), address(pigfox), maxTokenSupply);
+        dex1.setTokenPrice(address(erc20Token), 80);
+        dex2.setTokenPrice(address(erc20Token), 100);
+
+
         bytes memory data = abi.encode(address(dex1), address(dex2), address(erc20Token));
         bytes32 dataBytes = pigfox.onFlashLoan(address(pigfox), address(erc20Token), maxTokenSupply, 0, data);
         console.log("data", bytes32ToString(dataBytes));
