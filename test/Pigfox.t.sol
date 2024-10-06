@@ -22,8 +22,9 @@ contract PigfoxTest is Test {
         dex2 = new Dex("2");
         erc20Token = new ERC20Token(maxTokenSupply);
         console.log("erc20Token.getSuppy():", erc20Token.getSuppy());
-        erc20Token.approve(address(vault), maxTokenSupply);
         erc20Token.transfer(address(vault), maxTokenSupply);
+        erc20Token.supplyToken(address(dex1), 5000000000);
+        erc20Token.supplyToken(address(dex2), 3000000000);
     }
 
     function test_pigfox() public {
