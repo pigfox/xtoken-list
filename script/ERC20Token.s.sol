@@ -6,9 +6,10 @@ import "../src/ERC20Token.sol";
 
 contract ERC20TokenScript is Script {
     function run() external {
+        uint256 maxTokenSupply = 10 ether;
         vm.startBroadcast();
 
-        ERC20Token erc20Token = new ERC20Token();
+        ERC20Token erc20Token = new ERC20Token(maxTokenSupply);
         console.log("ERC20Token deployed at:", address(erc20Token));
 
         vm.stopBroadcast();
