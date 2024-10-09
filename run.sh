@@ -14,7 +14,9 @@ forge build --force
 #forge script script/Pigfox.s.sol:PigfoxScript --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify
 #forge script script/Dex.s.sol:DexScript --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify
 #forge script script/Vault.s.sol:VaultScript --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify
-forge script script/ERC20Token.s.sol:ERC20TokenScript --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify
+#forge script script/ERC20Token.s.sol:ERC20TokenScript --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify
 
 
 #forge test --gas-report --verbosity --match-contract PigfoxTest --match-test test_pigfox -vvvv
+forge test --gas-report --verbosity --match-contract PigfoxTest --match-test test_pigfox -vvvv
+#forge test --debug test_pigfox -vvvv

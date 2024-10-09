@@ -10,7 +10,8 @@ contract PigfoxScript is Script {
 
         vm.startBroadcast();
 
-        Pigfox pigfox = new Pigfox(equalizerLenderAddress);
+        Pigfox pigfox = new Pigfox();
+        pigfox.setLender(equalizerLenderAddress);
         console.log("Pigfox deployed at:", address(pigfox));
 
         vm.stopBroadcast();

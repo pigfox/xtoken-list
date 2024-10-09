@@ -8,27 +8,27 @@ contract Dex {
     string public name;
 
     //Set name of dex
-    constructor(string memory _name) {
+    function setName(string memory _name) public {
         name = _name;
     }
 
     //Get name of dex
-    function getName() external view returns (string memory) {
+    function getName() public view returns (string memory) {
         return name;
     }
 
     //Set price of individual token
-    function setTokenPrice(address _tokenAddress, uint _xTokenprice) external {
+    function setTokenPrice(address _tokenAddress, uint _xTokenprice) public {
         tokenPrices[_tokenAddress] = _xTokenprice;
     }
 
     //Get price of individual token
-    function getTokenPrice(address _tokenAddress) external view returns (uint256) {
+    function getTokenPrice(address _tokenAddress) public view returns (uint256) {
         return tokenPrices[_tokenAddress];
     }
 
     //Get value of all tokens
-    function valueOfTokens(address _tokenAddress) external view returns (uint256) {
+    function valueOfTokens(address _tokenAddress) public view returns (uint256) {
         IERC20 token = IERC20(_tokenAddress);
         return token.balanceOf(address(this)) * tokenPrices[_tokenAddress];
     }

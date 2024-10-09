@@ -8,7 +8,8 @@ contract DexScript is Script {
     function run() external {
         vm.startBroadcast();
 
-        Dex dex = new Dex("2");
+        Dex dex = new Dex();
+        dex.setName("2");
         console.log("Dex deployed at:", address(dex));
 
         vm.stopBroadcast();

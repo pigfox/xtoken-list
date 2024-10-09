@@ -7,11 +7,9 @@ import {console} from "../lib/forge-std/src/console.sol";
 
 contract ERC20Token is ERC20 {
     address public owner;
-    uint private initialSupply;
 
-    constructor(uint256 _initialSupply) ERC20("XToken", "XTK") {
+    constructor() ERC20("XToken", "XTK") {
         owner = msg.sender;
-        _mint(owner, _initialSupply);
     }
 
     function getSuppy() public view returns (uint256) {

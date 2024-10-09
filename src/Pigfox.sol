@@ -53,14 +53,17 @@ contract Pigfox is IERC3156FlashBorrower {
     bool public isPaused = true;
     bool public ongoingFlashLoan = false;
 
-    constructor(address _lender) {
+    constructor() {
         owner = msg.sender;
-        lender = IERC3156FlashLender(_lender);
     }
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the owner");
         _;
+    }
+
+    function setLender(address _lender) public onlyOwner {
+        lender = IERC3156FlashLender(_lender);
     }
 
     // @dev ERC-3156 Flash loan callback

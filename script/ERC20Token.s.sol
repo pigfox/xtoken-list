@@ -9,7 +9,8 @@ contract ERC20TokenScript is Script {
         uint256 maxTokenSupply = 10 ether;
         vm.startBroadcast();
 
-        ERC20Token erc20Token = new ERC20Token(maxTokenSupply);
+        ERC20Token erc20Token = new ERC20Token();
+        erc20Token.mint(maxTokenSupply);
         console.log("ERC20Token deployed at:", address(erc20Token));
 
         vm.stopBroadcast();
