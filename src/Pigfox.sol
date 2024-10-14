@@ -93,8 +93,8 @@ contract Pigfox is IERC3156FlashBorrower {
         // e.g., buy on uniswapv3
 
         uint256 amountOwing = amount + fee;
-        IERC20(tokenAddress).transfer(initiator, amountOwing); // Repay the loan
-
+        IERC20(tokenAddress).transfer(owner, amountOwing); // Repay the loan
+        //send profit to initiator??? as variable for dynamic setting of profit detination
         return keccak256("IERC3156FlashBorrower.onFlashLoan");
     }
 /*
