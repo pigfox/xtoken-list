@@ -34,7 +34,7 @@ cast send "$Dex1" "setName(string)" "0000000000" --rpc-url "$SEPOLIA_RPC_URL" --
 cast call "$Dex1" "getName()(string)" --rpc-url "$SEPOLIA_RPC_URL"
 $ cast send --private-key <Your Private Key> 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc $(cast from-utf8 "hello world") --rpc-url http://127.0.0.1:8545/
 '
-cast send "$Dex1" "setTokenPrice(address,uint256)" "$ERC20Token" "66669" --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY"
+cast send "$Dex1" "setTokenPrice(address,uint256)" "$ERC20Token" "1000" --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY"
 echo "-----------getTokenPrice--------------"
 hex_value=$(cast call "$Dex1" "getTokenPrice(address)" "$ERC20Token" --rpc-url "$SEPOLIA_RPC_URL")
 numerical_value=$(hex2Int "$hex_value")   # Call the function and capture the output
@@ -54,10 +54,14 @@ echo "-----------end getSupply--------------"
 echo "ERC20Token address: $ERC20Token"
 echo "Dex1 address: $Dex1"
 '
-echo "-----------totalSupply--------------"
-cast call "$ERC20Token" "totalSupply()" --rpc-url "$SEPOLIA_RPC_URL"
+echo "-----------totalSupply@ $ERC20Token --------------"
 hex_value=$(cast call "$ERC20Token" "totalSupply()" --rpc-url "$SEPOLIA_RPC_URL")
 total_supply=$(hex2Int "$hex_value")
 echo "Total supply: $total_supply"
 echo "-----------end totalSupply--------------"
 
+: '
+This is a
+very neat comment
+in bash
+'
