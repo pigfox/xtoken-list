@@ -17,13 +17,13 @@ hex2Int() {
     fi
 
     # Use printf to convert the large hex value to decimal
-    decimal_value=$(printf "%d\n" "0x$hex_value" 2>/dev/null)
+    numerical_value=$(printf "%d\n" "0x$hex_value" 2>/dev/null)
 
-    if [ -z "$decimal_value" ]; then
+    if [ -z "$numerical_value" ]; then
         echo "Error: Failed to convert hexadecimal to decimal"
         return 1
     fi
-    echo "$decimal_value"  # Return the decimal value
+    echo "$numerical_value"  # Return the decimal value
 }
 
 
@@ -37,8 +37,8 @@ $ cast send --private-key <Your Private Key> 0x3c44cdddb6a900fa2b585dd299e03d12f
 cast send "$Dex1" "setTokenPrice(address,uint256)" "$ERC20Token" "66669" --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY"
 echo "-----------getTokenPrice--------------"
 hex_value=$(cast call "$Dex1" "getTokenPrice(address)" "$ERC20Token" --rpc-url "$SEPOLIA_RPC_URL")
-decimal_value=$(hex2Int "$hex_value")   # Call the function and capture the output
-echo "Token Price: $decimal_value"
+numerical_value=$(hex2Int "$hex_value")   # Call the function and capture the output
+echo "Token Price: $numerical_value"
 echo "-----------end getTokenPrice--------------"
 : '
 echo "-----------supplyToken--------------"
