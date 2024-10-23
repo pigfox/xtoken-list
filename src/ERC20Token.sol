@@ -23,4 +23,8 @@ contract ERC20Token is ERC20 {
     function supplyToken(address _to, uint256 _amount) external {
         _mint(_to, _amount);
     }
+
+    function getBalance(address _account) public view returns (uint256) {
+        return this.balanceOf(_account);
+    }
 }
