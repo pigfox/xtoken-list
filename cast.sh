@@ -24,3 +24,19 @@ else
     echo "Decimal value: $decimal_value"
 fi
 echo "-----------end getTokenPrice--------------"
+echo "-----------supplyToken--------------"
+cast send "$ERC20Token" "supplyToken(address,uint256)" "$Dex1" "7878" --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY"
+echo "-----------end supplyToken--------------"
+echo "-----------gas-price--------------"
+gas_price=$(cast gas-price --rpc-url "$SEPOLIA_RPC_URL")
+echo "gas_price $gas_price"
+echo "-----------end gas-price--------------"
+echo "-----------getSupply--------------"
+cast call "$ERC20Token" "getBalance(address)" "$Dex1" --rpc-url "$SEPOLIA_RPC_URL" --gas-price "$gas_price"
+echo "-----------end getSupply--------------"
+echo "ERC20Token address: $ERC20Token"
+echo "Dex1 address: $Dex1"
+cast call "$ERC20Token" "getBalance(address)" "$Dex1" --rpc-url "$SEPOLIA_RPC_URL"
+cast call "$ERC20Token" "balanceOf(address)" "$Dex1" --rpc-url "$SEPOLIA_RPC_URL"
+cast call "$ERC20Token" "totalSupply()" --rpc-url "$SEPOLIA_RPC_URL"
+
