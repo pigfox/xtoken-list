@@ -27,7 +27,7 @@ hex2Int() {
 }
 
 
-echo "Calling contract"
+echo "Calling contracts"
 : '
 cast call "$Dex1" "getName()(string)" --rpc-url "$SEPOLIA_RPC_URL"
 cast send "$Dex1" "setName(string)" "0000000000" --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY"
@@ -40,7 +40,7 @@ hex_value=$(cast call "$Dex1" "getTokenPrice(address)" "$ERC20Token" --rpc-url "
 numerical_value=$(hex2Int "$hex_value")   # Call the function and capture the output
 echo "Token Price: $numerical_value"
 echo "-----------end getTokenPrice--------------"
-: '
+: ''
 echo "-----------supplyToken--------------"
 cast send "$ERC20Token" "supplyToken(address,uint256)" "$Dex1" "7878" --rpc-url "$SEPOLIA_RPC_URL" --private-key "$PRIVATE_KEY"
 echo "-----------end supplyToken--------------"
@@ -48,12 +48,12 @@ echo "-----------gas-price--------------"
 gas_price=$(cast gas-price --rpc-url "$SEPOLIA_RPC_URL")
 echo "gas_price $gas_price"
 echo "-----------end gas-price--------------"
-echo "-----------getSupply--------------"
-cast call "$ERC20Token" "getBalance(address)" "$Dex1" --rpc-url "$SEPOLIA_RPC_URL" --gas-price "$gas_price"
-echo "-----------end getSupply--------------"
+echo "-----------getBalance--------------"
+cast call "$ERC20Token" "getBalance(address)" "$Dex1" --rpc-url "$SEPOLIA_RPC_URL" #--gas-price "$gas_price"
+echo "-----------end getBalance--------------"
 echo "ERC20Token address: $ERC20Token"
 echo "Dex1 address: $Dex1"
-'
+
 echo "-----------totalSupply@ $ERC20Token --------------"
 hex_value=$(cast call "$ERC20Token" "totalSupply()" --rpc-url "$SEPOLIA_RPC_URL")
 total_supply=$(hex2Int "$hex_value")
