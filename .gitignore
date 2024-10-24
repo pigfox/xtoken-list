@@ -36,5 +36,6 @@ lib/
 /broadcast/**/dry-run/
 wip.sh
 nocommit.sh
+broadcast/
 
 
