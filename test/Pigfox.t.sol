@@ -12,7 +12,7 @@ contract PigfoxTest is Test {
     Dex public dex2;
     XToken public xToken;
     Pigfox public pigfox;
-    uint256 maxTokenSupply = 10 ether;
+    uint256 public maxTokenSupply = 10 ether;
 
     function setUp() public {
         dex1 = Dex(vm.envAddress("Dex1"));
@@ -22,17 +22,34 @@ contract PigfoxTest is Test {
         xToken.mint(maxTokenSupply);
         xToken.supplyTokenTo(address(dex1), 5000000000);
         xToken.supplyTokenTo(address(dex2), 3000000000);
-        dex1.setTokenPrice(address(xToken), 100);
+        dex1.setTokenPrice(address(xToken), 120);
         dex2.setTokenPrice(address(xToken), 80);
-        console.log("erc20Token.balanceOf(address(dex1)):", xToken.balanceOf(address(dex1)));
-        console.log("erc20Token.balanceOf(address(dex2)):", xToken.balanceOf(address(dex2)));
     }
 
-   function test_swap()public pure{
-       console.log("Test Swap");
+    function test_swap()public {
+        console.log("Test Swap");
+        uint256 dex1TokenPrice = dex1.getTokenPrice(address(xToken));
+        console.log("dex1TokenPrice:", dex1TokenPrice);
+        uint256 dex2TokenPrice = dex2.getTokenPrice(address(xToken));
+        console.log("dex2TokenPrice:", dex2TokenPrice);
+        if (dex1TokenPrice == dex2TokenPrice) {
+           revert("Prices are equal");
+        }
+
+        if (dex1TokenPrice < dex2TokenPrice){
+            uint256 dex1TokenBalance = xToken.balanceOf(address(dex1));
+            console.log("dex1TokenBalance :", dex1TokenBalance);
+            pigfox.swap(address(xToken), address(dex1), address(dex2), dex1TokenBalance);
+        }
+        if (dex2TokenPrice < dex1TokenPrice){
+            uint256 dex2TokenBalance = xToken.balanceOf(address(dex2));
+            console.log("dex2TokenBalance:", dex2TokenBalance);
+            pigfox.swap(address(xToken), address(dex2), address(dex1), dex2TokenBalance);
+        }
+
     }
 
-    function test_x() public {
+    function test_x() public view{
 
         /*
         address equalizerLenderAddress = vm.envAddress("SEPOLIA_EQUALIZER_LENDER");

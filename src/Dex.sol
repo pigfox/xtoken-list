@@ -18,8 +18,8 @@ contract Dex {
     }
 
     //Set price of individual token
-    function setTokenPrice(address _tokenAddress, uint _xTokenprice) public {
-        tokenPrices[_tokenAddress] = _xTokenprice;
+    function setTokenPrice(address _tokenAddress, uint _tokenPrice) public {
+        tokenPrices[_tokenAddress] = _tokenPrice;
     }
 
     //Get price of individual token
