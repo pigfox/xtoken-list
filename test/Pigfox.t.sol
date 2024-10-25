@@ -5,12 +5,9 @@ import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 import {Dex} from "../src/Dex.sol";
 import {ERC20Token} from "../src/ERC20Token.sol";
-import {Pigfox} from "../src/PigfoxFlashloan.sol";
-import {Vault} from "../src/Vault.sol";
-
+import {Pigfox} from "../src/Pigfox.sol";
 
 contract PigfoxTest is Test {
-    Vault public vault;
     Dex public dex1;
     Dex public dex2;
     ERC20Token public erc20Token;
@@ -18,43 +15,44 @@ contract PigfoxTest is Test {
     uint256 maxTokenSupply = 10 ether;
 
     function setUp() public {
-        
-        //Localhost
-        vault = new Vault();
-        dex1 = new Dex();
-        dex1.setName("1");
-        dex1.getName();
-        
-         /*
-        vault = Vault(vm.envAddress("Vault"));
-        dex1 = Dex("0xAe0Ba418186991b2bE5C274CDB316B16dD4e5B91);
-        console.log("dex1:", address(dex1));
-        
-        dex1.getName();
-        dex1.setName("1");
-        */
-        /*
-        try {
-            dex1.setName("1");
-        } catch Error(string memory reason) {
-            console.log("Error reason:", reason);
-        }
-        */
-         /*
+        dex1 = Dex(vm.envAddress("Dex1"));
         dex2 = Dex(vm.envAddress("Dex2"));
-        dex2.setName("2");
+        pigfox = Pigfox(vm.envAddress("Pigfox"));
         erc20Token = ERC20Token(vm.envAddress("ERC20Token"));
-        erc20Token.mint(maxTokenSupply);
-        console.log("erc20Token.getSuppy():", erc20Token.getSuppy());
-        erc20Token.transfer(address(vault), maxTokenSupply);
-        erc20Token.supplyToken(address(dex1), 5000000000);
-        erc20Token.supplyToken(address(dex2), 3000000000);
+
+        bytes memory data = abi.encodeWithSelector(
+            bytes4(keccak256("mintTo(address,uint256)")),
+            address(this),
+            maxTokenSupply
+        );
+
+        bytes4 selector;
+        assembly {
+            selector := mload(add(data, 32))
+        }
+
+        if (selector != bytes4(0)) { //<---- This is the line that is causing the error
+            //erc20Token.mint(maxTokenSupply);
+        } else {
+            // Option 2: Modify ERC20Token for testing (not recommended for production)
+            // Or
+            // Option 3: Use forge-std Mock to mock erc20Token behavior
+        }
+        /*
+
+        erc20Token.supplyTokenTo(address(dex1), 5000000000);
+        erc20Token.supplyTokenTo(address(dex2), 3000000000);
         console.log("erc20Token.balanceOf(address(dex1)):", erc20Token.balanceOf(address(dex1)));
         console.log("erc20Token.balanceOf(address(dex2)):", erc20Token.balanceOf(address(dex2)));
         */
     }
 
-    function test_pigfox() public {
+   function test_swap()public {
+       console.log("Test Swap");
+    }
+
+    function test_x() public {
+
         /*
         address equalizerLenderAddress = vm.envAddress("SEPOLIA_EQUALIZER_LENDER");
         pigfox = new Pigfox();

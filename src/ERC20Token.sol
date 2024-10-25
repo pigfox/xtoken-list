@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
 contract ERC20Token is ERC20 {
-    event ReceivedEther(uint amount, address sender);
     event Minted(uint amount, address sender);
     event MintedTo(uint amount, address receiver);
     address public owner;
@@ -24,7 +23,7 @@ contract ERC20Token is ERC20 {
         emit Minted(_amount, msg.sender);
     }
 
-    function supplyTokenTo(address _to, uint256 _amount) external {
+    function supplyTokenTo(address _to, uint256 _amount) public {
         _mint(_to, _amount);
         emit MintedTo(_amount, _to);
     }
@@ -35,10 +34,5 @@ contract ERC20Token is ERC20 {
 
     function getBalance() public view returns (uint) {
         return address(this).balance;
-    }
-
-    receive() external payable {
-        console.log("Received ", msg.value, " wei");
-        emit ReceivedEther(msg.value, msg.sender);
     }
 }
