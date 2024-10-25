@@ -5,7 +5,7 @@ import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 import {Dex} from "../src/Dex.sol";
 import {ERC20Token} from "../src/ERC20Token.sol";
-import {Pigfox} from "../src/Pigfox.sol";
+import {Pigfox} from "../src/PigfoxFlashloan.sol";
 import {Vault} from "../src/Vault.sol";
 
 
