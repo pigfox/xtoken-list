@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Vault {
+    mapping(address => uint256) public tokenPrices;
     address public owner;
 
     constructor() {
@@ -14,7 +15,7 @@ contract Vault {
         return IERC20(_tokenAddress).balanceOf(address(this));
     }
 
-    function transerToken(address _tokenAddress, address _to, uint256 _amount) public {
+    function transferToken(address _tokenAddress, address _to, uint256 _amount) public {
         IERC20(_tokenAddress).approve(_to, _amount);
         IERC20(_tokenAddress).transfer(_to, _amount);
     }

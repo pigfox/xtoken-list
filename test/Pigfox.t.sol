@@ -6,22 +6,37 @@ import {console} from "../lib/forge-std/src/console.sol";
 import {Dex} from "../src/Dex.sol";
 import {XToken} from "../src/XToken.sol";
 import {Pigfox} from "../src/Pigfox.sol";
+import {Vault} from "../src/Vault.sol";
 
 contract PigfoxTest is Test {
     Dex public dex1;
     Dex public dex2;
     XToken public xToken;
     Pigfox public pigfox;
+    Vault public vault;
     uint256 public maxTokenSupply = 10 ether;
 
     function setUp() public {
         dex1 = Dex(vm.envAddress("Dex1"));
         dex2 = Dex(vm.envAddress("Dex2"));
+        vault = Vault(vm.envAddress("Vault"));
         pigfox = Pigfox(vm.envAddress("Pigfox"));
         xToken = XToken(vm.envAddress("XToken"));
         xToken.mint(maxTokenSupply);
         xToken.supplyTokenTo(address(dex1), 5000000000);
         xToken.supplyTokenTo(address(dex2), 3000000000);
+        xToken.supplyTokenTo(address(vault), 1 ether);
+
+        // Approve pigfox to spend tokens on behalf of both Dexes
+        vm.prank(address(dex1));
+        xToken.approve(address(pigfox), type(uint256).max);
+
+        vm.prank(address(dex2));
+        xToken.approve(address(pigfox), type(uint256).max);
+
+        // Approve pigfox from the test contract
+        xToken.approve(address(pigfox), type(uint256).max);
+
         dex1.setTokenPrice(address(xToken), 120);
         dex2.setTokenPrice(address(xToken), 80);
     }
@@ -37,35 +52,16 @@ contract PigfoxTest is Test {
         }
 
         if (dex1TokenPrice < dex2TokenPrice){
+            console.log("Buy from Dex1 sell to Dex2");
             uint256 dex1TokenBalance = xToken.balanceOf(address(dex1));
-            console.log("dex1TokenBalance :", dex1TokenBalance);
             pigfox.swap(address(xToken), address(dex1), address(dex2), dex1TokenBalance);
         }
         if (dex2TokenPrice < dex1TokenPrice){
+            console.log("Buy from Dex2 sell to Dex1");
             uint256 dex2TokenBalance = xToken.balanceOf(address(dex2));
-            console.log("dex2TokenBalance:", dex2TokenBalance);
             pigfox.swap(address(xToken), address(dex2), address(dex1), dex2TokenBalance);
         }
 
-    }
-
-    function test_x() public view{
-
-        /*
-        address equalizerLenderAddress = vm.envAddress("SEPOLIA_EQUALIZER_LENDER");
-        pigfox = new Pigfox();
-        pigfox.setLender(equalizerLenderAddress);
-        vault.transerToken(address(erc20Token), address(pigfox), maxTokenSupply);
-        dex1.setTokenPrice(address(erc20Token), 100);
-        dex2.setTokenPrice(address(erc20Token), 80);
-        if (dex1.getTokenPrice(address(erc20Token)) == dex2.getTokenPrice(address(erc20Token))) {
-            revert("Prices are equal");
-        }
-
-        bytes memory data = abi.encode(address(dex1), address(dex2), address(erc20Token));
-        bytes32 dataBytes = pigfox.onFlashLoan(address(pigfox), address(erc20Token), maxTokenSupply, 0, data);
-        console.log("data", bytes32ToString(dataBytes));
-        */
     }
 
     function bytes32ToString(bytes32 _data) internal pure returns (string memory) {
