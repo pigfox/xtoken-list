@@ -33,3 +33,22 @@ Vault Factory
 Flash loan provider
 
 0x0837b2aCcF87De52a099409863CDb5f3588342AD
+
+bytes memory data = abi.encodeWithSelector(
+    bytes4(keccak256("mintTo(address,uint256)")),
+    address(this),
+    maxTokenSupply
+);
+
+bytes4 selector;
+assembly {
+    selector := mload(add(data, 32))
+}
+
+if (selector != bytes4(0)) {
+    erc20Token.mint(maxTokenSupply);
+} else {
+    // Option 2: Modify ERC20Token for testing (not recommended for production)
+    // Or
+    // Option 3: Use forge-std Mock to mock erc20Token behavior
+}

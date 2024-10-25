@@ -14,6 +14,7 @@ contract Pigfox {
 
     constructor() {
         owner = msg.sender;
+        destination = msg.sender;
     }
 
     modifier onlyOwner() {
@@ -27,6 +28,10 @@ contract Pigfox {
 
     function setDestination(address _destination) public onlyOwner {
         destination = _destination;
+    }
+
+    function getDestination() public view returns (address) {
+        return destination;
     }
 
     function swap(address _tokenAddress, address _fromDexAddress, address _toDexAddress, uint256 _amount) public {

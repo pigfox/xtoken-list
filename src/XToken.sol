@@ -5,7 +5,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
-contract ERC20Token is ERC20 {
+contract XToken is ERC20 {
     event Minted(uint amount, address sender);
     event MintedTo(uint amount, address receiver);
     address public owner;

@@ -4,13 +4,13 @@ pragma solidity ^0.8.26;
 import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 import {Dex} from "../src/Dex.sol";
-import {ERC20Token} from "../src/ERC20Token.sol";
+import {XToken} from "../src/XToken.sol";
 import {Pigfox} from "../src/Pigfox.sol";
 
 contract PigfoxTest is Test {
     Dex public dex1;
     Dex public dex2;
-    ERC20Token public erc20Token;
+    XToken public xToken;
     Pigfox public pigfox;
     uint256 maxTokenSupply = 10 ether;
 
@@ -18,36 +18,17 @@ contract PigfoxTest is Test {
         dex1 = Dex(vm.envAddress("Dex1"));
         dex2 = Dex(vm.envAddress("Dex2"));
         pigfox = Pigfox(vm.envAddress("Pigfox"));
-        erc20Token = ERC20Token(vm.envAddress("ERC20Token"));
-
-        bytes memory data = abi.encodeWithSelector(
-            bytes4(keccak256("mintTo(address,uint256)")),
-            address(this),
-            maxTokenSupply
-        );
-
-        bytes4 selector;
-        assembly {
-            selector := mload(add(data, 32))
-        }
-
-        if (selector != bytes4(0)) { //<---- This is the line that is causing the error
-            //erc20Token.mint(maxTokenSupply);
-        } else {
-            // Option 2: Modify ERC20Token for testing (not recommended for production)
-            // Or
-            // Option 3: Use forge-std Mock to mock erc20Token behavior
-        }
-        /*
-
-        erc20Token.supplyTokenTo(address(dex1), 5000000000);
-        erc20Token.supplyTokenTo(address(dex2), 3000000000);
-        console.log("erc20Token.balanceOf(address(dex1)):", erc20Token.balanceOf(address(dex1)));
-        console.log("erc20Token.balanceOf(address(dex2)):", erc20Token.balanceOf(address(dex2)));
-        */
+        xToken = XToken(vm.envAddress("XToken"));
+        xToken.mint(maxTokenSupply);
+        xToken.supplyTokenTo(address(dex1), 5000000000);
+        xToken.supplyTokenTo(address(dex2), 3000000000);
+        dex1.setTokenPrice(address(xToken), 100);
+        dex2.setTokenPrice(address(xToken), 80);
+        console.log("erc20Token.balanceOf(address(dex1)):", xToken.balanceOf(address(dex1)));
+        console.log("erc20Token.balanceOf(address(dex2)):", xToken.balanceOf(address(dex2)));
     }
 
-   function test_swap()public {
+   function test_swap()public pure{
        console.log("Test Swap");
     }
 
