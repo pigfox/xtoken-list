@@ -19,7 +19,7 @@ contract ArbitrageTest is Test {
 
     function setUp() public {
         // Set up the Sepolia fork
-        string memory rpcUrl = vm.envString("SEPOLIA_RPC_URL");
+        string memory rpcUrl = vm.envString("SEPOLIA_HTTP_RPC_URL");
         uint256 forkId = vm.createSelectFork(rpcUrl);
         vm.selectFork(forkId);
 
@@ -76,8 +76,8 @@ contract ArbitrageTest is Test {
 
     function test_swapTokens()public view{
         console.log("Function Test SwapTokens");
-        uint initialVaultBalance = vault.tokenBalance(address(xToken));
-        uint initialVaultETHBalance = vault.ethBalance();
+        uint256 initialVaultBalance = vault.tokenBalance(address(xToken));
+        uint256 initialVaultETHBalance = vault.ethBalance();
         //vm.startPrank(owner);
         uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
         console.log("--router1 address:", address(router1));
