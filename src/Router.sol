@@ -10,6 +10,7 @@ interface IERC20 {
 
 contract Router {
     mapping(address => uint256) public tokenPrices;
+    //mapping(address => uint256) public tokenBalances;
 
     // Get the balance of a specific token held by this contract
     function getTokenBalance(address token) external view returns (uint256) {
@@ -41,10 +42,12 @@ contract Router {
         require(IERC20(tokenOut).transfer(msg.sender, amountOut), "Output token transfer failed");
     }
 
+    /*
     // Add liquidity for a specific token in the router
     function addLiquidity(address token, uint256 amount) external {
         // Transfer the token from the sender to the contract
         require(IERC20(token).transferFrom(msg.sender, address(this), amount), "Liquidity addition failed");
-        tokenPrices[token] += amount;
+        tokenBalances[token] += amount;
     }
+    */
 }
