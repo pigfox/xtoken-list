@@ -1,17 +1,10 @@
+james@jamesbachini.com
+
 https://docs.equalizer.finance/getting-started/how-do-i-borrow-a-flash-loan-a-deep-dive
 
 
 export SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID
 export PRIVATE_KEY=YOUR_WALLET_PRIVATE_KEY
-
-
-[default]
-rpc_url = "${SEPOLIA_RPC_URL}"
-
-
-forge test --fork-url $SEPOLIA_RPC_URL
-forge script MyScript --fork-url $SEPOLIA_RPC_URL --broadcast
-forge test --fork-url $SEPOLIA_RPC_URL --fork-block-number <BLOCK_NUMBER
 
 
 Mainnet: Ethereum
@@ -54,17 +47,139 @@ if (selector != bytes4(0)) {
 }
 
  /*
-        address equalizerLenderAddress = vm.envAddress("SEPOLIA_EQUALIZER_LENDER");
-        pigfox = new Pigfox();
-        pigfox.setLender(equalizerLenderAddress);
-        vault.transerToken(address(erc20Token), address(pigfox), maxTokenSupply);
-        dex1.setTokenPrice(address(erc20Token), 100);
-        dex2.setTokenPrice(address(erc20Token), 80);
-        if (dex1.getTokenPrice(address(erc20Token)) == dex2.getTokenPrice(address(erc20Token))) {
-            revert("Prices are equal");
-        }
+address equalizerLenderAddress = vm.envAddress("SEPOLIA_EQUALIZER_LENDER");
+pigfox = new Pigfox();
+pigfox.setLender(equalizerLenderAddress);
+vault.transerToken(address(erc20Token), address(pigfox), maxTokenSupply);
+dex1.setTokenPrice(address(erc20Token), 100);
+dex2.setTokenPrice(address(erc20Token), 80);
+if (dex1.getTokenPrice(address(erc20Token)) == dex2.getTokenPrice(address(erc20Token))) {
+    revert("Prices are equal");
+}
 
-        bytes memory data = abi.encode(address(dex1), address(dex2), address(erc20Token));
-        bytes32 dataBytes = pigfox.onFlashLoan(address(pigfox), address(erc20Token), maxTokenSupply, 0, data);
-        console.log("data", bytes32ToString(dataBytes));
-        */
+bytes memory data = abi.encode(address(dex1), address(dex2), address(erc20Token));
+bytes32 dataBytes = pigfox.onFlashLoan(address(pigfox), address(erc20Token), maxTokenSupply, 0, data);
+console.log("data", bytes32ToString(dataBytes));
+*/
+
+-----------------------------------------------------------------------
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+interface IDexRouter {
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline  
+
+    ) external returns (uint[] memory amounts);
+}
+
+contract Arbitrage {
+    address public  
+ immutable dexRouter1;
+    address public immutable dexRouter2;
+
+    constructor(address _dexRouter1, address _dexRouter2) {
+        dexRouter1 = _dexRouter1;
+        dexRouter2 = _dexRouter2;
+    }
+
+    function arbitrage(
+        IERC20 tokenIn,
+        uint256 amountIn,
+        address[] calldata path1,
+        address[] calldata path2
+    ) external {
+        // Approve the DEX routers to spend the tokens
+        tokenIn.approve(dexRouter1, amountIn);
+        tokenIn.approve(dexRouter2, amountIn);
+
+        // Swap on DEX1
+        IDexRouter(dexRouter1).swapExactTokensForTokens(
+            amountIn,
+            0, // Minimum output amount
+            path1,
+            address(this),
+            block.timestamp
+        );
+
+        // Swap on DEX2
+        IDexRouter(dexRouter2).swapExactTokensForTokens(
+            IERC20(path1[path1.length - 1]).balanceOf(address(this)),
+            0, // Minimum output amount
+            path2,
+            msg.sender,
+            block.timestamp
+        );
+    }
+}
+
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IUniswapV2Factory.sol";  
+
+import "./IUniswapV2Pair.sol";
+
+contract UniswapV2Router {
+    address public immutable factory;
+
+    constructor(address _factory) {
+        factory = _factory;
+    }
+
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts) {
+        require(path.length >= 2, "UniswapV2Router: INVALID_PATH");
+        amounts = new uint[](path.length);
+        amounts[0] = amountIn;
+        for (uint i; i < path.length - 1; i++)  
+ {
+            (address input, address output) = (path[i], path[i + 1]);
+            (amounts[i + 1], ) = _swap(input, output, amounts[i], to);
+        }
+    }
+
+    function _swap(
+        address input,
+        address output,
+        uint amountIn,
+        address to
+    ) internal returns (uint amountOut, uint liquidity) {
+        (address token0, address token1) = input < output ? (input, output) : (output, input);
+        IUniswapV2Pair pair = IUniswapV2Pair(IUniswapV2Factory(factory).getPair(token0, token1));
+        uint amountInWithFee = amountIn * 997 / 1000;
+        uint reserveIn = pair.getReserves()[token0 == token1 ? 1 : 0];
+        uint reserveOut = pair.getReserves()[token0 == token1 ? 0 : 1];
+        amountOut = getAmountOut(amountInWithFee, reserveIn, reserveOut);
+        pair.swap(0, amountIn, to, 0);
+        return (amountOut, liquidity);
+    }
+
+    function getAmountOut(
+        uint amountIn,
+        uint reserveIn,
+        uint reserveOut
+    ) public pure returns (uint amountOut) {
+        uint amountInWithFee = amountIn  
+ * 997;
+        uint numerator = amountInWithFee * reserveOut;
+        uint denominator = (reserveIn * 1000) + amountInWithFee;
+        amountOut = numerator / denominator;  
+
+    }
+}
+Use code with caution.
+

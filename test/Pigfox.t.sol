@@ -19,7 +19,7 @@ contract PigfoxTest is Test {
     function setUp() public {
         dex1 = Dex(vm.envAddress("Dex1"));
         dex2 = Dex(vm.envAddress("Dex2"));
-        vault = Vault(vm.envAddress("Vault"));
+        vault = Vault(payable(vm.envAddress("Vault")));
         pigfox = Pigfox(vm.envAddress("Pigfox"));
         xToken = XToken(vm.envAddress("XToken"));
         xToken.mint(maxTokenSupply);
