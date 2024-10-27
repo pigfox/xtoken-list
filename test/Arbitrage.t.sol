@@ -18,39 +18,60 @@ contract ArbitrageTest is Test {
     uint256 public maxTokenSupply = 10 ether;
 
     function setUp() public {
+        // Set up the Sepolia fork
         string memory rpcUrl = vm.envString("SEPOLIA_RPC_URL");
         uint256 forkId = vm.createSelectFork(rpcUrl);
         vm.selectFork(forkId);
+
+        // Load addresses from environment variables
         owner = vm.envAddress("WALLET_ADDRESS");
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
         router1 = Router(vm.envAddress("Router1"));
         router2 = Router(vm.envAddress("Router2"));
-        router1.setTokenPrice(address(xToken), 120);
-        uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
-        console.log("@router1TokenPrice:", router1TokenPrice);
-        router2.setTokenPrice(address(xToken), 80);
-        uint256 router2TokenPrice = router2.getTokenPrice(address(xToken));
-        console.log("@router2TokenPrice:", router2TokenPrice);
-
         vault = Vault(payable(vm.envAddress("Vault")));
         xToken = XToken(vm.envAddress("XToken"));
-        console.log("XToken address", address (xToken));
-        xToken.supplyTokenTo(address(this), 5e18);
 
+        console.log("Loaded contract addresses:");
+
+        // Initialize token prices
+        initializeTokenPrices();
+
+        // Add liquidity and check balances
+        addLiquidityAndApprovals();
+
+        console.log("Setup completed successfully.");
+    }
+
+// Helper function to initialize and verify token prices
+    function initializeTokenPrices() internal {
+        router1.setTokenPrice(address(xToken), 120);
+        router2.setTokenPrice(address(xToken), 80);
+
+        uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
+        uint256 router2TokenPrice = router2.getTokenPrice(address(xToken));
+
+        require(router1TokenPrice == 120, "Router1 token price mismatch");
+        require(router2TokenPrice == 80, "Router2 token price mismatch");
+
+        console.log("@router1TokenPrice:", router1TokenPrice);
+        console.log("@router2TokenPrice:", router2TokenPrice);
+    }
+
+// Helper function to add liquidity and set approvals
+    function addLiquidityAndApprovals() internal {
+        xToken.supplyTokenTo(address(this), 5e18);
         uint256 thisBalance = xToken.getTokenBalanceAt(address(this));
-        console.log("XToken@thisBalance:", thisBalance);
-        xToken.supplyTokenTo(address(router1), thisBalance/2);
+
+        xToken.supplyTokenTo(address(router1), thisBalance / 2);
         uint256 router1Balance = xToken.getTokenBalanceAt(address(router1));
+
+        console.log("Initial token balances:");
+        console.log("XToken@thisBalance:", thisBalance);
         console.log("router1Balance:", router1Balance);
 
+        // Approve routers for xToken transactions
         xToken.approve(address(router1), type(uint256).max);
         xToken.approve(address(router2), type(uint256).max);
-        console.log("end setup");
-        /*
-        //router1.addLiquidity(address(xToken), maxTokenSupply/2);
-        //router1.addLiquidity(address(xToken), 1e18);
-        //router2.addLiquidity(address(xToken), 5e18);
-*/
     }
 
     function test_swapTokens()public view{
