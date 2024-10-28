@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
+import "../lib/forge-std/src/Vm.sol";
 import {Router} from "../src/Router.sol";
 import {XToken} from "../src/XToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
@@ -18,13 +19,17 @@ contract ArbitrageTest is Test {
     uint256 public maxTokenSupply = 10 ether;
 
     function setUp() public {
+        /**/
         // Set up the Sepolia fork
         string memory rpcUrl = vm.envString("SEPOLIA_HTTP_RPC_URL");
         uint256 forkId = vm.createSelectFork(rpcUrl);
+        console.log("Fork ID:", forkId);
         vm.selectFork(forkId);
 
         // Load addresses from environment variables
         owner = vm.envAddress("WALLET_ADDRESS");
+        console.log("Owner Address:", owner);
+
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
         router1 = Router(vm.envAddress("Router1"));
         router2 = Router(vm.envAddress("Router2"));
@@ -32,6 +37,11 @@ contract ArbitrageTest is Test {
         xToken = XToken(vm.envAddress("XToken"));
 
         console.log("Loaded contract addresses:");
+        console.log("Arbitrage Address:", address(arbitrage));
+        console.log("Router1 Address:", address(router1));
+        console.log("Router2 Address:", address(router2));
+        console.log("Vault Address:", address(vault));
+        console.log("XToken Address:", address(xToken));
 
         // Initialize token prices
         initializeTokenPrices();
@@ -42,10 +52,16 @@ contract ArbitrageTest is Test {
         console.log("Setup completed successfully.");
     }
 
+
 // Helper function to initialize and verify token prices
     function initializeTokenPrices() internal {
+        vm.startPrank(owner);  // Impersonate the correct address
+        // Approve routers for xToken transactions
+        xToken.approve(address(router1), type(uint256).max);
+        xToken.approve(address(router2), type(uint256).max);
         router1.setTokenPrice(address(xToken), 120);
         router2.setTokenPrice(address(xToken), 80);
+        vm.stopPrank();
 
         uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
         uint256 router2TokenPrice = router2.getTokenPrice(address(xToken));
@@ -68,17 +84,13 @@ contract ArbitrageTest is Test {
         console.log("Initial token balances:");
         console.log("XToken@thisBalance:", thisBalance);
         console.log("router1Balance:", router1Balance);
-
-        // Approve routers for xToken transactions
-        xToken.approve(address(router1), type(uint256).max);
-        xToken.approve(address(router2), type(uint256).max);
     }
 
-    function test_swapTokens()public view{
+    function test_swapTokens()public{
         console.log("Function Test SwapTokens");
         uint256 initialVaultBalance = vault.tokenBalance(address(xToken));
         uint256 initialVaultETHBalance = vault.ethBalance();
-        //vm.startPrank(owner);
+        vm.startPrank(owner);
         uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
         console.log("--router1 address:", address(router1));
         console.log("--router1TokenPrice:", router1TokenPrice);
@@ -88,7 +100,7 @@ contract ArbitrageTest is Test {
         if (router1TokenPrice == router2TokenPrice) {
            revert("Prices are equal");
         }
-        /*
+
         if (router1TokenPrice < router2TokenPrice){
             console.log("Buy from router1 sell to router2");
             uint256 router1TokenBalance = xToken.balanceOf(address(router1));
@@ -104,7 +116,6 @@ contract ArbitrageTest is Test {
         assertNotEq(finalVaultBalance, initialVaultBalance);
         uint finalVaultETHBalance = vault.ethBalance();
         assertNotEq(finalVaultETHBalance, initialVaultETHBalance);
-        */
     }
 
     function bytes32ToString(bytes32 _data) internal pure returns (string memory) {
