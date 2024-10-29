@@ -52,6 +52,8 @@ contract ArbitrageTest is Test {
         console.log("Function Initialize Token Prices");
         xToken.approve(address(router1), type(uint256).max);
         xToken.approve(address(router2), type(uint256).max);
+        xToken.supplyTokenTo(address(router1), 15e18);
+        xToken.supplyTokenTo(address(router2), 5e18);
         router1.setTokenPrice(address(xToken), 120);
         router2.setTokenPrice(address(xToken), 80);
 
@@ -81,15 +83,15 @@ contract ArbitrageTest is Test {
     function test_swapTokens()public{
         console.log("Function Test SwapTokens");
         vm.startPrank(owner);
-        //uint256 initialVaultBalance = vault.tokenBalance(address(xToken));
-        //uint256 initialVaultETHBalance = vault.ethBalance();
+        uint256 initialVaultBalance = vault.tokenBalance(address(xToken));
+        uint256 initialVaultETHBalance = vault.ethBalance();
         uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
         console.log("--router1 address:", address(router1));
         console.log("--router1TokenPrice:", router1TokenPrice);
         console.log("--router2 address:", address(router2));
         uint256 router2TokenPrice = router2.getTokenPrice(address(xToken));
         console.log("--router2TokenPrice:", router2TokenPrice);
-        /*
+
         if (router1TokenPrice == router2TokenPrice) {
            revert("Prices are equal");
         }
@@ -97,12 +99,12 @@ contract ArbitrageTest is Test {
         if (router1TokenPrice < router2TokenPrice){
             console.log("Buy from router1 sell to router2");
             uint256 router1TokenBalance = xToken.balanceOf(address(router1));
-            //arbitrage.executeArbitrage(address(xToken), address(router1), address(router2), address(vault),router1TokenBalance);
+            arbitrage.executeArbitrage(address(xToken), address(router1), address(router2), address(vault),router1TokenBalance);
         }
         if (router2TokenPrice < router1TokenPrice){
             console.log("Buy from router2 sell to router1");
             uint256 router2TokenBalance = xToken.balanceOf(address(router2));
-            //arbitrage.executeArbitrage(address(xToken), address(router2), address(router1), address(vault),router2TokenBalance);
+            arbitrage.executeArbitrage(address(xToken), address(router2), address(router1), address(vault),router2TokenBalance);
         }
 
 
@@ -110,7 +112,7 @@ contract ArbitrageTest is Test {
         assertNotEq(finalVaultBalance, initialVaultBalance);
         uint finalVaultETHBalance = vault.ethBalance();
         assertNotEq(finalVaultETHBalance, initialVaultETHBalance);
-        */
+
         vm.stopPrank();
     }
 
