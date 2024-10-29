@@ -42,7 +42,6 @@ contract ArbitrageTest is Test {
         console.log("Setup completed successfully.");
     }
 
-
     // Helper function to initialize and verify token prices
     function initializeTokenPrices() internal {
         vm.startPrank(owner);
@@ -52,8 +51,6 @@ contract ArbitrageTest is Test {
         console.log("Function Initialize Token Prices");
         xToken.approve(address(router1), type(uint256).max);
         xToken.approve(address(router2), type(uint256).max);
-        xToken.supplyTokenTo(address(router1), 15e18);
-        xToken.supplyTokenTo(address(router2), 5e18);
         router1.setTokenPrice(address(xToken), 120);
         router2.setTokenPrice(address(xToken), 80);
 
@@ -75,9 +72,13 @@ contract ArbitrageTest is Test {
         xToken.supplyTokenTo(address(router1), thisBalance / 2);
         uint256 router1Balance = xToken.getTokenBalanceAt(address(router1));
 
+        xToken.supplyTokenTo(address(router2), thisBalance / 4);
+        uint256 router2Balance = xToken.getTokenBalanceAt(address(router2));
+
         console.log("Initial token balances:");
         console.log("XToken@thisBalance:", thisBalance);
         console.log("router1Balance:", router1Balance);
+        console.log("router2Balance:", router2Balance);
     }
 
     function test_swapTokens()public{
