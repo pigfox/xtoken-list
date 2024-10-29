@@ -16,6 +16,8 @@ contract ArbitrageTest is Test {
     Arbitrage public arbitrage;
     Vault public vault;
     uint256 public maxTokenSupply = 10 ether;
+    uint256 public initialRouter1TokenPrice = 120;
+    uint256 public initialRouter2TokenPrice = 80;
 
     function setUp() public {
         // Load addresses from environment variables
@@ -49,16 +51,16 @@ contract ArbitrageTest is Test {
         console.log("msg.sender:", msg.sender);
         //require(msg.sender == owner, "Not authorized");
         console.log("Function Initialize Token Prices");
-        xToken.approve(address(router1), type(uint256).max);
-        xToken.approve(address(router2), type(uint256).max);
-        router1.setTokenPrice(address(xToken), 120);
-        router2.setTokenPrice(address(xToken), 80);
+        //xToken.approve(address(router1), type(uint256).max);
+        //xToken.approve(address(router2), type(uint256).max);
+        router1.setTokenPrice(address(xToken), initialRouter1TokenPrice);
+        router2.setTokenPrice(address(xToken), initialRouter2TokenPrice);
 
         uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
         uint256 router2TokenPrice = router2.getTokenPrice(address(xToken));
         vm.stopPrank();
-        require(router1TokenPrice == 120, "Router1 token price mismatch");
-        require(router2TokenPrice == 80, "Router2 token price mismatch");
+        require(router1TokenPrice == initialRouter1TokenPrice, "Router1 token price mismatch");
+        require(router2TokenPrice == initialRouter2TokenPrice, "Router2 token price mismatch");
 
         console.log("@router1TokenPrice:", router1TokenPrice);
         console.log("@router2TokenPrice:", router2TokenPrice);

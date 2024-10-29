@@ -2,6 +2,7 @@
 pragma solidity ^0.8.26;
 
 import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {console} from "../lib/forge-std/src/console.sol";
 
 interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
@@ -28,6 +29,7 @@ contract Arbitrage {
 
     // Approves the routers to spend XToken
     function _approveRouters(address xToken, address fromRouter, address toRouter, uint256 amount) internal {
+        console.log("Approving routers");
         bool approved = IERC20(xToken).approve(fromRouter, amount);
         require(approved, "From router approval failed");
         approved = IERC20(xToken).approve(toRouter, amount);
@@ -42,8 +44,9 @@ contract Arbitrage {
         address profitRecipient,
         uint256 amount
     ) external onlyOwner {
+        console.log("Executing arbitrage");
         _approveRouters(xToken, fromRouterAddress, toRouterAddress, amount);
-        uint256 initialBalance = IERC20(xToken).balanceOf(address(this));
+        uint256 initialBalance = IERC20(xToken).balanceOf(fromRouterAddress);
         require(initialBalance >= amount, "Insufficient balance in fromRouter");
 
         ERC20 token = ERC20(xToken);
