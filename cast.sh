@@ -1,6 +1,6 @@
 #!/bin/sh
-set +x
-set +e
+set -x
+set -e
 clear
 . ./.env
 
@@ -35,7 +35,7 @@ cast call "$Router1" "getName()(string)" --rpc-url "$SEPOLIA_HTTP_RPC_URL"
 $ cast send --private-key <Your Private Key> 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc $(cast from-utf8 "hello world") --rpc-url http://127.0.0.1:8545/
 '
 
-cast send "$Router1" "setTokenPrice(address,uint256)" "$XToken" "10003" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
+cast send "$Router1" "setTokenPrice(address,uint256)" "$XToken" "99998888" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
 : '
 echo "-----------getTokenPrice--------------"
 hex_value=$(cast call "$Router1" "getTokenPrice(address)" "$XToken" --rpc-url "$SEPOLIA_HTTP_RPC_URL")

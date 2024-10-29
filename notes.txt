@@ -183,3 +183,16 @@ contract UniswapV2Router {
 }
 Use code with caution.
 
+        /*
+        // Set up the Sepolia fork
+        string memory rpcUrl = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        uint256 fork = vm.createFork(rpcUrl);
+        vm.selectFork(fork);
+        console.log("Fork ID:", fork);
+
+        uint256 fork2 = vm.createSelectFork(rpcUrl);
+        console.log("Fork2 ID:", fork2);
+
+        uint256 fork3 = vm.createSelectFork(rpcUrl);
+        console.log("Fork3 ID:", fork3);
+*/
