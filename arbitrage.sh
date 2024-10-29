@@ -5,6 +5,27 @@ clear
 . ./.env
 
 echo "Running arbitrage simulation"
+hex2Int() {
+    local hex_value="$1"
+
+    # Clean the output by stripping '0x' and any extra whitespace
+    hex_value=$(echo "$hex_value" | sed 's/^0x//' | tr -d '\n' | tr -d ' ')
+
+    # Check if the value is not empty and valid for conversion
+    if [ -z "$hex_value" ] || ! echo "$hex_value" | grep -qE '^[0-9a-fA-F]+$'; then
+        echo "Error: Invalid hexadecimal value"
+        return 1
+    fi
+
+    # Use printf to convert the large hex value to decimal
+    numerical_value=$(printf "%d\n" "0x$hex_value" 2>/dev/null)
+
+    if [ -z "$numerical_value" ]; then
+        echo "Error: Failed to convert hexadecimal to decimal"
+        return 1
+    fi
+    echo "$numerical_value"  # Return the decimal value
+}
 
 # Set token price for Router1
 cast send "$Router1" "setTokenPrice(address,uint256)" "$XToken" "120" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
@@ -16,13 +37,16 @@ cast send "$Router2" "setTokenPrice(address,uint256)" "$XToken" "80" --rpc-url "
 cast send "$XToken" "supplyTokenTo(address,uint256)" "$Router1" "5000000000000000000" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
 
 # Check test contract's balance
-cast call "$XToken" "balanceOf(address)" "$TEST_CONTRACT" --rpc-url "$SEPOLIA_HTTP_RPC_URL"
+cast call "$XToken" "balanceOf(address)" "$Router1" --rpc-url "$SEPOLIA_HTTP_RPC_URL"
 
 # Supply tokens to Router1
 cast send "$XToken" "supplyTokenTo(address,uint256)" "$Router1" "2500000000000000000" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
 
 # Check Router1’s balance
 cast call "$XToken" "balanceOf(address)" "$Router1" --rpc-url "$SEPOLIA_HTTP_RPC_URL"
+
+# Check Router2’s balance
+cast call "$XToken" "balanceOf(address)" "$Router2" --rpc-url "$SEPOLIA_HTTP_RPC_URL"
 
 # Approve Router1 for maximum tokens
 cast send "$XToken" "approve(address,uint256)" "$Router1" "$(cast --max-uint)" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
@@ -32,7 +56,9 @@ cast send "$XToken" "approve(address,uint256)" "$Router2" "$(cast --max-uint)" -
 
 # Get token prices from Router1 and Router2
 ROUTER1_PRICE=$(cast call "$Router1" "getTokenPrice(address)" "$XToken" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
+ROUTER1_PRICE=$(hex2Int "$ROUTER1_PRICE")
 ROUTER2_PRICE=$(cast call "$Router2" "getTokenPrice(address)" "$XToken" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
+ROUTER2_PRICE=$(hex2Int "$ROUTER2_PRICE")
 
 # Decide and execute arbitrage
 if [ "$ROUTER1_PRICE" -lt "$ROUTER2_PRICE" ]; then
