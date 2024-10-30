@@ -71,16 +71,19 @@ contract ArbitrageTest is Test {
     function addLiquidityAndApprovals() internal {
         xToken.supplyTokenTo(address(this), initialArbitrageTokens);
         uint256 thisBalance = xToken.getTokenBalanceAt(address(this));
+        console.log("74");
         assertEq(xToken.getTokenBalanceAt(address(this)), initialArbitrageTokens);
 
         uint256 router1Tokens = thisBalance / 2;
         xToken.supplyTokenTo(address(router1), router1Tokens);
         uint256 router1Balance = xToken.getTokenBalanceAt(address(router1));
+        console.log("80");
         assertEq(xToken.getTokenBalanceAt(address(router1)), router1Tokens);
 
         uint256 router2Tokens = thisBalance / 4;
         xToken.supplyTokenTo(address(router2), thisBalance / 4);
         uint256 router2Balance = xToken.getTokenBalanceAt(address(router2));
+        console.log("86");
         assertEq(xToken.getTokenBalanceAt(address(router2)), router2Tokens);
 
         console.log("Initial token balances:");
