@@ -30,10 +30,12 @@ contract Arbitrage {
     // Approves the routers to spend XToken
     function _approveRouters(address xToken, address fromRouter, address toRouter, uint256 amount) internal {
         console.log("Approving routers");
-        bool approved = IERC20(xToken).approve(fromRouter, amount);
-        require(approved, "From router approval failed");
-        approved = IERC20(xToken).approve(toRouter, amount);
-        require(approved, "To router approval failed");
+        bool fromRouterApproved = IERC20(xToken).approve(fromRouter, amount);
+        require(fromRouterApproved, "From router approval failed");
+        bool toRouterApproved = IERC20(xToken).approve(toRouter, amount);
+        require(toRouterApproved, "To router approval failed");
+        bool arbitrageApproved = IERC20(xToken).approve(address(this), amount);
+        require(arbitrageApproved, "Arbitrage approval failed");
     }
 
     // Perform arbitrage if profitable

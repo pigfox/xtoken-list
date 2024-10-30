@@ -18,6 +18,7 @@ contract ArbitrageTest is Test {
     uint256 public maxTokenSupply = 10 ether;
     uint256 public initialRouter1TokenPrice = 120;
     uint256 public initialRouter2TokenPrice = 80;
+    uint256 public initialArbitrageTokens = 5e18;
 
     function setUp() public {
         // Load addresses from environment variables
@@ -68,14 +69,19 @@ contract ArbitrageTest is Test {
 
 // Helper function to add liquidity and set approvals
     function addLiquidityAndApprovals() internal {
-        xToken.supplyTokenTo(address(this), 5e18);
+        xToken.supplyTokenTo(address(this), initialArbitrageTokens);
         uint256 thisBalance = xToken.getTokenBalanceAt(address(this));
+        assertEq(xToken.getTokenBalanceAt(address(this)), initialArbitrageTokens);
 
-        xToken.supplyTokenTo(address(router1), thisBalance / 2);
+        uint256 router1Tokens = thisBalance / 2;
+        xToken.supplyTokenTo(address(router1), router1Tokens);
         uint256 router1Balance = xToken.getTokenBalanceAt(address(router1));
+        assertEq(xToken.getTokenBalanceAt(address(router1)), router1Tokens);
 
+        uint256 router2Tokens = thisBalance / 4;
         xToken.supplyTokenTo(address(router2), thisBalance / 4);
         uint256 router2Balance = xToken.getTokenBalanceAt(address(router2));
+        assertEq(xToken.getTokenBalanceAt(address(router2)), router2Tokens);
 
         console.log("Initial token balances:");
         console.log("XToken@thisBalance:", thisBalance);
