@@ -79,6 +79,12 @@ contract ArbitrageTest is Test {
         xToken.supplyTokenTo(address(router1), router1Tokens);
         uint256 router1Balance = xToken.getTokenBalanceAt(address(router1));
         console.log("@80 router1Balance:", router1Balance);
+        if(router1Tokens > router1Balance){
+            console.log("router1Tokens > router1Balance");
+        }else{
+            console.log("router1Tokens < router1Balance");
+        }
+
         assertEq(router1Balance, router1Tokens);
 
         uint256 router2Tokens = thisBalance / 4;
