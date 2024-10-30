@@ -32,10 +32,13 @@ contract Arbitrage {
         console.log("Approving routers");
         bool fromRouterApproved = IERC20(xToken).approve(fromRouter, amount);
         require(fromRouterApproved, "From router approval failed");
+        console.log("From router approved successfully");
         bool toRouterApproved = IERC20(xToken).approve(toRouter, amount);
         require(toRouterApproved, "To router approval failed");
+        console.log("To router approved successfully");
         bool arbitrageApproved = IERC20(xToken).approve(address(this), amount);
         require(arbitrageApproved, "Arbitrage approval failed");
+        console.log("Arbitrage approved successfully");
         console.log("Routers approved successfully");
     }
 
