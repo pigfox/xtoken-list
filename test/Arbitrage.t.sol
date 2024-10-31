@@ -90,7 +90,6 @@ contract ArbitrageTest is Test {
         uint256 router2Tokens = thisBalance / 4;
         xToken.supplyTokenTo(address(router2), thisBalance / 4);
         uint256 router2Balance = xToken.getTokenBalanceAt(address(router2));
-        console.log("86");
         assertEq(router2Balance, router2Tokens);
 
         console.log("Initial token balances:");
@@ -99,7 +98,7 @@ contract ArbitrageTest is Test {
         console.log("router2Balance:", router2Balance);
     }
 
-    function test_swapTokens()public{
+    function test_executeArbitrage()public{
         console.log("Function Test SwapTokens");
         vm.startPrank(owner);
         uint256 initialVaultBalance = vault.tokenBalance(address(xToken));

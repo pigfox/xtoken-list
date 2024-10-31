@@ -22,6 +22,7 @@ contract Arbitrage {
 
     constructor() {
         owner = msg.sender;
+        profitAddress = msg.sender;
     }
 
     modifier onlyOwner() {
@@ -49,7 +50,7 @@ contract Arbitrage {
         require(arbitrageApproved, "Arbitrage approval failed");
         console.log("Arbitrage contract approved successfully");
 
-        uint256 arbitrageAllowance = IERC20(xToken).allowance(owner, address(this));
+        uint256 arbitrageAllowance = IERC20(xToken).allowance(msg.sender, address(this));
         console.log("XToken allowance:", arbitrageAllowance);
 
         console.log("Arbitrage approved successfully");
