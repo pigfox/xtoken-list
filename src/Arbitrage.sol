@@ -9,6 +9,7 @@ interface IERC20 {
     function transfer(address recipient, uint256 amount) external returns (bool);
     function approve(address spender, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
 }
 
 interface IDexRouter {
@@ -17,6 +18,7 @@ interface IDexRouter {
 
 contract Arbitrage {
     address public owner;
+    address public profitAddress;
 
     constructor() {
         owner = msg.sender;
@@ -27,9 +29,14 @@ contract Arbitrage {
         _;
     }
 
+    function setProfitAddress(address _profitAddress) external onlyOwner {
+        profitAddress = _profitAddress;
+    }
+
     // Approves the routers to spend XToken
     function _approveRouters(address xToken, address fromRouter, address toRouter, uint256 amount) internal {
         console.log("Approving routers");
+
         bool fromRouterApproved = IERC20(xToken).approve(fromRouter, amount);
         require(fromRouterApproved, "From router approval failed");
         console.log("From router approved successfully");
@@ -38,8 +45,12 @@ contract Arbitrage {
         require(toRouterApproved, "To router approval failed");
         console.log("To router approved successfully");
 
-        bool arbitrageApproved = IERC20(xToken).approve(address(this), amount);
+        bool arbitrageApproved = IERC20(xToken).approve(address(this), type(uint256).max);
         require(arbitrageApproved, "Arbitrage approval failed");
+        console.log("Arbitrage contract approved successfully");
+
+        uint256 arbitrageAllowance = IERC20(xToken).allowance(owner, address(this));
+        console.log("XToken allowance:", arbitrageAllowance);
 
         console.log("Arbitrage approved successfully");
         console.log("Routers approved successfully");
@@ -47,31 +58,35 @@ contract Arbitrage {
 
     // Perform arbitrage if profitable
     function executeArbitrage(
-        address xToken,
+        address xTokenAddress,
         address fromRouterAddress,
         address toRouterAddress,
-        address profitRecipient,
-        uint256 amount
+        uint256 amount,
+        uint256 deadline
     ) external onlyOwner {
+        require(block.timestamp <= deadline, "Deadline exceeded");
         console.log("Executing arbitrage");
-        _approveRouters(xToken, fromRouterAddress, toRouterAddress, amount);
-        uint256 initialBalance = IERC20(xToken).balanceOf(fromRouterAddress);
+        _approveRouters(xTokenAddress, fromRouterAddress, toRouterAddress, amount);
+        uint256 initialBalance = IERC20(xTokenAddress).balanceOf(fromRouterAddress);
         require(initialBalance >= amount, "Insufficient balance in fromRouter");
 
-        ERC20 token = ERC20(xToken);
+        ERC20 token = ERC20(xTokenAddress);
         token.approve(fromRouterAddress, amount);
-        token.transferFrom(fromRouterAddress, address(this), amount);
-        uint256 amountBReceived = IERC20(xToken).balanceOf(address(this));
+        bool transferredFromRouterAddress = token.transferFrom(fromRouterAddress, address(this), amount);
+        require(transferredFromRouterAddress, "Transfer from fromRouter failed");
+
+        uint256 amountBReceived = IERC20(xTokenAddress).balanceOf(address(this));
         token.approve(address(this), amount);
-        token.transferFrom(address(this), toRouterAddress, amountBReceived);
+        bool transferredFromArbitrage = token.transferFrom(address(this), toRouterAddress, amountBReceived);
+        require(transferredFromArbitrage, "Transfer from arbitrage failed");
 
         // Calculate the profit made from the arbitrage trade
-        uint256 finalBalance = IERC20(xToken).balanceOf(address(this));
+        uint256 finalBalance = IERC20(xTokenAddress).balanceOf(address(this));
         uint256 profit = finalBalance > initialBalance ? finalBalance - initialBalance : 0;
 
         // Send the profit to the profit recipient
         if (profit > 0) {
-            require(IERC20(xToken).transfer(profitRecipient, profit), "Profit transfer failed");
+            require(IERC20(xTokenAddress).transfer(profitAddress, profit), "Profit transfer failed");
         }
     }
 

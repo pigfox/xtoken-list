@@ -118,20 +118,28 @@ contract ArbitrageTest is Test {
         if (router1TokenPrice < router2TokenPrice){
             console.log("Buy from router1 sell to router2");
             uint256 router1TokenBalance = xToken.balanceOf(address(router1));
-            arbitrage.executeArbitrage(address(xToken), address(router1), address(router2), address(vault),router1TokenBalance);
+            arbitrage.executeArbitrage(address(xToken), address(router1), address(router2), router1TokenBalance, block.timestamp);
         }
         if (router2TokenPrice < router1TokenPrice){
             console.log("Buy from router2 sell to router1");
             uint256 router2TokenBalance = xToken.balanceOf(address(router2));
-            arbitrage.executeArbitrage(address(xToken), address(router2), address(router1), address(vault),router2TokenBalance);
+            arbitrage.executeArbitrage(address(xToken), address(router2), address(router1), router2TokenBalance, block.timestamp);
         }
-
 
         uint finalVaultBalance = vault.tokenBalance(address(xToken));
         assertNotEq(finalVaultBalance, initialVaultBalance);
         uint finalVaultETHBalance = vault.ethBalance();
         assertNotEq(finalVaultETHBalance, initialVaultETHBalance);
 
+        vm.stopPrank();
+    }
+
+    function test_setProfitAddress()public{
+        console.log("Function Test SetProfitAddress");
+        vm.startPrank(owner);
+        address profitAddress = vm.envAddress("WALLET_ADDRESS");
+        arbitrage.setProfitAddress(profitAddress);
+        assertEq(arbitrage.profitAddress(), profitAddress);
         vm.stopPrank();
     }
 
