@@ -18,6 +18,7 @@ contract MsgSenderTest is Test {
 
     function test_run() external view{
         msgSender.run();
+        assert(msgSender.owner() == owner, "Owner should be the same as the sender");
     }
 
     function tearDown() public {
