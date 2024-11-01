@@ -4,8 +4,10 @@ set -e
 clear
 forge clean
 . ./.env
-contract="Arbitrage"
-function="executeArbitrage"
+#contract="Arbitrage"
+#function="executeArbitrage"
+contract="MsgSender"
+function="run"
 rpc_url=$SEPOLIA_HTTP_RPC_URL
 echo "Testing $contract::$function..."
 forge test --rpc-url "$rpc_url" --gas-report --verbosity --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv

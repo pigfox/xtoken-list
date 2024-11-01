@@ -1,13 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {console} from "../lib/forge-std/src/console.sol";
+
+interface IERC20 {
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
+}
 
 interface IDexRouter {
     function getTokenBalance(address token) external view returns (uint256);
 }
 
-contract Arbitrage {
+contract ArbitrageLocal {
     address public owner;
     address public profitAddress;
 
@@ -27,15 +36,25 @@ contract Arbitrage {
 
     // Approves the routers to spend XToken
     function _approveRouters(address xToken, address fromRouter, address toRouter, uint256 amount) internal {
+        console.log("Approving routers");
 
         bool fromRouterApproved = IERC20(xToken).approve(fromRouter, amount);
         require(fromRouterApproved, "From router approval failed");
+        console.log("From router approved successfully");
 
         bool toRouterApproved = IERC20(xToken).approve(toRouter, amount);
         require(toRouterApproved, "To router approval failed");
+        console.log("To router approved successfully");
 
         bool arbitrageApproved = IERC20(xToken).approve(address(this), type(uint256).max);
         require(arbitrageApproved, "Arbitrage approval failed");
+        console.log("Arbitrage contract approved successfully");
+
+        uint256 arbitrageAllowance = IERC20(xToken).allowance(msg.sender, address(this));
+        console.log("XToken allowance:", arbitrageAllowance);
+
+        console.log("Arbitrage approved successfully");
+        console.log("Routers approved successfully");
     }
 
     // Perform arbitrage if profitable
@@ -47,6 +66,7 @@ contract Arbitrage {
         uint256 deadline
     ) external onlyOwner {
         require(block.timestamp <= deadline, "Deadline exceeded");
+        console.log("Executing arbitrage");
         _approveRouters(xTokenAddress, fromRouterAddress, toRouterAddress, amount);
         uint256 initialBalance = IERC20(xTokenAddress).balanceOf(fromRouterAddress);
         require(initialBalance >= amount, "Insufficient balance in fromRouter");

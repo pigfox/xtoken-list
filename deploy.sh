@@ -6,6 +6,6 @@ clear
 forge clean
 rpc_url="$SEPOLIA_HTTP_RPC_URL"
 private_key="$PRIVATE_KEY"
-contract="Arbitrage"
+contract="MsgSender"
 echo "Deploying $contract..."
 forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$rpc_url" --private-key "$private_key" --broadcast --verify --optimize 200

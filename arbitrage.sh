@@ -27,6 +27,11 @@ hex2Int() {
     echo "$numerical_value"  # Return the decimal value
 }
 
+#Get balance of an address
+#cast balance "$WALLET_ADDRESS" --rpc-url "$SEPOLIA_HTTP_RPC_URL"
+INITIAL_WALLET_BALANCE=$(cast balance "$WALLET_ADDRESS" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
+echo $INITIAL_WALLET_BALANCE
+
 # Set token price for Router1
 cast send "$Router1" "setTokenPrice(address,uint256)" "$XToken" "120" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
 
@@ -81,3 +86,7 @@ FINAL_ROUTER2_BALANCE=$(cast call "$XToken" "balanceOf(address)" "$Router2" --rp
 
 echo "Router1's balance: $(hex2Int "$INITIAL_ROUTER1_BALANCE")  -> $(hex2Int "$FINAL_ROUTER1_BALANCE")"
 echo "Router2's balance: $(hex2Int "$INITIAL_ROUTER2_BALANCE")  -> $(hex2Int "$FINAL_ROUTER2_BALANCE")"
+
+FINAL_WALLET_BALANCE=$(cast balance "$WALLET_ADDRESS" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
+echo $FINAL_WALLET_BALANCE
+echo "Differential: $(($FINAL_WALLET_BALANCE - $INITIAL_WALLET_BALANCE))"
