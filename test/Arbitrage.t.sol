@@ -36,8 +36,6 @@ contract ArbitrageTest is Test {
         console.log("Router2 Address:", address(router2));
         console.log("Vault Address:", address(vault));
         console.log("XToken Address:", address(xToken));
-        vm.stopPrank();
-
         initializeTokenPrices();
         addLiquidityAndApprovals();
 
@@ -69,7 +67,6 @@ contract ArbitrageTest is Test {
     function addLiquidityAndApprovals() internal {
         xToken.supplyTokenTo(address(this), initialArbitrageTokens);
         uint256 thisBalance = xToken.getTokenBalanceAt(address(this));
-        console.log("74");
         assertEq(xToken.getTokenBalanceAt(address(this)), initialArbitrageTokens);
 
         uint256 router1Tokens = thisBalance / 2;
@@ -132,7 +129,6 @@ contract ArbitrageTest is Test {
 
     function test_setProfitAddress()public{
         console.log("Function Test SetProfitAddress");
-        vm.startPrank(owner);
         address profitAddress = vm.envAddress("WALLET_ADDRESS");
         arbitrage.setProfitAddress(profitAddress);
         assertEq(arbitrage.profitAddress(), profitAddress);
