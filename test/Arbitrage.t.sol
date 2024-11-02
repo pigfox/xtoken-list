@@ -36,14 +36,14 @@ contract ArbitrageTest is Test {
         console.log("Router2 Address:", address(router2));
         console.log("Vault Address:", address(vault));
         console.log("XToken Address:", address(xToken));
-        initializeTokenPrices();
-        addLiquidityAndApprovals();
+        _initializeTokenPrices();
+        _addLiquidityAndApprovals();
 
         console.log("Setup completed successfully.");
     }
 
     // Helper function to initialize and verify token prices
-    function initializeTokenPrices() internal {
+    function _initializeTokenPrices() internal {
         console.log("owner:", owner);
         console.log("msg.sender:", msg.sender);
         //require(msg.sender == owner, "Not authorized");
@@ -64,7 +64,7 @@ contract ArbitrageTest is Test {
     }
 
 // Helper function to add liquidity and set approvals
-    function addLiquidityAndApprovals() internal {
+    function _addLiquidityAndApprovals() internal {
         xToken.supplyTokenTo(address(this), initialArbitrageTokens);
         uint256 thisBalance = xToken.getTokenBalanceAt(address(this));
         assertEq(xToken.getTokenBalanceAt(address(this)), initialArbitrageTokens);
@@ -74,14 +74,6 @@ contract ArbitrageTest is Test {
         xToken.supplyTokenTo(address(router1), router1Tokens);
         uint256 router1Balance = xToken.getTokenBalanceAt(address(router1));
         console.log("@80 router1Balance:", router1Balance);
-
-        if(router1Tokens > router1Balance){
-            console.log("router1Tokens > router1Balance");
-        }else{
-            console.log("router1Tokens < router1Balance");
-        }
-
-        //assertEq(router1Balance, router1Tokens);
 
         uint256 router2Tokens = thisBalance / 4;
         xToken.supplyTokenTo(address(router2), thisBalance / 4);
@@ -120,7 +112,7 @@ contract ArbitrageTest is Test {
             uint256 router2TokenBalance = xToken.balanceOf(address(router2));
             arbitrage.executeArbitrage(address(xToken), address(router2), address(router1), router2TokenBalance, block.timestamp);
         }
-
+        vm.stopPrank();
         uint finalVaultBalance = vault.tokenBalance(address(xToken));
         assertNotEq(finalVaultBalance, initialVaultBalance);
         uint finalVaultETHBalance = vault.ethBalance();
@@ -156,7 +148,13 @@ contract ArbitrageTest is Test {
         return string(result);
     }
 
+    function _setPrank() internal {
+        vm.startPrank(owner);
+    }
+
+    /*
     function tearDown() public {
         vm.stopPrank(); // Ensure prank is stopped after each test
     }
+    */
 }

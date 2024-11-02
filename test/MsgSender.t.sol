@@ -6,22 +6,20 @@ import {console} from "../lib/forge-std/src/console.sol";
 import {MsgSender} from "../src/MsgSender.sol";
 
 contract MsgSenderTest is Test {
-    MsgSender msgSender;
-    address owner;
+    MsgSender public msgSender;
+    address public owner;
 
     function setUp() public {
         owner = vm.envAddress("WALLET_ADDRESS");
         console.log("Owner Address:", owner);
-        vm.startPrank(owner);
         msgSender = new MsgSender();
     }
 
-    function test_run() external view{
+    function test_run() external{
+        vm.startPrank(owner);
+        console.log("msg.sender:", msg.sender);
+        assert(msg.sender == owner);
         msgSender.run();
-        assert(msgSender.owner() == owner);
-    }
-
-    function tearDown() public {
-        vm.stopPrank(); // Ensure prank is stopped after each test
+        vm.stopPrank();
     }
 }
