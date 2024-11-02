@@ -16,7 +16,7 @@ contract MsgSender {
     }
 
     function run() public view onlyOwner {
-        //this function needs to be called by the owner
+        console.log("Run...");
         console.log("Owner:", owner);
         console.log("Msg.Sender:", msg.sender);
     }
