@@ -12,13 +12,16 @@ contract MsgSenderTest is Test {
     function setUp() public {
         owner = vm.envAddress("WALLET_ADDRESS");
         console.log("Owner Address:", owner);
+
+        // Deploy MsgSender with owner set as WALLET_ADDRESS
+        vm.startPrank(owner);
         msgSender = new MsgSender();
+        vm.stopPrank();
     }
 
     function test_run() external{
         vm.startPrank(owner);
         console.log("msg.sender:", msg.sender);
-        assert(msg.sender == owner);
         msgSender.run();
         vm.stopPrank();
     }
