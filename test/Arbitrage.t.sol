@@ -99,6 +99,7 @@ contract ArbitrageTest is Test {
 
     function test_executeArbitrage()public{
         console.log("Function Test SwapTokens");
+        assert(arbitrage.owner() == owner);
         uint256 initialVaultBalance = vault.tokenBalance(address(xToken));
         uint256 initialVaultETHBalance = vault.ethBalance();
         uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
