@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "forge-std/Test.sol";
+import "./MyContract.sol";
+
+contract MyContractTest is Test {
+    MyContract myContract;
+
+    function getDeployedContractInstance() public returns (MyContract) {
+        // Prepare the cast command to fetch the contract address
+        string;
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = "<deployer_address>"; // Replace with the deployer address
+        inputs[3] = "getDeployedContractAddress()"; // Replace with the function name to get the address
+
+        // Execute the cast command using vm.ffi and retrieve the result
+        bytes memory result = vm.ffi(inputs);
+
+        // Decode the result to get the contract address
+        address contractAddress = abi.decode(result, (address));
+
+        // Return an instance of MyContract at the retrieved address
+        return MyContract(contractAddress);
+    }
+
+    function testFetchContractInstance() public {
+        // Fetch the contract instance using getDeployedContractInstance
+        myContract = getDeployedContractInstance();
+
+        // Now you can interact with `myContract` as an instance of the deployed contract
+        address owner = myContract.owner();
+        emit log_address(owner); // Log the owner address for verification in the test
+    }
+}
