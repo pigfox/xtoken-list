@@ -6,13 +6,13 @@ forge clean
 . ./.env
 #contract="Arbitrage"
 #function="executeArbitrage"
-contract="MsgSender"
-function="test_run"
+contract="Arbitrage"
+function="test_executeArbitrage"
 rpc_url=$SEPOLIA_HTTP_RPC_URL
 echo "Testing $contract::$function..."
 forge test --rpc-url "$rpc_url" --gas-report --verbosity --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
 #forge test --rpc-url "$rpc_url" --gas-report --verbosity --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" -vvvv
-#forge test --fork-url "$rpc_url" --etherscan-api-key "$ETHERSCAN_API_KEY" --gas-report --verbosity --match-contract "$contract" --match-test "$function" -vvvv
+#forge test --fork-url "http://127.0.0.1:8545" --etherscan-api-key "$ETHERSCAN_API_KEY" --gas-report --verbosity --match-contract "$contract" --match-test "$function" -vvvv
 #forge test --gas-report --verbosity --match-contract "$contract" --match-test "$function" -vvvv
 
 
