@@ -13,7 +13,7 @@ contract Functions is Test{
          inputs[1] = "call";
          inputs[2] = _xToken;
          bytes memory result = vm.ffi(inputs);
-        //console.log("result", result);
+
          // Decode the result to get the contract address
          address contractAddress = abi.decode(result, (address));
 

@@ -13,6 +13,12 @@ contract XToken is ERC20 {
         owner = msg.sender;
     }
 
+    // Approve the spender to spend tokens on behalf of the owner
+    function approveSpender(address spender, uint256 amount) public returns (bool) {
+        _approve(msg.sender, spender, amount);
+        return true;
+    }
+
     function getSupply() public view returns (uint256) {
         return this.totalSupply();
     }
