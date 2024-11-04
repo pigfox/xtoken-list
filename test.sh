@@ -8,12 +8,13 @@ forge clean
 #function="executeArbitrage"
 contract="Arbitrage"
 function="test_executeArbitrage"
-rpc_url=$SEPOLIA_HTTP_RPC_URL
+rpc_url=https://ethereum-sepolia-rpc.publicnode.com
 echo "Testing $contract::$function..."
 #cast call "$XToken" --rpc-url "$rpc_url"
 #cast send 0x7D6983bFB1625636b0e38Ae178a7315FaDe11295 "mint(uint256)(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-cast call "$XToken" "getBalance()" --rpc-url https://ethereum-sepolia-rpc.publicnode.com
-cast call "$Arbitrage" "getBalance()" --rpc-url https://ethereum-sepolia-rpc.publicnode.com
+cast call "$XToken" "totalSupply()" --rpc-url "$rpc_url"
+cast send "$XToken" "mint(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+cast call "$XToken" "totalSupply()" --rpc-url "$rpc_url"
 #cast call 0xe34Ac9E64fb1db3b3bb30988462014Cb525de040 "getBalance()" --rpc-url https://ethereum-sepolia-rpc.publicnode.com
 #cast send "$XToken" "mint(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #cast send "$XToken" "supplyTokenTo(address)(uint256)" "$Arbitrage" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
