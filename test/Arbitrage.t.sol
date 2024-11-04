@@ -24,15 +24,19 @@ contract ArbitrageTest is Test {
     uint256 public initialArbitrageTokens = 5e18;
 
     function setUp() public {
-        ownerAddressStr = vm.envString("WALLET_ADDRESS");
-        xTokenAddressStr = vm.envString("XToken");
-        console.log("Owner Address:", ownerAddressStr);
-        vm.startPrank(address(ownerAddressStr));
-        vm.allowCheatcodes(address(ownerAddressStr));
-        vm.allowCheatcodes(address(xTokenAddressStr));
+        xToken = XToken(vm.envAddress("XToken"));
+        _testMint();
+        /*
+        ownerAddress = vm.envAddress("WALLET_ADDRESS");
         functions = new Functions();
+        xTokenAddress = vm.envAddress("XToken");
+        console.log("Owner Address:", ownerAddress);
+        vm.startPrank(ownerAddress);
+        vm.allowCheatcodes(ownerAddress);
+        vm.allowCheatcodes(xTokenAddress);
+        vm.allowCheatcodes(address(this));
         //xToken = XToken(vm.envAddress("XToken"));
-        xToken = functions.getXTokens(vm.envString("XToken"), ownerAddressStr);
+        xToken = functions.getXToken(vm.envString("XToken"));
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
         router1 = Router(vm.envAddress("Router1"));
         router2 = Router(vm.envAddress("Router2"));
@@ -48,11 +52,22 @@ contract ArbitrageTest is Test {
         _addLiquidityAndApprovals();
         vm.stopPrank();
         console.log("Setup completed successfully.");
+        */
+    }
+
+    function _testMint() public {
+        console.log("Testing mint function.");
+        // Example of calling the mint function using the contract instance
+        xToken.supplyTokenTo(address(this), 1 ether);
+
+        // You can add assertions here to check the state of the contract
+        uint256 balance = xToken.getTokenBalanceAt(address(this));
+        assertEq(balance, 1 ether, "Balance should be 1 ether");
     }
 
     // Helper function to initialize and verify token prices
     function _initializeTokenPrices() internal {
-        console.log("owner:", ownerAddressStr);
+        console.log("owner:", ownerAddress);
         console.log("msg.sender:", msg.sender);
         //require(msg.sender == owner, "Not authorized");
         console.log("Function Initialize Token Prices");
@@ -95,11 +110,11 @@ contract ArbitrageTest is Test {
     }
 
     function test_executeArbitrage()public{
-        vm.startPrank(ownerAddressStr);
+        vm.startPrank(ownerAddress);
         console.log("Function Test SwapTokens");
         address arbitrageOwner = arbitrage.owner();
         console.log("arbitrageOwner:",arbitrageOwner);
-        assert(msg.sender == ownerAddressStr, "Not authorized");
+        assert(msg.sender == ownerAddress);
         uint256 initialVaultBalance = vault.tokenBalance(address(xToken));
         uint256 initialVaultETHBalance = vault.ethBalance();
         uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
@@ -131,7 +146,7 @@ contract ArbitrageTest is Test {
     }
 
     function test_setProfitAddress()public{
-        vm.startPrank(ownerAddressStr);
+        vm.startPrank(ownerAddress);
         console.log("Function Test SetProfitAddress");
         address profitAddress = vm.envAddress("WALLET_ADDRESS");
         arbitrage.setProfitAddress(profitAddress);
@@ -159,10 +174,6 @@ contract ArbitrageTest is Test {
         }
 
         return string(result);
-    }
-
-    function _setPrank() internal {
-        vm.startPrank(ownerAddressStr);
     }
 
     /*

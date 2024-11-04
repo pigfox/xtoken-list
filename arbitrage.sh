@@ -32,14 +32,14 @@ hex2Int() {
 INITIAL_WALLET_BALANCE=$(cast balance "$WALLET_ADDRESS" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
 echo $INITIAL_WALLET_BALANCE
 
+# Mint and supply tokens to the test contract
+cast send "$XToken" "supplyTokenTo(address,uint256)" "$Router1" "5000000000000000000" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
+
 # Set token price for Router1
 cast send "$Router1" "setTokenPrice(address,uint256)" "$XToken" "120" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
 
 # Set token price for Router2
 cast send "$Router2" "setTokenPrice(address,uint256)" "$XToken" "80" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
-
-# Mint and supply tokens to the test contract
-cast send "$XToken" "supplyTokenTo(address,uint256)" "$Router1" "5000000000000000000" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
 
 # Check test contract's balance
 cast call "$XToken" "balanceOf(address)" "$Router1" --rpc-url "$SEPOLIA_HTTP_RPC_URL"
