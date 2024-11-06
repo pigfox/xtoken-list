@@ -8,13 +8,14 @@ import {XToken} from "../src/XToken.sol";
 
 contract Functions is Test{
     function getXToken(string calldata _xToken) public returns (XToken) {
-        string[] memory inputs = new string[](6);
+        string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
         inputs[2] = "--rpc-url";
         inputs[3] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // specify the RPC URL here
         inputs[4] = _xToken;
         inputs[5] = "balanceOf(address)";
+        inputs[6] = "0xb04d6a4949fa623629e0ED6bd4Ecb78A8C847693";
         bytes memory result = vm.ffi(inputs);
 
         if (result.length == 0) {
