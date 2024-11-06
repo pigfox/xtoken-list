@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.26;
-
+import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
 import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 import {Router} from "../src/Router.sol";
@@ -22,11 +22,15 @@ contract ArbitrageTest is Test {
     uint256 public initialRouter1TokenPrice = 120;
     uint256 public initialRouter2TokenPrice = 80;
     uint256 public initialArbitrageTokens = 5e18;
+    //uint256 public chainId = vm.envString("SEPOLIA_CHAIN_ID");
 
     function setUp() public {
-        xToken = XToken(vm.envAddress("XToken"));
-        _testMint();
-        /*
+        xToken = XToken(xTokenAddress);
+
+        //xToken = XToken(vm.envAddress("XToken"));
+
+        //_testMint();
+
         ownerAddress = vm.envAddress("WALLET_ADDRESS");
         functions = new Functions();
         xTokenAddress = vm.envAddress("XToken");
@@ -52,7 +56,6 @@ contract ArbitrageTest is Test {
         _addLiquidityAndApprovals();
         vm.stopPrank();
         console.log("Setup completed successfully.");
-        */
     }
 
     function _testMint() public {
@@ -110,6 +113,15 @@ contract ArbitrageTest is Test {
     }
 
     function test_executeArbitrage()public{
+        /*
+        address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
+        XToken xToken1 = XToken(xTokenAddress);
+        console.log("DevOpsTools xTokenAddress:", xTokenAddress);
+
+        console.log("vm.envAddress(\"XToken\"):", vm.envAddress("XToken"));
+        XToken xToken2 = XToken(vm.envAddress("XToken"));//address from deployed contract on Sepolia
+        */
+
         vm.startPrank(ownerAddress);
         console.log("Function Test SwapTokens");
         address arbitrageOwner = arbitrage.owner();

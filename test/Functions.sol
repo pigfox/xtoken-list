@@ -8,11 +8,19 @@ import {XToken} from "../src/XToken.sol";
 
 contract Functions is Test{
     function getXToken(string calldata _xToken) public returns (XToken) {
-         string[] memory inputs = new string[](4);
-         inputs[0] = "cast";
-         inputs[1] = "call";
-         inputs[2] = _xToken;
-         bytes memory result = vm.ffi(inputs);
+        string[] memory inputs = new string[](6);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = "--rpc-url";
+        inputs[3] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // specify the RPC URL here
+        inputs[4] = _xToken;
+        inputs[5] = "balanceOf(address)";
+        bytes memory result = vm.ffi(inputs);
+
+        if (result.length == 0) {
+            console.log("Error: cast call returned empty result");
+            revert("Failed to retrieve contract address");
+        }
 
          // Decode the result to get the contract address
          address contractAddress = abi.decode(result, (address));
