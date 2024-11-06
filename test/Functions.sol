@@ -15,8 +15,9 @@ contract Functions is Test{
         inputs[3] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // specify the RPC URL here
         inputs[4] = _xToken;
         inputs[5] = "balanceOf(address)";
-        inputs[6] = "0xb04d6a4949fa623629e0ED6bd4Ecb78A8C847693";
+        inputs[6] = vm.envString("WALLET_ADDRESS");
         bytes memory result = vm.ffi(inputs);
+        console.logBytes(result);
 
         if (result.length == 0) {
             console.log("Error: cast call returned empty result");
