@@ -40,7 +40,7 @@ contract ArbitrageTest is Test {
         router2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
 
-        uint256 xTokenWalletBalance = functions.getXTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
+        uint256 xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
         (bytes memory result, bool success)  = functions.mint(vm.envString("XToken"), 1 ether);
@@ -53,7 +53,7 @@ contract ArbitrageTest is Test {
             console.log("Transaction Success:", txSuccess);
         }
 
-        xTokenWalletBalance = functions.getXTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
+        xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
         vm.stopPrank();
 

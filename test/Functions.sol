@@ -9,7 +9,7 @@ import {HelperFctns} from "./HelperFctns.sol";
 
 contract Functions is Test{
     HelperFctns public helperFctns;
-    function getXTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
+    function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
@@ -50,7 +50,7 @@ contract Functions is Test{
         console.logBytes(result); // Debugging: Print result bytes
 
         // Check if result is non-empty and decode
-        if (result.length > 0) {
+        if (0 < result.length) {
             (transactionHash, success) = abi.decode(result, (bytes, bool));
         } else {
             console.log("Error: cast call returned empty result");
