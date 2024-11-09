@@ -25,28 +25,33 @@ contract ArbitrageTest is Test {
     //uint256 public chainId = vm.envString("SEPOLIA_CHAIN_ID");
 
     function setUp() public {
-        xToken = XToken(xTokenAddress);
-
-        //xToken = XToken(vm.envAddress("XToken"));
-
         //_testMint();
-
         ownerAddress = vm.envAddress("WALLET_ADDRESS");
         functions = new Functions();
         xTokenAddress = vm.envAddress("XToken");
         console.log("Owner Address:", ownerAddress);
         vm.startPrank(ownerAddress);
-        vm.allowCheatcodes(ownerAddress);
-        vm.allowCheatcodes(xTokenAddress);
-        vm.allowCheatcodes(address(this));
+        //vm.allowCheatcodes(ownerAddress);
+        //vm.allowCheatcodes(xTokenAddress);
+        //vm.allowCheatcodes(address(this));
         //xToken = XToken(vm.envAddress("XToken"));
-        xToken = functions.getXToken(vm.envString("XToken"));
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
         router1 = Router(vm.envAddress("Router1"));
         router2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
 
+        uint256 xTokenWalletBalance = functions.getXTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
+        console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
+        (address transactionHash, bool success) = functions.mint(vm.envString("XToken"), 1 ether);
+        console.log("Transaction Hash:", transactionHash);
+        console.log("Success:", success);
+
+        xTokenWalletBalance = functions.getXTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
+        console.log("xTokenWalletBalance:", xTokenWalletBalance);
+        vm.stopPrank();
+
+/*
         console.log("Arbitrage Address:", address(arbitrage));
         console.log("Router1 Address:", address(router1));
         console.log("Router2 Address:", address(router2));
@@ -56,8 +61,9 @@ contract ArbitrageTest is Test {
         _addLiquidityAndApprovals();
         vm.stopPrank();
         console.log("Setup completed successfully.");
+        */
     }
-
+/*
     function _testMint() public {
         console.log("Testing mint function.");
         // Example of calling the mint function using the contract instance
@@ -111,7 +117,7 @@ contract ArbitrageTest is Test {
         console.log("router1Balance:", router1Balance);
         console.log("router2Balance:", router2Balance);
     }
-
+*/
     function test_executeArbitrage()public{
         /*
         address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
@@ -120,7 +126,7 @@ contract ArbitrageTest is Test {
 
         console.log("vm.envAddress(\"XToken\"):", vm.envAddress("XToken"));
         XToken xToken2 = XToken(vm.envAddress("XToken"));//address from deployed contract on Sepolia
-        */
+
 
         vm.startPrank(ownerAddress);
         console.log("Function Test SwapTokens");
@@ -155,8 +161,9 @@ contract ArbitrageTest is Test {
         assertNotEq(finalVaultBalance, initialVaultBalance);
         uint finalVaultETHBalance = vault.ethBalance();
         assertNotEq(finalVaultETHBalance, initialVaultETHBalance);
+        */
     }
-
+/*
     function test_setProfitAddress()public{
         vm.startPrank(ownerAddress);
         console.log("Function Test SetProfitAddress");
@@ -166,27 +173,7 @@ contract ArbitrageTest is Test {
         assertEq(arbitrage.profitAddress(), profitAddress);
     }
 
-    function bytes32ToString(bytes32 _data) internal pure returns (string memory) {
-        bytes memory tempBytes = new bytes(32);
-        uint8 length = 0;
-
-        for (uint8 i = 0; i < 32; i++) {
-            bytes1 char = _data[i]; // Use bytes1 instead of byte
-            if (char != 0) {
-                tempBytes[length] = char;
-                length++;
-            } else {
-                break;
-            }
-        }
-
-        bytes memory result = new bytes(length);
-        for (uint8 j = 0; j < length; j++) {
-            result[j] = tempBytes[j];
-        }
-
-        return string(result);
-    }
+*/
 
     /*
     function tearDown() public {

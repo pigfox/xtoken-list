@@ -5,17 +5,19 @@ import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 import {Router} from "../src/Router.sol";
 import {XToken} from "../src/XToken.sol";
+import {HelperFctns} from "./HelperFctns.sol";
 
 contract Functions is Test{
-    function getXToken(string calldata _xToken) public returns (XToken) {
+    HelperFctns public helperFctns;
+    function getXTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
         inputs[2] = "--rpc-url";
-        inputs[3] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // specify the RPC URL here
-        inputs[4] = _xToken;
+        inputs[3] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[4] = _tokenAddress;
         inputs[5] = "balanceOf(address)";
-        inputs[6] = vm.envString("WALLET_ADDRESS");
+        inputs[6] = _holderAddress;
         bytes memory result = vm.ffi(inputs);
         console.logBytes(result);
 
@@ -24,23 +26,34 @@ contract Functions is Test{
             revert("Failed to retrieve contract address");
         }
 
-         // Decode the result to get the contract address
-         address contractAddress = abi.decode(result, (address));
-
-         return XToken(contractAddress);
+         uint256 balance = abi.decode(result, (uint256));
+         return balance;
     }
 
-    function addressToString(address _addr) public pure returns (string memory) {
-        bytes32 value = bytes32(uint256(uint160(_addr)));
-        bytes memory alphabet = "0123456789abcdef";
+    function mint(string calldata _tokenAddress, uint256 _amount) public returns (address, bool){
+        //mirror this call in function cast send 0xBc35bD49d5de2929522E5Cc3F40460D74d24c24C mint(uint256) 100000088840000000000666 --rpc-url https://ethereum-sepolia-rpc.publicnode.com --from 0xb04d6a4949fa623629e0ED6bd4Ecb78A8C847693 --private-key de012f23692636afc7c476519954c4e7da7c50f772ab3f86faf3594266d6ad7f
+        string[] memory inputs = new string[](11);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = "--rpc-url";
+        inputs[3] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // specify the RPC URL here
+        inputs[4] = _tokenAddress;
+        inputs[5] = "mint(uint256)";
+        inputs[6] = vm.toString(_amount);
+        inputs[7] = "--from";
+        inputs[8] = vm.envString("WALLET_ADDRESS");
+        inputs[9] = "--private-key";
+        inputs[10] = vm.envString("PRIVATE_KEY");
+        bytes memory result = vm.ffi(inputs);
+        console.logBytes(result);
 
-        bytes memory str = new bytes(42);
-        str[0] = "0";
-        str[1] = "x";
-        for (uint256 i = 0; i < 20; i++) {
-            str[2 + i * 2] = alphabet[uint8(value[i + 12] >> 4)];
-            str[3 + i * 2] = alphabet[uint8(value[i + 12] & 0x0f)];
+        if (result.length == 0) {
+            console.log("Error: cast call returned empty result");
+            revert("Failed to retrieve contract address");
         }
-        return string(str);
+
+        (bytes32 txHash, bool success) = abi.decode(result, (bytes32, bool));
+        address transactionHash = address(uint160(uint256(txHash))); // Convert txHash to an address type
+        return (transactionHash, success);
     }
 }

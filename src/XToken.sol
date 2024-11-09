@@ -19,10 +19,6 @@ contract XToken is ERC20 {
         return true;
     }
 
-    function getSupply() public view returns (uint256) {
-        return this.totalSupply();
-    }
-
     function mint(uint256 _amount) public {
         _mint(owner, _amount);
         emit Minted(_amount, msg.sender);
