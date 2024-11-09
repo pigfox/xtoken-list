@@ -10,14 +10,15 @@ import {HelperFctns} from "./HelperFctns.sol";
 contract Functions is Test{
     HelperFctns public helperFctns;
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
+        //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
-        inputs[2] = "--rpc-url";
-        inputs[3] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        inputs[4] = _tokenAddress;
-        inputs[5] = "balanceOf(address)";
-        inputs[6] = _holderAddress;
+        inputs[2] = _tokenAddress;
+        inputs[3] = "balanceOf(address)";
+        inputs[4] = _holderAddress;
+        inputs[5] = "--rpc-url";
+        inputs[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");
         bytes memory result = vm.ffi(inputs);
 
         if (result.length == 0) {
@@ -30,15 +31,15 @@ contract Functions is Test{
     }
 
     function mint(string calldata _tokenAddress, uint256 _amount) public returns (bytes memory transactionHash, bool success) {
-        // Prepare inputs for the `cast send` command
+        // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](11);
         inputs[0] = "cast";
         inputs[1] = "send";
-        inputs[2] = "--rpc-url";
-        inputs[3] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // RPC URL from environment
-        inputs[4] = _tokenAddress;
-        inputs[5] = "mint(uint256)";
-        inputs[6] = vm.toString(_amount);
+        inputs[2] = _tokenAddress;
+        inputs[3] = "mint(uint256)";
+        inputs[4] = vm.toString(_amount);
+        inputs[5] = "--rpc-url";
+        inputs[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");;
         inputs[7] = "--from";
         inputs[8] = vm.envString("WALLET_ADDRESS");
         inputs[9] = "--private-key";
