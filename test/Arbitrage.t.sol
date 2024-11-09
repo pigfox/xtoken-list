@@ -43,9 +43,15 @@ contract ArbitrageTest is Test {
         uint256 xTokenWalletBalance = functions.getXTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
-        (address transactionHash, bool success) = functions.mint(vm.envString("XToken"), 1 ether);
-        console.log("Transaction Hash:", transactionHash);
-        console.log("Success:", success);
+        (bytes memory result, bool success)  = functions.mint(vm.envString("XToken"), 1 ether);
+        if (!success) {
+            revert("Failed to mint tokens");
+        } else {
+            // Decode the result since we know it's successful
+            (bytes memory txHash, bool txSuccess) = abi.decode(result, (bytes, bool));
+            console.logBytes(txHash);
+            console.log("Transaction Success:", txSuccess);
+        }
 
         xTokenWalletBalance = functions.getXTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
