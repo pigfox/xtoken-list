@@ -42,35 +42,26 @@ contract ArbitrageTest is Test {
 
         //uint256 xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         //console.log("xTokenWalletBalance:", xTokenWalletBalance);
-/*
-        (bytes memory result, bool success)  = functions.mint(vm.envString("XToken"), 1 ether);
-        if (!success) {
-            revert("Failed to mint tokens");
-        } else {
-            // Decode the result since we know it's successful
-            (bytes memory txHash, bool txSuccess) = abi.decode(result, (bytes, bool));
-            console.logBytes(txHash);
-            console.log("Transaction Success:", txSuccess);
+
+        bytes memory result = functions.mint(vm.envString("XToken"), 1 ether);
+        if (0 < result.length) {
+            bytes memory output = abi.decode(result, (bytes));
+            console.log(string(output));
+        }else{
+            console.log("Error: cast call returned empty result");
+            revert("Failed supplyTokensTo()");
         }
-*/
-        bytes memory result  = functions.supplyTokensTo(vm.envString("XToken"), vm.envString("Router1"),1 ether);
-
-            // Decode the result since we know it's successful
-            bytes memory txHash = abi.decode(result, (bytes));
-            console.logBytes(txHash);
-
 
         /*
-        (bytes memory result, bool success)  = functions.supplyTokensTo(vm.envString("XToken"), vm.envString("Router1"),1 ether);
-        if (!success) {
-            revert("Failed to supply tokens");
-        } else {
-            // Decode the result since we know it's successful
-            (bytes memory txHash, bool txSuccess) = abi.decode(result, (bytes, bool));
-            console.logBytes(txHash);
-            console.log("Transaction Success:", txSuccess);
+        bytes memory result  = functions.supplyTokensTo(vm.envString("XToken"), vm.envString("Router1"),1 ether);
+        if (0 < result.length) {
+            bytes memory output = abi.decode(result, (bytes));
+            console.log(string(output));
+        }else{
+            console.log("Error: cast call returned empty result");
+            revert("Failed supplyTokensTo()");
         }
-*/
+  */
         vm.stopPrank();
 
 /*

@@ -47,10 +47,10 @@ contract Functions is Test{
 
         // Execute the command and get the result
         bytes memory result = vm.ffi(inputs);
+        console.log("Mint result",string(result));
 
         // Check if result is non-empty before decoding
-        if (result.length > 0) {
-            // Decoding directly without `try`
+        if (0 < result.length) {
             output = abi.decode(result, (bytes));
         } else {
             console.log("Error: cast call returned empty result");
