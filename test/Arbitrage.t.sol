@@ -42,20 +42,35 @@ contract ArbitrageTest is Test {
 
         //uint256 xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         //console.log("xTokenWalletBalance:", xTokenWalletBalance);
-
+/*
         (bytes memory result, bool success)  = functions.mint(vm.envString("XToken"), 1 ether);
         if (!success) {
             revert("Failed to mint tokens");
         } else {
             // Decode the result since we know it's successful
             (bytes memory txHash, bool txSuccess) = abi.decode(result, (bytes, bool));
-            //console.logBytes(txHash);
-            txHash;
+            console.logBytes(txHash);
             console.log("Transaction Success:", txSuccess);
         }
+*/
+        bytes memory result  = functions.supplyTokensTo(vm.envString("XToken"), vm.envString("Router1"),1 ether);
 
-        //xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
-        //console.log("xTokenWalletBalance:", xTokenWalletBalance);
+            // Decode the result since we know it's successful
+            bytes memory txHash = abi.decode(result, (bytes));
+            console.logBytes(txHash);
+
+
+        /*
+        (bytes memory result, bool success)  = functions.supplyTokensTo(vm.envString("XToken"), vm.envString("Router1"),1 ether);
+        if (!success) {
+            revert("Failed to supply tokens");
+        } else {
+            // Decode the result since we know it's successful
+            (bytes memory txHash, bool txSuccess) = abi.decode(result, (bytes, bool));
+            console.logBytes(txHash);
+            console.log("Transaction Success:", txSuccess);
+        }
+*/
         vm.stopPrank();
 
 /*
