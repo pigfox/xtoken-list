@@ -40,8 +40,8 @@ contract ArbitrageTest is Test {
         router2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
 
-        uint256 xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
-        console.log("xTokenWalletBalance:", xTokenWalletBalance);
+        //uint256 xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
+        //console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
         (bytes memory result, bool success)  = functions.mint(vm.envString("XToken"), 1 ether);
         if (!success) {
@@ -49,12 +49,13 @@ contract ArbitrageTest is Test {
         } else {
             // Decode the result since we know it's successful
             (bytes memory txHash, bool txSuccess) = abi.decode(result, (bytes, bool));
-            console.logBytes(txHash);
+            //console.logBytes(txHash);
+            txHash;
             console.log("Transaction Success:", txSuccess);
         }
 
-        xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
-        console.log("xTokenWalletBalance:", xTokenWalletBalance);
+        //xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
+        //console.log("xTokenWalletBalance:", xTokenWalletBalance);
         vm.stopPrank();
 
 /*
@@ -124,7 +125,8 @@ contract ArbitrageTest is Test {
         console.log("router2Balance:", router2Balance);
     }
 */
-    function test_executeArbitrage()public{
+    function test_executeArbitrage()public view{
+        console.log("Function Test ExecuteArbitrage");
         /*
         address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
         XToken xToken1 = XToken(xTokenAddress);

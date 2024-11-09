@@ -19,7 +19,6 @@ contract Functions is Test{
         inputs[5] = "balanceOf(address)";
         inputs[6] = _holderAddress;
         bytes memory result = vm.ffi(inputs);
-        console.logBytes(result);
 
         if (result.length == 0) {
             console.log("Error: cast call returned empty result");
@@ -47,10 +46,10 @@ contract Functions is Test{
 
         // Execute the command and get the result
         bytes memory result = vm.ffi(inputs);
-        console.logBytes(result); // Debugging: Print result bytes
 
-        // Check if result is non-empty and decode
-        if (0 < result.length) {
+        // Check if result is non-empty before decoding
+        if (result.length > 0) {
+            // Decoding directly without `try`
             (transactionHash, success) = abi.decode(result, (bytes, bool));
         } else {
             console.log("Error: cast call returned empty result");
