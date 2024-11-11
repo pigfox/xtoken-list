@@ -49,7 +49,7 @@ contract Functions is Test{
 
         // Execute the command and get the result
         bytes memory result = vm.ffi(inputs);
-        console.log("Cast result",string(result));
+        //console.log("Cast result",string(result));
 
         if (0 == result.length) {
             console.log("Error: cast call returned empty result");
@@ -57,11 +57,14 @@ contract Functions is Test{
         }
 
         bytes memory data = vm.parseJson(string(result));
-        console.logBytes(data);
+        //console.logBytes(data);
         TransactionReceipt memory transactionReceipt = abi.decode(data, (TransactionReceipt));
-        console.log("Transaction Hash: ", transactionReceipt.transactionHash);
-        console.log("Transaction Status: ", transactionReceipt.status);
+        console.log(62);//<--no error
+        console.log("Transaction Hash: ", helperFctns.bytes32ToString(transactionReceipt.transactionHash));//<--Member "bytes32ToString" not found or not visible after argument-dependent lookup in type(HelperFctns).
+        //console.logBytes32(transactionReceipt.transactionHash);//<--Member "log" not found or not visible after argument-dependent lookup in type(library console).
 
+        //console.log("Transaction Hash: ", transactionReceipt.transactionHash);
+        //console.log("Transaction Status: ", transactionReceipt.status);
 /*
         string[] memory jqStatusCmd = new string[](3);
         jqStatusCmd[0] = "jq";

@@ -37,7 +37,7 @@ contract HelperFctns is Test{
         return result;
     }
 
-    function bytes32ToString(bytes32 _data) internal pure returns (string memory) {
+    function bytes32ToString(bytes32 _data) external pure returns (string memory) {
         bytes memory tempBytes = new bytes(32);
         uint8 length = 0;
 
@@ -58,5 +58,4 @@ contract HelperFctns is Test{
 
         return string(result);
     }
-
 }
