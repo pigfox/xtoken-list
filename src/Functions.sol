@@ -57,6 +57,8 @@ contract Functions is Test{
             revert("Failed to retrieve contract address");
         }
 
+        console.log("Result: ", string(result));
+
         // Parse the status field using jq
         string[] memory jqStatusCmd = new string[](3);
         jqStatusCmd[0] = "jq";
