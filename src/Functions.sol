@@ -50,28 +50,53 @@ contract Functions is Test{
 
         bytes memory result = vm.ffi(inputs);
         //console.log("Cast result",string(result));
-
+        //"status":"0x1"
+        //"transactionHash":"0x1ae6af137a7e528c7ef3e990176df3b2b4d3a15fc6d205cabdfc49a6b93f13a2",
         if (0 == result.length) {
             console.log("Error: cast call returned empty result");
             revert("Failed to retrieve contract address");
         }
 
+
+        // Parse the status field using jq
+        string[] memory jqStatusCmd = new string[](3);
+        jqStatusCmd[0] = "jq";
+        jqStatusCmd[1] = "-r";
+        jqStatusCmd[2] = ".status";
+
+        string[] memory jqTxHashCmd = new string[](3);
+        jqTxHashCmd[0] = "jq";
+        jqTxHashCmd[1] = "-r";
+        jqTxHashCmd[2] = ".transactionHash";
+
+        // Use ffi to directly parse status
+        bytes memory statusBytes = vm.ffi(jqStatusCmd);
+        string memory status = string(statusBytes);
+
+        // Use ffi to directly parse transactionHash
+        bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
+        string memory transactionHash = string(txHashBytes);
+
+        // Log the status and transactionHash as strings
+        console.log("Transaction Status: ", status);
+        console.log("Transaction Hash: ", transactionHash);
+/*
         bytes memory data = vm.parseJson(string(result));
         //console.log("Log Bytes");
         //console.logBytes(data);
+
+        console.log("data[\"transactionHash\"]");
+        console.logBytes1(data["transactionHash"]);
+
         TransactionReceipt memory transactionReceipt;
         // Assuming data["transactionHash"] is a string (hex representation) and needs to be converted to bytes32
         string memory txHashString = data["transactionHash"];  // Treat the hash as a string
         bytes32 txHash = helperFctns.stringFromHex(txHashString);  // Convert the string to bytes32 using a helper function
-
-// If you need to convert bytes32 back to a string (for example, for logging or display purposes)
         string memory txHashStringConverted = helperFctns.bytes32ToString(txHash);
-
-// Assign the string (converted) to the transactionReceipt
         transactionReceipt.transactionHash = txHashStringConverted;
 
         console.log("transactionReceipt.transactionHash:", transactionReceipt.transactionHash);
-
+*/
 
 
         //transactionReceipt.status = helperFctns.stringFromHex(data["status"]);
