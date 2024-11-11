@@ -57,7 +57,6 @@ contract Functions is Test{
             revert("Failed to retrieve contract address");
         }
 
-
         // Parse the status field using jq
         string[] memory jqStatusCmd = new string[](3);
         jqStatusCmd[0] = "jq";
@@ -71,10 +70,14 @@ contract Functions is Test{
 
         // Use ffi to directly parse status
         bytes memory statusBytes = vm.ffi(jqStatusCmd);
+        console.log("statusBytes");
+        console.logBytes(statusBytes);
         string memory status = string(statusBytes);
 
         // Use ffi to directly parse transactionHash
         bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
+        console.log("txHashBytes");
+        console.logBytes(txHashBytes);
         string memory transactionHash = string(txHashBytes);
 
         // Log the status and transactionHash as strings
