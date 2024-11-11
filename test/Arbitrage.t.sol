@@ -43,7 +43,9 @@ contract ArbitrageTest is Test {
         //uint256 xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         //console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
-        bytes memory result = functions.mint(vm.envString("XToken"), 1 ether);
+        //functions.mint(vm.envString("XToken"), 1 ether);
+        //bytes memory result = functions.mint(vm.envString("XToken"), 1 ether);
+        /*
         if (0 < result.length) {
             bytes memory output = abi.decode(result, (bytes));
             console.log(string(output));
@@ -51,8 +53,9 @@ contract ArbitrageTest is Test {
             console.log("Error: cast call returned empty result");
             revert("Failed supplyTokensTo()");
         }
+        */
 
-        /*
+/*
         bytes memory result  = functions.supplyTokensTo(vm.envString("XToken"), vm.envString("Router1"),1 ether);
         if (0 < result.length) {
             bytes memory output = abi.decode(result, (bytes));
@@ -61,9 +64,9 @@ contract ArbitrageTest is Test {
             console.log("Error: cast call returned empty result");
             revert("Failed supplyTokensTo()");
         }
-  */
-        vm.stopPrank();
 
+        vm.stopPrank();
+*/
 /*
         console.log("Arbitrage Address:", address(arbitrage));
         console.log("Router1 Address:", address(router1));
@@ -131,8 +134,9 @@ contract ArbitrageTest is Test {
         console.log("router2Balance:", router2Balance);
     }
 */
-    function test_executeArbitrage()public view{
+    function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
+        functions.mint(vm.envString("XToken"), 1 ether);
         /*
         address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
         XToken xToken1 = XToken(xTokenAddress);
