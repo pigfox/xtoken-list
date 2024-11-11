@@ -60,15 +60,17 @@ contract Functions is Test{
         console.log("Result: ", string(result));
 
         // Parse the status field using jq
-        string[] memory jqStatusCmd = new string[](3);
+        string[] memory jqStatusCmd = new string[](4);
         jqStatusCmd[0] = "jq";
         jqStatusCmd[1] = "-r";
         jqStatusCmd[2] = ".status";
+        jqStatusCmd[3] = result;
 
-        string[] memory jqTxHashCmd = new string[](3);
+        string[] memory jqTxHashCmd = new string[](4);
         jqTxHashCmd[0] = "jq";
         jqTxHashCmd[1] = "-r";
         jqTxHashCmd[2] = ".transactionHash";
+        jqTxHashCmd[3] = result;
 
         // Use ffi to directly parse status
         bytes memory statusBytes = vm.ffi(jqStatusCmd);

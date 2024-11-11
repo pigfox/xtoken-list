@@ -92,8 +92,6 @@ contract HelperFctns {
         }
     }
 
-
-
     // Helper function to parse hex string to bytes32
     function bytes32FromHex(bytes memory hexValue) public pure returns (bytes32 result) {
         require(hexValue.length == 66, "Invalid bytes32 length");
@@ -133,5 +131,24 @@ contract HelperFctns {
         if (c >= 0x61 && c <= 0x66) return c - 0x61 + 10;  // 'a' to 'f'
         if (c >= 0x41 && c <= 0x46) return c - 0x41 + 10;  // 'A' to 'F'
         revert("Invalid hex char");
+    }
+
+    // Convert a string to its hexadecimal representation
+    function stringToHex(string memory str) public pure returns (string memory) {
+        bytes memory strBytes = bytes(str); // Convert the input string to bytes
+        bytes memory hexBytes = new bytes(2 + strBytes.length * 2); // "0x" + 2 hex chars per byte
+
+        hexBytes[0] = "0";
+        hexBytes[1] = "x";
+
+        bytes memory hexAlphabet = "0123456789abcdef";
+
+        for (uint256 i = 0; i < strBytes.length; i++) {
+            uint8 byteValue = uint8(strBytes[i]);
+            hexBytes[2 + i * 2] = hexAlphabet[byteValue >> 4];      // High nibble
+            hexBytes[3 + i * 2] = hexAlphabet[byteValue & 0x0f];    // Low nibble
+        }
+
+        return string(hexBytes); // Return the hexadecimal representation as a string
     }
 }
