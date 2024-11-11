@@ -7,7 +7,7 @@ import {Router} from "../src/Router.sol";
 import {XToken} from "../src/XToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
 import {Vault} from "../src/Vault.sol";
-import {Functions} from "./Functions.sol";
+import {Functions} from "../src/Functions.sol";
 
 contract ArbitrageTest is Test {
     address public ownerAddress;
@@ -136,7 +136,9 @@ contract ArbitrageTest is Test {
 */
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
-        functions.mint(vm.envString("XToken"), 1 ether);
+        (string memory txHash, string memory success) = functions.mint(vm.envString("XToken"), 1 ether);
+        console.log("txHash:", txHash);
+        console.log("success:", success);
         /*
         address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
         XToken xToken1 = XToken(xTokenAddress);

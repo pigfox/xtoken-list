@@ -16,12 +16,12 @@ struct LogEntry {
 
 // Define the main struct for the transaction receipt
 struct TransactionReceipt {
-    bytes status;
+    string status;
     uint256 cumulativeGasUsed;
     LogEntry[] logs;
     bytes logsBloom;
     uint8 txType;
-    bytes32 transactionHash;
+    string transactionHash;
     uint256 transactionIndex;
     bytes32 blockHash;
     uint256 blockNumber;

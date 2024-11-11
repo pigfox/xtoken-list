@@ -31,7 +31,8 @@ contract Functions is Test{
          return balance;
     }
 
-    function mint(string calldata _tokenAddress, uint256 _amount) public {
+    function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+        console.log("Minting ", _amount, " tokens");
         // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
@@ -47,7 +48,6 @@ contract Functions is Test{
         inputs[10] = "--private-key";
         inputs[11] = vm.envString("PRIVATE_KEY");
 
-        // Execute the command and get the result
         bytes memory result = vm.ffi(inputs);
         //console.log("Cast result",string(result));
 
@@ -57,36 +57,27 @@ contract Functions is Test{
         }
 
         bytes memory data = vm.parseJson(string(result));
+        //console.log("Log Bytes");
         //console.logBytes(data);
-        TransactionReceipt memory transactionReceipt = abi.decode(data, (TransactionReceipt));
-        console.log(62);//<--no error
-        console.log("Transaction Hash: ", helperFctns.bytes32ToString(transactionReceipt.transactionHash));//<--Member "bytes32ToString" not found or not visible after argument-dependent lookup in type(HelperFctns).
-        //console.logBytes32(transactionReceipt.transactionHash);//<--Member "log" not found or not visible after argument-dependent lookup in type(library console).
+        TransactionReceipt memory transactionReceipt;
+        // Assuming data["transactionHash"] is a string (hex representation) and needs to be converted to bytes32
+        string memory txHashString = data["transactionHash"];  // Treat the hash as a string
+        bytes32 txHash = helperFctns.stringFromHex(txHashString);  // Convert the string to bytes32 using a helper function
 
-        //console.log("Transaction Hash: ", transactionReceipt.transactionHash);
-        //console.log("Transaction Status: ", transactionReceipt.status);
-/*
-        string[] memory jqStatusCmd = new string[](3);
-        jqStatusCmd[0] = "jq";
-        jqStatusCmd[1] = "-r";
-        jqStatusCmd[2] = ".status";
+// If you need to convert bytes32 back to a string (for example, for logging or display purposes)
+        string memory txHashStringConverted = helperFctns.bytes32ToString(txHash);
 
-        // Pass the result as input to jq
-        bytes memory statusBytes = vm.ffi(jqStatusCmd);
-        string memory status = string(statusBytes);
-        console.log("Transaction Status: ", status);
+// Assign the string (converted) to the transactionReceipt
+        transactionReceipt.transactionHash = txHashStringConverted;
 
-        // Parse the 'transactionHash' from result using jq
-        string[] memory jqTxHashCmd = new string[](3);
-        jqTxHashCmd[0] = "jq";
-        jqTxHashCmd[1] = "-r";
-        jqTxHashCmd[2] = ".transactionHash";
+        console.log("transactionReceipt.transactionHash:", transactionReceipt.transactionHash);
 
-        // Pass the result as input to jq
-        bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
-        string memory transactionHash = string(txHashBytes);
-        console.log("Transaction Hash: ", transactionHash);
-        */
+
+
+        //transactionReceipt.status = helperFctns.stringFromHex(data["status"]);
+        //console.log("transactionReceipt.status", transactionReceipt.status);
+        //return (helperFctns.bytes32ToString(transactionReceipt.transactionHash), string(transactionReceipt.status));
+        return("","");
     }
 
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (bytes memory output) {
