@@ -56,7 +56,8 @@ contract Functions is Test{
             revert("Failed to retrieve contract address");
         }
 
-        bytes memory data = vm.parseJson(result);
+        bytes memory data = vm.parseJson(string(result));
+        console.logBytes(data);
         TransactionReceipt memory transactionReceipt = abi.decode(data, (TransactionReceipt));
         console.log("Transaction Hash: ", transactionReceipt.transactionHash);
         console.log("Transaction Status: ", transactionReceipt.status);
