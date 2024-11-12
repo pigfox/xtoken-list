@@ -9,7 +9,7 @@ import {console} from "../lib/forge-std/src/console.sol";
 import {TransactionReceipt} from "./TransactionReceipt.sol";
 
 contract Functions is Test{
-    Conversions public helperFctns;
+    Conversions public conversions;
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](7);
@@ -57,18 +57,20 @@ contract Functions is Test{
             revert("Error: cast call returned empty result");
         }
 
+        string memory resultHex = conversions.bytesToHex(result);
+
         // Parse the status field using jq
         string[] memory jqStatusCmd = new string[](4);
         jqStatusCmd[0] = "jq";
         jqStatusCmd[1] = "-r";
         jqStatusCmd[2] = "status";
-        jqStatusCmd[3] = string(result);
+        jqStatusCmd[3] = resultHex;
 
         string[] memory jqTxHashCmd = new string[](4);
         jqTxHashCmd[0] = "jq";
         jqTxHashCmd[1] = "-r";
         jqTxHashCmd[2] = "transactionHash";
-        jqTxHashCmd[3] = string(result);
+        jqTxHashCmd[3] = resultHex;
 
         // Use ffi to directly parse status
         bytes memory statusBytes = vm.ffi(jqStatusCmd);

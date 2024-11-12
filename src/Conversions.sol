@@ -170,14 +170,14 @@ contract Conversions {
 
     function bytesToHex(bytes memory data) public returns (string memory) {
         emit LogDataLength(data.length);
-        bytes memory result = new bytes(data.length * 2);
-        bytes memory hexAlphabet = "0123456789abcdef";
-        for (uint256 i = 0; i < data.length; i++) {
-            uint8 byteValue = uint8(data[i]);
-            result[i * 2] = hexAlphabet[byteValue >> 4];      // High nibble
-            result[i * 2 + 1] = hexAlphabet[byteValue & 0x0f]; // Low nibble
+        bytes memory alphabet = "0123456789abcdef";
+        bytes memory str = new bytes(2 + data.length * 2);
+        str[0] = "0";
+        str[1] = "x";
+        for (uint i = 0; i < data.length; i++) {
+            str[2+i*2] = alphabet[uint(uint8(data[i] >> 4))];
+            str[3+i*2] = alphabet[uint(uint8(data[i] & 0x0f))];
         }
-
-        return string(result); // Convert the bytes array to a string
+        return string(str);
     }
 }
