@@ -54,42 +54,30 @@ contract Functions is Test{
         //"transactionHash":"0x1ae6af137a7e528c7ef3e990176df3b2b4d3a15fc6d205cabdfc49a6b93f13a2",
         if (0 == result.length) {
             console.log("Error: cast call returned empty result");
-            revert("Failed to retrieve contract address");
+            revert("Error: cast call returned empty result");
         }
-        console.log("#59");
-        //console.log("Result: ", string(result));
-        console.log("#61");
+
         // Parse the status field using jq
         string[] memory jqStatusCmd = new string[](4);
         jqStatusCmd[0] = "jq";
         jqStatusCmd[1] = "-r";
-        jqStatusCmd[2] = ".status";
-        console.log("#67");//<--prints
-        string memory hexString = helperFctns.bytesToHex(result);
-        console.log("hexString after conversion:");
-        console.logString(hexString);
-        jqStatusCmd[3] = hexString;//helperFctns.bytesToHex(result);
-        console.log("#72");//does not print
-
+        jqStatusCmd[2] = "status";
+        jqStatusCmd[3] = string(result);
 
         string[] memory jqTxHashCmd = new string[](4);
         jqTxHashCmd[0] = "jq";
         jqTxHashCmd[1] = "-r";
-        jqTxHashCmd[2] = ".transactionHash";
-        jqTxHashCmd[3] = helperFctns.bytesToHex(result);
-        console.log("#74");
+        jqTxHashCmd[2] = "transactionHash";
+        jqTxHashCmd[3] = string(result);
+
         // Use ffi to directly parse status
         bytes memory statusBytes = vm.ffi(jqStatusCmd);
         string memory statusString = abi.decode(statusBytes, (string));
-        //console.log("statusBytes");
-        //console.logBytes(statusBytes);
-        console.log("#80");
+
         // Use ffi to directly parse transactionHash
         bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
         string memory txHashString = abi.decode(txHashBytes, (string));
-        //console.log("txHashBytes");
-        //console.logBytes(txHashBytes);
-        console.log("#86");
+
         // Log the status and transactionHash as strings
         console.log("Transaction Status: ", statusString);
         console.log("Transaction Hash: ", txHashString);

@@ -5,7 +5,7 @@ import {console} from "../lib/forge-std/src/console.sol";
 
 contract Conversions {
     event LogDataLength(uint256 length);
-    
+
     function addressToString(address _addr) public pure returns (string memory) {
         bytes32 value = bytes32(uint256(uint160(_addr)));
         bytes memory alphabet = "0123456789abcdef";
@@ -169,18 +169,15 @@ contract Conversions {
     }
 
     function bytesToHex(bytes memory data) public returns (string memory) {
-        console.log("#170");
         emit LogDataLength(data.length);
         bytes memory result = new bytes(data.length * 2);
-        //bytes memory hexAlphabet = "0123456789abcdef";
-        console.log("data.length:", data.length);
-        /*
+        bytes memory hexAlphabet = "0123456789abcdef";
         for (uint256 i = 0; i < data.length; i++) {
             uint8 byteValue = uint8(data[i]);
             result[i * 2] = hexAlphabet[byteValue >> 4];      // High nibble
             result[i * 2 + 1] = hexAlphabet[byteValue & 0x0f]; // Low nibble
         }
-*/
+
         return string(result); // Convert the bytes array to a string
     }
 }
