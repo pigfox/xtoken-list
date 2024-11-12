@@ -4,7 +4,7 @@ pragma solidity ^0.8.26;
 import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
-contract HelperFctns {
+contract Conversions {
     function addressToString(address _addr) public pure returns (string memory) {
         bytes32 value = bytes32(uint256(uint160(_addr)));
         bytes memory alphabet = "0123456789abcdef";

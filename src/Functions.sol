@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {HelperFctns} from "./HelperFctns.sol";
+import {Conversions} from "./Conversions.sol";
 import {Router} from "../src/Router.sol";
 import {Test} from "../lib/forge-std/src/Test.sol";
 import {XToken} from "../src/XToken.sol";
@@ -9,7 +9,7 @@ import {console} from "../lib/forge-std/src/console.sol";
 import {TransactionReceipt} from "./TransactionReceipt.sol";
 
 contract Functions is Test{
-    HelperFctns public helperFctns;
+    Conversions public helperFctns;
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](7);
