@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
 contract Conversions {
+    event LogDataLength(uint256 length);
     function addressToString(address _addr) public pure returns (string memory) {
         bytes32 value = bytes32(uint256(uint160(_addr)));
         bytes memory alphabet = "0123456789abcdef";
@@ -79,6 +79,8 @@ contract Conversions {
             result |= (bytes32(uint256(hexCharToUint(temp[2 + i * 2])) << (8 * (31 - i))));
             result |= (bytes32(uint256(hexCharToUint(temp[3 + i * 2])) << (8 * (31 - i - 1))));
         }
+
+        return result;
     }
 
     // Function to convert a single hex character to uint8
@@ -90,6 +92,13 @@ contract Conversions {
         } else {
             revert("Invalid hex character");
         }
+    }
+
+    function hexCharToUint(uint8 c) internal pure returns (uint8) {
+        if (c >= 0x30 && c <= 0x39) return c - 0x30;  // '0' to '9'
+        if (c >= 0x61 && c <= 0x66) return c - 0x61 + 10;  // 'a' to 'f'
+        if (c >= 0x41 && c <= 0x46) return c - 0x41 + 10;  // 'A' to 'F'
+        revert("Invalid hex char");
     }
 
     // Helper function to parse hex string to bytes32
@@ -139,14 +148,6 @@ contract Conversions {
         return bytes1(hexCharToUint(hex1) * 16 + hexCharToUint(hex2));
     }
 
-    // Helper function to parse a hex character to uint
-    function hexCharToUint(uint8 c) internal pure returns (uint8) {
-        if (c >= 0x30 && c <= 0x39) return c - 0x30;  // '0' to '9'
-        if (c >= 0x61 && c <= 0x66) return c - 0x61 + 10;  // 'a' to 'f'
-        if (c >= 0x41 && c <= 0x46) return c - 0x41 + 10;  // 'A' to 'F'
-        revert("Invalid hex char");
-    }
-
     // Convert a string to its hexadecimal representation
     function stringToHex(string memory str) public pure returns (string memory) {
         bytes memory strBytes = bytes(str); // Convert the input string to bytes
@@ -164,5 +165,21 @@ contract Conversions {
         }
 
         return string(hexBytes); // Return the hexadecimal representation as a string
+    }
+
+    function bytesToHex(bytes memory data) public returns (string memory) {
+        console.log("#170");
+        emit LogDataLength(data.length);
+        bytes memory result = new bytes(data.length * 2);
+        //bytes memory hexAlphabet = "0123456789abcdef";
+        console.log("data.length:", data.length);
+        /*
+        for (uint256 i = 0; i < data.length; i++) {
+            uint8 byteValue = uint8(data[i]);
+            result[i * 2] = hexAlphabet[byteValue >> 4];      // High nibble
+            result[i * 2 + 1] = hexAlphabet[byteValue & 0x0f]; // Low nibble
+        }
+*/
+        return string(result); // Convert the bytes array to a string
     }
 }
