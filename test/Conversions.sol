@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
+import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
-contract Conversions {
+contract ConversionsTest is Test  {
     event LogDataLength(uint256 length);
 
     function addressToString(address _addr) public pure returns (string memory) {

@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {Conversions} from "./Conversions.sol";
+import {ConversionsTest} from "./Conversions.sol";
 import {Router} from "../src/Router.sol";
 import {Test} from "../lib/forge-std/src/Test.sol";
+import {TransactionReceipt} from "../src/TransactionReceipt.sol";
 import {XToken} from "../src/XToken.sol";
 import {console} from "../lib/forge-std/src/console.sol";
-import {TransactionReceipt} from "./TransactionReceipt.sol";
 
-contract Functions is Test{
-    Conversions public conversions;
+
+contract FunctionsTest is Test{
+    ConversionsTest public conversionsTest;
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](7);
@@ -32,7 +33,7 @@ contract Functions is Test{
     }
 
     function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
-        console.log("Minting ", _amount, " tokens");
+        console.log("Minting ", _amount, "tokens");
         // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
@@ -56,9 +57,11 @@ contract Functions is Test{
             console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
-
-        string memory resultHex = conversions.bytesToHex(result);
-
+        console.log(59);
+        string memory resultHex = conversionsTest.bytesToHex(result);
+        console.log(resultHex);
+        console.log(62);
+        /*
         // Parse the status field using jq
         string[] memory jqStatusCmd = new string[](4);
         jqStatusCmd[0] = "jq";
@@ -71,10 +74,12 @@ contract Functions is Test{
         jqTxHashCmd[1] = "-r";
         jqTxHashCmd[2] = "transactionHash";
         jqTxHashCmd[3] = resultHex;
-
+        console.log(74);
         // Use ffi to directly parse status
         bytes memory statusBytes = vm.ffi(jqStatusCmd);
+        console.log(77);
         string memory statusString = abi.decode(statusBytes, (string));
+        console.log(79);
 
         // Use ffi to directly parse transactionHash
         bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
@@ -85,6 +90,8 @@ contract Functions is Test{
         console.log("Transaction Hash: ", txHashString);
 
         return(txHashString,statusString);
+        */
+        return ("" , "");
     }
 
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (bytes memory output) {

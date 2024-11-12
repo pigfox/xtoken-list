@@ -7,12 +7,12 @@ import {Router} from "../src/Router.sol";
 import {XToken} from "../src/XToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
 import {Vault} from "../src/Vault.sol";
-import {Functions} from "../src/Functions.sol";
+import {FunctionsTest} from "./Functions.sol";
 
 contract ArbitrageTest is Test {
     address public ownerAddress;
     address public xTokenAddress;
-    Functions public functions;
+    FunctionsTest public functionsTest;
     XToken public xToken;
     Router public router1;
     Router public router2;
@@ -27,7 +27,7 @@ contract ArbitrageTest is Test {
     function setUp() public {
         //_testMint();
         ownerAddress = vm.envAddress("WALLET_ADDRESS");
-        functions = new Functions();
+        functionsTest = new FunctionsTest();
         xTokenAddress = vm.envAddress("XToken");
         console.log("Owner Address:", ownerAddress);
         vm.startPrank(ownerAddress);
@@ -136,7 +136,7 @@ contract ArbitrageTest is Test {
 */
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
-        (string memory txHash, string memory success) = functions.mint(vm.envString("XToken"), 1 ether);
+        (string memory txHash, string memory success) = functionsTest.mint(vm.envString("XToken"), 1 ether);
         console.log("txHash:", txHash);
         console.log("success:", success);
         /*
