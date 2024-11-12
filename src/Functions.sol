@@ -74,42 +74,21 @@ contract Functions is Test{
 
         // Use ffi to directly parse status
         bytes memory statusBytes = vm.ffi(jqStatusCmd);
+        string memory statusString = abi.decode(statusBytes, (string));
         //console.log("statusBytes");
         //console.logBytes(statusBytes);
-        string memory status = string(statusBytes);
 
         // Use ffi to directly parse transactionHash
         bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
+        string memory txHashString = abi.decode(txHashBytes, (string));
         //console.log("txHashBytes");
         //console.logBytes(txHashBytes);
-        string memory transactionHash = string(txHashBytes);
 
         // Log the status and transactionHash as strings
-        console.log("Transaction Status: ", status);
-        console.log("Transaction Hash: ", transactionHash);
-/*
-        bytes memory data = vm.parseJson(string(result));
-        //console.log("Log Bytes");
-        //console.logBytes(data);
+        console.log("Transaction Status: ", statusString);
+        console.log("Transaction Hash: ", txHashString);
 
-        console.log("data[\"transactionHash\"]");
-        console.logBytes1(data["transactionHash"]);
-
-        TransactionReceipt memory transactionReceipt;
-        // Assuming data["transactionHash"] is a string (hex representation) and needs to be converted to bytes32
-        string memory txHashString = data["transactionHash"];  // Treat the hash as a string
-        bytes32 txHash = helperFctns.stringFromHex(txHashString);  // Convert the string to bytes32 using a helper function
-        string memory txHashStringConverted = helperFctns.bytes32ToString(txHash);
-        transactionReceipt.transactionHash = txHashStringConverted;
-
-        console.log("transactionReceipt.transactionHash:", transactionReceipt.transactionHash);
-*/
-
-
-        //transactionReceipt.status = helperFctns.stringFromHex(data["status"]);
-        //console.log("transactionReceipt.status", transactionReceipt.status);
-        //return (helperFctns.bytes32ToString(transactionReceipt.transactionHash), string(transactionReceipt.status));
-        return("","");
+        return(txHashString,statusString);
     }
 
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (bytes memory output) {
