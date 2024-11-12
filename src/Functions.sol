@@ -57,31 +57,31 @@ contract Functions is Test{
             revert("Failed to retrieve contract address");
         }
 
-        console.log("Result: ", string(result));
+        //console.log("Result: ", string(result));
 
         // Parse the status field using jq
         string[] memory jqStatusCmd = new string[](4);
         jqStatusCmd[0] = "jq";
         jqStatusCmd[1] = "-r";
         jqStatusCmd[2] = ".status";
-        jqStatusCmd[3] = result;
+        jqStatusCmd[3] = helperFctns.bytesToString(result);
 
         string[] memory jqTxHashCmd = new string[](4);
         jqTxHashCmd[0] = "jq";
         jqTxHashCmd[1] = "-r";
         jqTxHashCmd[2] = ".transactionHash";
-        jqTxHashCmd[3] = result;
+        jqTxHashCmd[3] = helperFctns.bytesToString(result);
 
         // Use ffi to directly parse status
         bytes memory statusBytes = vm.ffi(jqStatusCmd);
-        console.log("statusBytes");
-        console.logBytes(statusBytes);
+        //console.log("statusBytes");
+        //console.logBytes(statusBytes);
         string memory status = string(statusBytes);
 
         // Use ffi to directly parse transactionHash
         bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
-        console.log("txHashBytes");
-        console.logBytes(txHashBytes);
+        //console.log("txHashBytes");
+        //console.logBytes(txHashBytes);
         string memory transactionHash = string(txHashBytes);
 
         // Log the status and transactionHash as strings

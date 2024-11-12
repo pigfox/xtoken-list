@@ -104,6 +104,20 @@ contract HelperFctns {
         return result;
     }
 
+    // Convert a bytes array to its ASCII string representation
+    function bytesToString(bytes memory hexValue) public pure returns (string memory) {
+        bytes memory strBytes = new bytes(hexValue.length * 2); // Two hex characters per byte
+        bytes memory hexAlphabet = "0123456789abcdef";
+
+        for (uint256 i = 0; i < hexValue.length; i++) {
+            uint8 byteValue = uint8(hexValue[i]);
+            strBytes[i * 2] = hexAlphabet[byteValue >> 4];     // High nibble
+            strBytes[i * 2 + 1] = hexAlphabet[byteValue & 0x0f]; // Low nibble
+        }
+
+        return string(strBytes); // Convert the bytes array to a string
+    }
+
     function stringFromHex(bytes memory hexValue) public pure returns (string memory) {
         // Ensure the input hexValue has even length
         require(hexValue.length % 2 == 0, "Invalid hex string length");
