@@ -32,6 +32,10 @@ contract FunctionsTest is Test{
          return balance;
     }
 
+    constructor() {
+        conversionsTest = new ConversionsTest();
+    }
+
     function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
         console.log("Minting ", _amount, "tokens");
         // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
@@ -59,7 +63,7 @@ contract FunctionsTest is Test{
         }
         console.log(59);
         string memory resultHex = conversionsTest.bytesToHex(result);
-        console.log(resultHex);
+        console.log(resultHex);//
         console.log(62);
         /*
         // Parse the status field using jq
