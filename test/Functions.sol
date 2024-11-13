@@ -54,48 +54,39 @@ contract FunctionsTest is Test{
         inputs[11] = vm.envString("PRIVATE_KEY");
 
         bytes memory result = vm.ffi(inputs);
-        //console.log("Cast result",string(result));
-        //"status":"0x1"
-        //"transactionHash":"0x1ae6af137a7e528c7ef3e990176df3b2b4d3a15fc6d205cabdfc49a6b93f13a2",
         if (0 == result.length) {
             console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
-        console.log(59);
-        string memory resultHex = conversionsTest.bytesToHex(result);
-        console.log(resultHex);//
-        console.log(62);
-        /*
-        // Parse the status field using jq
+        string memory resultString = string(result);
+        console.log("Cast result",resultString);
+
         string[] memory jqStatusCmd = new string[](4);
         jqStatusCmd[0] = "jq";
         jqStatusCmd[1] = "-r";
-        jqStatusCmd[2] = "status";
-        jqStatusCmd[3] = resultHex;
+        jqStatusCmd[2] = ".status";
+        jqStatusCmd[3] = resultString;
+        bytes memory statusBytes = vm.ffi(jqStatusCmd);
+        string memory statusString = string(statusBytes);
 
         string[] memory jqTxHashCmd = new string[](4);
         jqTxHashCmd[0] = "jq";
         jqTxHashCmd[1] = "-r";
         jqTxHashCmd[2] = "transactionHash";
-        jqTxHashCmd[3] = resultHex;
-        console.log(74);
-        // Use ffi to directly parse status
-        bytes memory statusBytes = vm.ffi(jqStatusCmd);
-        console.log(77);
-        string memory statusString = abi.decode(statusBytes, (string));
-        console.log(79);
-
-        // Use ffi to directly parse transactionHash
+        jqTxHashCmd[3] = resultString;
         bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
-        string memory txHashString = abi.decode(txHashBytes, (string));
+        string memory txHashString = string(txHashBytes);
+
+        if(bytes(statusString).length == 0 || bytes(txHashString).length == 0){
+            console.log("Error: json conversion failed");
+            revert("Error: json conversion failed");
+        }
 
         // Log the status and transactionHash as strings
         console.log("Transaction Status: ", statusString);
         console.log("Transaction Hash: ", txHashString);
 
         return(txHashString,statusString);
-        */
-        return ("" , "");
     }
 
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (bytes memory output) {
