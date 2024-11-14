@@ -22,7 +22,7 @@ contract ArbitrageTest is Test {
     uint256 public initialRouter1TokenPrice = 120;
     uint256 public initialRouter2TokenPrice = 80;
     uint256 public initialArbitrageTokens = 5e18;
-    //uint256 public chainId = vm.envString("SEPOLIA_CHAIN_ID");
+    string public statusOk = "0x1";
 
     function setUp() public {
         //_testMint();

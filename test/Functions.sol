@@ -90,6 +90,16 @@ contract FunctionsTest is Test{
         string memory json = string(result);
         (string memory status, string memory transactionHash) = parseJson(json);
 
+        string memory statusField = '"status":"';
+        uint statusFieldLength = bytes(statusField).length;
+        string memory status2 = parseField(json, '"status":"', statusFieldLength);
+
+        string memory transactionHashField = '"transactionHash":"';
+        uint transactionHashLength = bytes(transactionHashField).length;
+        string memory transactionHash2 = parseField(json, '"transactionHash":"', transactionHashLength);
+        console.log("status2",status2);
+        console.log("transactionHash2",transactionHash2);
+
         return (transactionHash,status);
     }
 
@@ -144,6 +154,13 @@ contract FunctionsTest is Test{
         console.log("Transaction Hash: ", transactionHash);
 
         return output;
+    }
+
+    function parseField(string memory json, string memory field, uint indexAt) internal pure returns (string memory value) {
+        bytes memory jsonBytes = bytes(json);
+        uint256 statusStart = findIndexOfSubstring(jsonBytes, field, 0) + indexAt;
+        uint256 statusEnd = findIndexOfSubstring(jsonBytes, '"', statusStart);
+        value = extractSubstring(json, statusStart, statusEnd);
     }
 
     function parseJson(string memory json) internal pure returns (string memory status, string memory transactionHash) {
@@ -202,12 +219,4 @@ contract FunctionsTest is Test{
         }
         return string(result);
     }
-/*
-    // Example usage function to display parsed status and transaction hash
-    function displayParsedData(string memory json) public view {
-        (string memory status, string memory transactionHash) = parseJson(json);
-        console.log("Transaction Status: ", status);
-        console.log("Transaction Hash: ", transactionHash);
-    }
-    */
 }
