@@ -156,9 +156,9 @@ contract FunctionsTest is Test{
         return output;
     }
 
-    function parseField(string memory json, string memory field, uint indexAt) internal pure returns (string memory value) {
+    function parseField(string memory json, string memory field, uint fieldLength) internal pure returns (string memory value) {
         bytes memory jsonBytes = bytes(json);
-        uint256 statusStart = findIndexOfSubstring(jsonBytes, field, 0) + indexAt;
+        uint256 statusStart = findIndexOfSubstring(jsonBytes, field, 0) + fieldLength;
         uint256 statusEnd = findIndexOfSubstring(jsonBytes, '"', statusStart);
         value = extractSubstring(json, statusStart, statusEnd);
     }
