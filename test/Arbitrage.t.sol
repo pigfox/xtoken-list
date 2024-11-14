@@ -22,7 +22,8 @@ contract ArbitrageTest is Test {
     uint256 public initialRouter1TokenPrice = 120;
     uint256 public initialRouter2TokenPrice = 80;
     uint256 public initialArbitrageTokens = 5e18;
-    string public statusOk = "0x1";
+    string public expectedStatusOk = "0x1";
+    uint public expectedTxHashLength = 66;
 
     function setUp() public {
         //_testMint();
@@ -137,8 +138,8 @@ contract ArbitrageTest is Test {
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
         (string memory txHash, string memory status) = functionsTest.mint(vm.envString("XToken"), 1 ether);
-        assertEq(statusOk, status);
-        assertEq(bytes(txHash).length, 66);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
         console.log("txHash:", txHash);
         console.log("success:", status);
         /*
