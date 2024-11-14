@@ -41,6 +41,10 @@ contract ArbitrageTest is Test {
         router2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
 
+        (string memory txHash, string memory status) = functionsTest.mint(vm.envString("XToken"), 1 ether);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
         //uint256 xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         //console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
@@ -137,11 +141,7 @@ contract ArbitrageTest is Test {
 */
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
-        (string memory txHash, string memory status) = functionsTest.mint(vm.envString("XToken"), 1 ether);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-        console.log("txHash:", txHash);
-        console.log("success:", status);
+
         /*
         address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
         XToken xToken1 = XToken(xTokenAddress);
