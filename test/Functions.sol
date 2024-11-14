@@ -42,6 +42,11 @@ contract FunctionsTest is Test{
         address contractAddress; // Nullable field represented as an address
     }
     ConversionsTest public conversionsTest;
+
+    constructor() {
+        conversionsTest = new ConversionsTest();
+    }
+
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](7);
@@ -61,10 +66,6 @@ contract FunctionsTest is Test{
 
          uint256 balance = abi.decode(result, (uint256));
          return balance;
-    }
-
-    constructor() {
-        conversionsTest = new ConversionsTest();
     }
 
     function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
