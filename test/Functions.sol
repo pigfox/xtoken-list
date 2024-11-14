@@ -43,10 +43,17 @@ contract FunctionsTest is Test{
     }
     ConversionsTest public conversionsTest;
 
+    event MintEvent(address indexed tokenAddress, uint256 amount);
+
     constructor() {
         conversionsTest = new ConversionsTest();
     }
-
+/*
+    function stringToAddress(string calldata _tokenAddress) public pure returns (address) {
+        bytes32 hash = keccak256(bytes(_tokenAddress));
+        return address(uint160(uint256(hash)));
+    }
+*/
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](7);
@@ -69,7 +76,8 @@ contract FunctionsTest is Test{
     }
 
     function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
-        console.log("Minting ", _amount, "tokens");
+        emit MintEvent(conversionsTest.stringToAddress(_tokenAddress), _amount);
+        //console.log("Minting ", _amount, "tokens");
         // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
@@ -100,7 +108,7 @@ contract FunctionsTest is Test{
         uint256[] memory values = abi.decode(status, (uint256[]));
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        string memory statusStr = toHexString(statusInt);
+        string memory statusStr = conversionsTest.toHexString(statusInt);
         bytes memory transactionHash = result.parseRaw(".transactionHash");
         string memory transactionHashStr = vm.toString(transactionHash);
 
@@ -139,88 +147,10 @@ contract FunctionsTest is Test{
         uint256[] memory values = abi.decode(status, (uint256[]));
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        string memory statusStr = toHexString(statusInt);
+        string memory statusStr = conversionsTest.toHexString(statusInt);
         bytes memory transactionHash = result.parseRaw(".transactionHash");
         string memory transactionHashStr = vm.toString(transactionHash);
 
         return(transactionHashStr,statusStr);
     }
-
-    function toHexDigit(uint8 d) internal pure returns (bytes1) {
-        if (0 <= d && d <= 9) {
-            return bytes1(uint8(bytes1("0")) + d);
-        } else if (10 <= uint8(d) && uint8(d) <= 15) {
-            return bytes1(uint8(bytes1("a")) + d - 10);
-        }
-        revert();
-    }
-
-    function toHexString(uint256 a) public pure returns (string memory) {
-        uint256 count = 0;
-        uint256 b = a;
-        while (b != 0) {
-            count++;
-            b /= 16;
-        }
-        bytes memory res = new bytes(count);
-        for (uint256 i = 0; i < count; ++i) {
-            b = a % 16;
-            res[count - i - 1] = toHexDigit(uint8(b));
-            a /= 16;
-        }
-        return string(abi.encodePacked("0x", string(res)));
-    }
-
-/*
-    function parseField(string memory json, string memory field, uint fieldLength) internal pure returns (string memory value) {
-        bytes memory jsonBytes = bytes(json);
-        uint256 statusStart = findIndexOfSubstring(jsonBytes, field, 0) + fieldLength;
-        uint256 statusEnd = findIndexOfSubstring(jsonBytes, '"', statusStart);
-        value = extractSubstring(json, statusStart, statusEnd);
-    }
-
-    // Helper function to find the position of a substring starting from a specified index
-    function findIndexOfSubstring(bytes memory data, string memory substring, uint256 startIndex)
-    internal
-    pure
-    returns (uint256)
-    {
-        bytes memory subBytes = bytes(substring);
-        uint256 dataLength = data.length;
-        uint256 subLength = subBytes.length;
-
-        if (subLength == 0 || dataLength < subLength || startIndex >= dataLength) {
-            revert("Invalid substring or start index");
-        }
-
-        for (uint256 i = startIndex; i <= dataLength - subLength; i++) {
-            bool matchFound = true;
-            for (uint256 j = 0; j < subLength; j++) {
-                if (data[i + j] != subBytes[j]) {
-                    matchFound = false;
-                    break;
-                }
-            }
-            if (matchFound) {
-                return i;
-            }
-        }
-        revert("Substring not found");
-    }
-
-    // Helper function to extract a substring from a string given start and end indices
-    function extractSubstring(string memory str, uint256 start, uint256 end)
-    internal
-    pure
-    returns (string memory)
-    {
-        bytes memory strBytes = bytes(str);
-        require(end <= strBytes.length, "Invalid end position");
-        bytes memory result = new bytes(end - start);
-        for (uint256 i = start; i < end; i++) {
-            result[i - start] = strBytes[i];
-        }
-        return string(result);
-    }
-    */
 }
