@@ -160,7 +160,7 @@ contract FunctionsTest is Test{
         value = extractSubstring(json, statusStart, statusEnd);
     }
 
-// Helper function to find the position of a substring starting from a specified index
+    // Helper function to find the position of a substring starting from a specified index
     function findIndexOfSubstring(bytes memory data, string memory substring, uint256 startIndex)
     internal
     pure

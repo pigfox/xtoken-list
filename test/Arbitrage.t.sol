@@ -138,6 +138,7 @@ contract ArbitrageTest is Test {
         console.log("Function Test ExecuteArbitrage");
         (string memory txHash, string memory status) = functionsTest.mint(vm.envString("XToken"), 1 ether);
         assertEq(statusOk, status);
+        assertEq(bytes(txHash).length, 66);
         console.log("txHash:", txHash);
         console.log("success:", status);
         /*
