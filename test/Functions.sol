@@ -3,13 +3,15 @@ pragma solidity ^0.8.26;
 
 import {ConversionsTest} from "./Conversions.sol";
 import {Router} from "../src/Router.sol";
-import {Test} from "../lib/forge-std/src/Test.sol";
+import {Test, console} from "../lib/forge-std/src/Test.sol";
 //import {TransactionReceipt} from "../src/TransactionReceipt.sol";
 import {XToken} from "../src/XToken.sol";
-import {console} from "../lib/forge-std/src/console.sol";
+import {stdJson} from "../lib/forge-std/src/StdJson.sol";
+
 
 
 contract FunctionsTest is Test{
+    using stdJson for string;
 
     struct LogEntry {
         address addr;
@@ -82,22 +84,26 @@ contract FunctionsTest is Test{
         inputs[10] = "--private-key";
         inputs[11] = vm.envString("PRIVATE_KEY");
 
-        bytes memory result = vm.ffi(inputs);
-        if (0 == result.length) {
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
             console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
-        string memory json = string(result);
+        string memory json = string(castResult);
 
-        string memory statusField = '"status":"';
-        uint statusFieldLength = bytes(statusField).length;
-        string memory status = parseField(json, '"status":"', statusFieldLength);
+        string memory result = string(
+            abi.encodePacked(json)
+        );
 
-        string memory transactionHashField = '"transactionHash":"';
-        uint transactionHashLength = bytes(transactionHashField).length;
-        string memory transactionHash = parseField(json, '"transactionHash":"', transactionHashLength);
+        bytes memory status = result.parseRaw(".status");
+        uint256[] memory values = abi.decode(status, (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory statusStr = toHexString(statusInt);
+        bytes memory transactionHash = result.parseRaw(".transactionHash");
+        string memory transactionHashStr = vm.toString(transactionHash);
 
-        return (transactionHash,status);
+        return(transactionHashStr,statusStr);
     }
 
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (bytes memory output) {
@@ -153,6 +159,32 @@ contract FunctionsTest is Test{
         return output;
     }
 
+    function toHexDigit(uint8 d) internal pure returns (bytes1) {
+        if (0 <= d && d <= 9) {
+            return bytes1(uint8(bytes1("0")) + d);
+        } else if (10 <= uint8(d) && uint8(d) <= 15) {
+            return bytes1(uint8(bytes1("a")) + d - 10);
+        }
+        revert();
+    }
+
+    function toHexString(uint256 a) public pure returns (string memory) {
+        uint256 count = 0;
+        uint256 b = a;
+        while (b != 0) {
+            count++;
+            b /= 16;
+        }
+        bytes memory res = new bytes(count);
+        for (uint256 i = 0; i < count; ++i) {
+            b = a % 16;
+            res[count - i - 1] = toHexDigit(uint8(b));
+            a /= 16;
+        }
+        return string(abi.encodePacked("0x", string(res)));
+    }
+
+/*
     function parseField(string memory json, string memory field, uint fieldLength) internal pure returns (string memory value) {
         bytes memory jsonBytes = bytes(json);
         uint256 statusStart = findIndexOfSubstring(jsonBytes, field, 0) + fieldLength;
@@ -203,4 +235,5 @@ contract FunctionsTest is Test{
         }
         return string(result);
     }
+    */
 }
