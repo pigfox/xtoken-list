@@ -44,16 +44,12 @@ contract FunctionsTest is Test{
     ConversionsTest public conversionsTest;
 
     event MintEvent(address indexed tokenAddress, uint256 amount);
+    event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
 
     constructor() {
         conversionsTest = new ConversionsTest();
     }
-/*
-    function stringToAddress(string calldata _tokenAddress) public pure returns (address) {
-        bytes32 hash = keccak256(bytes(_tokenAddress));
-        return address(uint160(uint256(hash)));
-    }
-*/
+
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](7);
@@ -117,6 +113,7 @@ contract FunctionsTest is Test{
 
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (string memory, string memory) {
         // cast send "$XToken" "supplyTokenTo(address,uint256)" "$Arbitrage" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        emit SupplyTokensEvent(conversionsTest.stringToAddress(_supplierAddress), conversionsTest.stringToAddress(_receiverAddress),_amount);
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
