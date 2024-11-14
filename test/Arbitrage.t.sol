@@ -41,24 +41,15 @@ contract ArbitrageTest is Test {
         router2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
 
+        uint256 xTokenWalletBalance = functionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
+        console.log("xTokenWalletBalance:", xTokenWalletBalance);
+
         (string memory txHash, string memory status) = functionsTest.mint(vm.envString("XToken"), 1 ether);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        //uint256 xTokenWalletBalance = functions.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
-        //console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
-        //functions.mint(vm.envString("XToken"), 1 ether);
-        //bytes memory result = functions.mint(vm.envString("XToken"), 1 ether);
-        /*
-        if (0 < result.length) {
-            bytes memory output = abi.decode(result, (bytes));
-            console.log(string(output));
-        }else{
-            console.log("Error: cast call returned empty result");
-            revert("Failed supplyTokensTo()");
-        }
-        */
+
 
 /*
         bytes memory result  = functions.supplyTokensTo(vm.envString("XToken"), vm.envString("Router1"),1 ether);
