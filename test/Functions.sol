@@ -4,12 +4,41 @@ pragma solidity ^0.8.26;
 import {ConversionsTest} from "./Conversions.sol";
 import {Router} from "../src/Router.sol";
 import {Test} from "../lib/forge-std/src/Test.sol";
-import {TransactionReceipt} from "../src/TransactionReceipt.sol";
+//import {TransactionReceipt} from "../src/TransactionReceipt.sol";
 import {XToken} from "../src/XToken.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
 
 contract FunctionsTest is Test{
+
+    struct LogEntry {
+        address addr;
+        bytes32[] topics;
+        bytes data;
+        bytes32 blockHash;
+        uint256 blockNumber;
+        bytes32 transactionHash;
+        uint256 transactionIndex;
+        uint256 logIndex;
+        bool removed;
+    }
+
+    struct TransactionReceipt {
+        string status;
+        uint256 cumulativeGasUsed;
+        LogEntry[] logs;
+        bytes logsBloom;
+        uint8 txType;
+        string transactionHash;
+        uint256 transactionIndex;
+        bytes32 blockHash;
+        uint256 blockNumber;
+        uint256 gasUsed;
+        uint256 effectiveGasPrice;
+        address from;
+        address to;
+        address contractAddress; // Nullable field represented as an address
+    }
     ConversionsTest public conversionsTest;
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
@@ -58,8 +87,30 @@ contract FunctionsTest is Test{
             console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
-        string memory resultString = string(result);
-        console.log("Cast result",resultString);
+        string memory json = string(result);
+        // Find the "status" value
+        (string memory status, string memory transactionHash) = parseJson(json);
+        console.log("Transaction Status: ", status);
+        console.log("Transaction Hash: ", transactionHash);
+
+/*
+        // Try parsing a simpler path first
+        bytes memory data = vm.parseJson(json, "$"); // This should parse the entire JSON string
+        console.log("Parsed Data:", string(data));
+
+        // Then try parsing the "status" field
+        data = vm.parseJson(json, "$.status");
+        string memory statusString = abi.decode(data, (string));
+        console.log("statusString", statusString);
+
+        TransactionReceipt memory transactionReceipt = abi.decode(data, (TransactionReceipt));
+        console.log("This does not print");
+        string memory statusString = transactionReceipt.status;
+        if(bytes(statusString).length == 0){
+            console.log("Error: json conversion failed");
+            revert("Error: json conversion failed");
+        }
+        console.log("Transaction Status: ", statusString);
 
         string[] memory jqStatusCmd = new string[](4);
         jqStatusCmd[0] = "jq";
@@ -87,6 +138,8 @@ contract FunctionsTest is Test{
         console.log("Transaction Hash: ", txHashString);
 
         return(txHashString,statusString);
+        */
+        return ("","");
     }
 
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (bytes memory output) {
@@ -142,4 +195,69 @@ contract FunctionsTest is Test{
         return output;
     }
 
+    function parseJson(string memory json) internal pure returns (string memory status, string memory transactionHash) {
+        bytes memory jsonBytes = bytes(json);
+
+        // Find the "status" value
+        uint256 statusStart = findIndexOfSubstring(jsonBytes, '"status":"', 0) + 10;
+        uint256 statusEnd = findIndexOfSubstring(jsonBytes, '"', statusStart);
+        status = extractSubstring(json, statusStart, statusEnd);
+
+        // Find the "transactionHash" value
+        uint256 txHashStart = findIndexOfSubstring(jsonBytes, '"transactionHash":"', 0) + 19;
+        uint256 txHashEnd = findIndexOfSubstring(jsonBytes, '"', txHashStart);
+        transactionHash = extractSubstring(json, txHashStart, txHashEnd);
+        return (status, transactionHash);
+    }
+
+// Helper function to find the position of a substring starting from a specified index
+    function findIndexOfSubstring(bytes memory data, string memory substring, uint256 startIndex)
+    internal
+    pure
+    returns (uint256)
+    {
+        bytes memory subBytes = bytes(substring);
+        uint256 dataLength = data.length;
+        uint256 subLength = subBytes.length;
+
+        if (subLength == 0 || dataLength < subLength || startIndex >= dataLength) {
+            revert("Invalid substring or start index");
+        }
+
+        for (uint256 i = startIndex; i <= dataLength - subLength; i++) {
+            bool matchFound = true;
+            for (uint256 j = 0; j < subLength; j++) {
+                if (data[i + j] != subBytes[j]) {
+                    matchFound = false;
+                    break;
+                }
+            }
+            if (matchFound) {
+                return i;
+            }
+        }
+        revert("Substring not found");
+    }
+
+    // Helper function to extract a substring from a string given start and end indices
+    function extractSubstring(string memory str, uint256 start, uint256 end)
+    internal
+    pure
+    returns (string memory)
+    {
+        bytes memory strBytes = bytes(str);
+        require(end <= strBytes.length, "Invalid end position");
+        bytes memory result = new bytes(end - start);
+        for (uint256 i = start; i < end; i++) {
+            result[i - start] = strBytes[i];
+        }
+        return string(result);
+    }
+
+    // Example usage function to display parsed status and transaction hash
+    function displayParsedData(string memory json) public view {
+        (string memory status, string memory transactionHash) = parseJson(json);
+        console.log("Transaction Status: ", status);
+        console.log("Transaction Hash: ", transactionHash);
+    }
 }
