@@ -88,58 +88,9 @@ contract FunctionsTest is Test{
             revert("Error: cast call returned empty result");
         }
         string memory json = string(result);
-        // Find the "status" value
         (string memory status, string memory transactionHash) = parseJson(json);
-        console.log("Transaction Status: ", status);
-        console.log("Transaction Hash: ", transactionHash);
 
-/*
-        // Try parsing a simpler path first
-        bytes memory data = vm.parseJson(json, "$"); // This should parse the entire JSON string
-        console.log("Parsed Data:", string(data));
-
-        // Then try parsing the "status" field
-        data = vm.parseJson(json, "$.status");
-        string memory statusString = abi.decode(data, (string));
-        console.log("statusString", statusString);
-
-        TransactionReceipt memory transactionReceipt = abi.decode(data, (TransactionReceipt));
-        console.log("This does not print");
-        string memory statusString = transactionReceipt.status;
-        if(bytes(statusString).length == 0){
-            console.log("Error: json conversion failed");
-            revert("Error: json conversion failed");
-        }
-        console.log("Transaction Status: ", statusString);
-
-        string[] memory jqStatusCmd = new string[](4);
-        jqStatusCmd[0] = "jq";
-        jqStatusCmd[1] = "-r";
-        jqStatusCmd[2] = ".status";
-        jqStatusCmd[3] = resultString;
-        bytes memory statusBytes = vm.ffi(jqStatusCmd);
-        string memory statusString = string(statusBytes);
-
-        string[] memory jqTxHashCmd = new string[](4);
-        jqTxHashCmd[0] = "jq";
-        jqTxHashCmd[1] = "-r";
-        jqTxHashCmd[2] = "transactionHash";
-        jqTxHashCmd[3] = resultString;
-        bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
-        string memory txHashString = string(txHashBytes);
-
-        if(bytes(statusString).length == 0 || bytes(txHashString).length == 0){
-            console.log("Error: json conversion failed");
-            revert("Error: json conversion failed");
-        }
-
-        // Log the status and transactionHash as strings
-        console.log("Transaction Status: ", statusString);
-        console.log("Transaction Hash: ", txHashString);
-
-        return(txHashString,statusString);
-        */
-        return ("","");
+        return (transactionHash,status);
     }
 
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (bytes memory output) {
@@ -198,12 +149,10 @@ contract FunctionsTest is Test{
     function parseJson(string memory json) internal pure returns (string memory status, string memory transactionHash) {
         bytes memory jsonBytes = bytes(json);
 
-        // Find the "status" value
         uint256 statusStart = findIndexOfSubstring(jsonBytes, '"status":"', 0) + 10;
         uint256 statusEnd = findIndexOfSubstring(jsonBytes, '"', statusStart);
         status = extractSubstring(json, statusStart, statusEnd);
 
-        // Find the "transactionHash" value
         uint256 txHashStart = findIndexOfSubstring(jsonBytes, '"transactionHash":"', 0) + 19;
         uint256 txHashEnd = findIndexOfSubstring(jsonBytes, '"', txHashStart);
         transactionHash = extractSubstring(json, txHashStart, txHashEnd);
@@ -253,11 +202,12 @@ contract FunctionsTest is Test{
         }
         return string(result);
     }
-
+/*
     // Example usage function to display parsed status and transaction hash
     function displayParsedData(string memory json) public view {
         (string memory status, string memory transactionHash) = parseJson(json);
         console.log("Transaction Status: ", status);
         console.log("Transaction Hash: ", transactionHash);
     }
+    */
 }
