@@ -88,17 +88,14 @@ contract FunctionsTest is Test{
             revert("Error: cast call returned empty result");
         }
         string memory json = string(result);
-        (string memory status, string memory transactionHash) = parseJson(json);
 
         string memory statusField = '"status":"';
         uint statusFieldLength = bytes(statusField).length;
-        string memory status2 = parseField(json, '"status":"', statusFieldLength);
+        string memory status = parseField(json, '"status":"', statusFieldLength);
 
         string memory transactionHashField = '"transactionHash":"';
         uint transactionHashLength = bytes(transactionHashField).length;
-        string memory transactionHash2 = parseField(json, '"transactionHash":"', transactionHashLength);
-        console.log("status2",status2);
-        console.log("transactionHash2",transactionHash2);
+        string memory transactionHash = parseField(json, '"transactionHash":"', transactionHashLength);
 
         return (transactionHash,status);
     }
@@ -161,19 +158,6 @@ contract FunctionsTest is Test{
         uint256 statusStart = findIndexOfSubstring(jsonBytes, field, 0) + fieldLength;
         uint256 statusEnd = findIndexOfSubstring(jsonBytes, '"', statusStart);
         value = extractSubstring(json, statusStart, statusEnd);
-    }
-
-    function parseJson(string memory json) internal pure returns (string memory status, string memory transactionHash) {
-        bytes memory jsonBytes = bytes(json);
-
-        uint256 statusStart = findIndexOfSubstring(jsonBytes, '"status":"', 0) + 10;
-        uint256 statusEnd = findIndexOfSubstring(jsonBytes, '"', statusStart);
-        status = extractSubstring(json, statusStart, statusEnd);
-
-        uint256 txHashStart = findIndexOfSubstring(jsonBytes, '"transactionHash":"', 0) + 19;
-        uint256 txHashEnd = findIndexOfSubstring(jsonBytes, '"', txHashStart);
-        transactionHash = extractSubstring(json, txHashStart, txHashEnd);
-        return (status, transactionHash);
     }
 
 // Helper function to find the position of a substring starting from a specified index
