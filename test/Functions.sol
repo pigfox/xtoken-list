@@ -106,7 +106,7 @@ contract FunctionsTest is Test{
         return(transactionHashStr,statusStr);
     }
 
-    function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (bytes memory output) {
+    function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (string memory, string memory) {
         // cast send "$XToken" "supplyTokenTo(address,uint256)" "$Arbitrage" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
@@ -123,40 +123,26 @@ contract FunctionsTest is Test{
         inputs[11] = "--private-key";
         inputs[12] = vm.envString("PRIVATE_KEY");
 
-        // Execute the command and get the result
-        bytes memory result = vm.ffi(inputs);
-
-        // Check if result is non-empty before decoding
-        if (result.length > 0) {
-            // Decoding directly without `try`
-            output = abi.decode(result, (bytes));
-        } else {
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
             console.log("Error: cast call returned empty result");
-            revert("Failed to retrieve contract address");
+            revert("Error: cast call returned empty result");
         }
+        string memory json = string(castResult);
 
-        // Parse the status field using jq
-        string[] memory jqStatusCmd = new string[](3);
-        jqStatusCmd[0] = "jq";
-        jqStatusCmd[1] = "-r";
-        jqStatusCmd[2] = ".status";
+        string memory result = string(
+            abi.encodePacked(json)
+        );
 
-        bytes memory statusBytes = vm.ffi(jqStatusCmd);
-        string memory status = string(statusBytes);
+        bytes memory status = result.parseRaw(".status");
+        uint256[] memory values = abi.decode(status, (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory statusStr = toHexString(statusInt);
+        bytes memory transactionHash = result.parseRaw(".transactionHash");
+        string memory transactionHashStr = vm.toString(transactionHash);
 
-        string[] memory jqTxHashCmd = new string[](3);
-        jqTxHashCmd[0] = "jq";
-        jqTxHashCmd[1] = "-r";
-        jqTxHashCmd[2] = ".transactionHash";
-
-        bytes memory txHashBytes = vm.ffi(jqTxHashCmd);
-        string memory transactionHash = string(txHashBytes);
-
-        // Log the status and transactionHash as strings
-        console.log("Transaction Status: ", status);
-        console.log("Transaction Hash: ", transactionHash);
-
-        return output;
+        return(transactionHashStr,statusStr);
     }
 
     function toHexDigit(uint8 d) internal pure returns (bytes1) {
