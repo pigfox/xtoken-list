@@ -3,6 +3,13 @@ pragma solidity ^0.8.26;
 
 import {Test} from "../lib/forge-std/src/Test.sol";
 
+/*
+string memory json = string(result);
+string memory statusField = '"status":"';
+uint statusFieldLength = bytes(statusField).length;
+string memory status = parseField(json, '"status":"', statusFieldLength);
+*/
+
 contract Parser is Test{
     function parseField(string memory json, string memory field, uint fieldLength) internal pure returns (string memory value) {
         bytes memory jsonBytes = bytes(json);
