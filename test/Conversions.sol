@@ -5,9 +5,26 @@ import {Test} from "../lib/forge-std/src/Test.sol";
 import {console} from "../lib/forge-std/src/console.sol";
 
 contract ConversionsTest is Test  {
-    function stringToAddress(string calldata _tokenAddress) public pure returns (address) {
-        bytes32 hash = keccak256(bytes(_tokenAddress));
-        return address(uint160(uint256(hash)));
+    // Function to convert a string to an address
+    function stringToAddress(string memory _tokenAddress) public pure returns (address) {
+        bytes memory addressBytes = bytes(_tokenAddress);
+        require(addressBytes.length == 42, "Invalid address length");
+        require(addressBytes[0] == '0' && (addressBytes[1] == 'x' || addressBytes[1] == 'X'), "Invalid address format");
+
+        uint160 addr = 0;
+        for (uint256 i = 2; i < 42; i++) {
+            uint8 b = uint8(addressBytes[i]);
+            if (b >= 48 && b <= 57) { // '0' to '9'
+                addr = addr * 16 + (b - 48);
+            } else if (b >= 97 && b <= 102) { // 'a' to 'f'
+                addr = addr * 16 + (b - 87);
+            } else if (b >= 65 && b <= 70) { // 'A' to 'F'
+                addr = addr * 16 + (b - 55);
+            } else {
+                revert("Invalid address character");
+            }
+        }
+        return address(addr);
     }
 
     function toHexDigit(uint8 d) internal pure returns (bytes1) {
