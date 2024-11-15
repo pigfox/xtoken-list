@@ -47,7 +47,7 @@ contract FunctionsTest is Test{
     event MintEvent(address indexed tokenAddress, uint256 amount);
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event ApproveEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
-    event BalanceEvent(address indexed walletAddress);
+    event BalanceEvent(address indexed contractAddress);
 
     constructor() {
         conversionsTest = new ConversionsTest();
@@ -58,6 +58,7 @@ contract FunctionsTest is Test{
         cast balance 0xb04d6a4949fa623629e0ED6bd4Ecb78A8C847693 --rpc-url https://ethereum-sepolia-rpc.publicnode.com
         5343635260568317891
         */
+        emit BalanceEvent(conversionsTest.stringToAddress(_contractAddress));
         string[] memory inputs = new string[](5);
         inputs[0] = "cast";
         inputs[1] = "balance";
@@ -99,7 +100,6 @@ contract FunctionsTest is Test{
 
     function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
         emit MintEvent(conversionsTest.stringToAddress(_tokenAddress), _amount);
-        //console.log("Minting ", _amount, "tokens");
         // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
