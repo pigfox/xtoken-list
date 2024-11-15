@@ -152,4 +152,43 @@ contract FunctionsTest is Test{
 
         return(transactionHashStr,statusStr);
     }
+
+    function approve(string calldata _tokenAddress, string calldata _spenderAddress, uint256 _amount) public returns (string memory, string memory){
+        // cast send "$XToken" "approve(address,uint256)" "$Router1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string[] memory inputs = new string[](13);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _tokenAddress;
+        inputs[3] = "approve(address,uint256)";
+        inputs[4] = _spenderAddress;
+        inputs[5] =  vm.toString(_amount);
+        inputs[6] = "--json";
+        inputs[7] = "--rpc-url";
+        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[9] = "--from";
+        inputs[10] = vm.envString("WALLET_ADDRESS");
+        inputs[11] = "--private-key";
+        inputs[12] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+        string memory json = string(castResult);
+
+        string memory result = string(
+            abi.encodePacked(json)
+        );
+
+        bytes memory status = result.parseRaw(".status");
+        uint256[] memory values = abi.decode(status, (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory statusStr = conversionsTest.toHexString(statusInt);
+        bytes memory transactionHash = result.parseRaw(".transactionHash");
+        string memory transactionHashStr = vm.toString(transactionHash);
+
+        return(transactionHashStr,statusStr);
+    }
 }

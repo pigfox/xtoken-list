@@ -52,6 +52,10 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        (txHash, status) = functionsTest.approve(vm.envString("XToken"), vm.envString("Router1"),1 ether);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
 
 
 /*
@@ -71,15 +75,6 @@ contract ArbitrageTest is Test {
         */
     }
 /*
-    function _testMint() public {
-        console.log("Testing mint function.");
-        // Example of calling the mint function using the contract instance
-        xToken.supplyTokenTo(address(this), 1 ether);
-
-        // You can add assertions here to check the state of the contract
-        uint256 balance = xToken.getTokenBalanceAt(address(this));
-        assertEq(balance, 1 ether, "Balance should be 1 ether");
-    }
 
     // Helper function to initialize and verify token prices
     function _initializeTokenPrices() internal {
