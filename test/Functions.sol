@@ -46,9 +46,15 @@ contract FunctionsTest is Test{
     event GetTokenBalanceOfEvent(address indexed tokenAddress, address indexed holderAddress);
     event MintEvent(address indexed tokenAddress, uint256 amount);
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
+    event ApproveEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
 
     constructor() {
         conversionsTest = new ConversionsTest();
+    }
+
+    function walletBalance() public view returns (uint256) {
+        //cast balance <WALLET_ADDRESS> --rpc-url <RPC_URL>
+        return address(this).balance;
     }
 
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
@@ -155,13 +161,15 @@ contract FunctionsTest is Test{
 
     function approve(string calldata _tokenAddress, string calldata _spenderAddress) public returns (string memory, string memory){
         // cast send "$XToken" "approve(address,uint256)" "$Router1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string memory amount = maxAmount();
+        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_spenderAddress), conversionsTest.stringToUint(amount));
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
         inputs[2] = _tokenAddress;
         inputs[3] = "approve(address,uint256)";
         inputs[4] = _spenderAddress;
-        inputs[5] =  maxAmount(); //vm.toString(_amount);
+        inputs[5] =  amount;
         inputs[6] = "--json";
         inputs[7] = "--rpc-url";
         inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
