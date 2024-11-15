@@ -116,6 +116,10 @@ contract ArbitrageTest is Test {
 */
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
+        uint256 gasStart = gasleft();
+
+        uint256 gasUsed = gasStart - gasleft();
+        console.log("Gas used:", gasUsed);
 
         /*
         address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
