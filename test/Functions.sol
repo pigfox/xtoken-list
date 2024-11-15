@@ -48,6 +48,7 @@ contract FunctionsTest is Test{
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event ApproveEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event BalanceEvent(address indexed contractAddress);
+    event SetTokenPriceEvent(address indexed tokenAddress, uint256 price);
 
     constructor() {
         conversionsTest = new ConversionsTest();
@@ -71,7 +72,6 @@ contract FunctionsTest is Test{
             console.log("Error: cast call returned empty result");
             revert("Failed to retrieve wallet balance");
         }
-        console.log("Balance Result: ", string(result));
 
         return conversionsTest.stringToUint(string(result));
     }
@@ -179,15 +179,15 @@ contract FunctionsTest is Test{
 
     function approve(string calldata _tokenAddress, string calldata _spenderAddress) public returns (string memory, string memory){
         // cast send "$XToken" "approve(address,uint256)" "$Router1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-        string memory amount = maxAmount();
-        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_spenderAddress), conversionsTest.stringToUint(amount));
+        uint256 amount = type(uint256).max;
+        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_spenderAddress), amount);
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
         inputs[2] = _tokenAddress;
         inputs[3] = "approve(address,uint256)";
         inputs[4] = _spenderAddress;
-        inputs[5] =  amount;
+        inputs[5] =  conversionsTest.uintToString(amount);
         inputs[6] = "--json";
         inputs[7] = "--rpc-url";
         inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
@@ -218,8 +218,62 @@ contract FunctionsTest is Test{
         return(transactionHashStr,statusStr);
     }
 
-    function maxAmount() internal view returns(string memory){
-        string memory maxUint256Str = conversionsTest.toHexString(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
-        return maxUint256Str;
+    function setTokenPrice(string calldata _router, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+        // cast send "$Router1" "setTokenPrice(address,uint256)" "$XToken" 9876 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string[] memory inputs = new string[](13);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _router;
+        inputs[3] = "setTokenPrice(address,uint256)";
+        inputs[4] = _tokenAddress;
+        inputs[4] = conversionsTest.uintToString(_amount);
+        inputs[5] = "--json";
+        inputs[6] = "--rpc-url";
+        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[8] = "--from";
+        inputs[9] = vm.envString("WALLET_ADDRESS");
+        inputs[10] = "--private-key";
+        inputs[11] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+        string memory json = string(castResult);
+
+        string memory result = string(
+            abi.encodePacked(json)
+        );
+
+        bytes memory status = result.parseRaw(".status");
+        uint256[] memory values = abi.decode(status, (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory statusStr = conversionsTest.toHexString(statusInt);
+        bytes memory transactionHash = result.parseRaw(".transactionHash");
+        string memory transactionHashStr = vm.toString(transactionHash);
+
+        return(transactionHashStr,statusStr);
+    }
+
+    function getTokenPrice(string calldata _router, string calldata _tokenAddress) public returns (uint256) {
+        // cast call "$Router1" "getTokenPrice(address)" "$XToken" --rpc-url "$rpc_url"
+        string[] memory inputs = new string[](8);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = _router;
+        inputs[3] = "getTokenPrice(address)";
+        inputs[4] = _tokenAddress;
+        inputs[5] = "--rpc-url";
+        inputs[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        bytes memory result = vm.ffi(inputs);
+
+        if (result.length == 0) {
+            console.log("Error: cast call returned empty result");
+            revert("Failed to retrieve token price");
+        }
+
+        return abi.decode(result, (uint256));
     }
 }

@@ -56,19 +56,12 @@ contract ConversionsTest is Test  {
         bytes memory b = bytes(s);
         uint256 result = 0;
 
-        // Start iterating after "0x" if present
-        uint256 startIndex = (b[0] == '0' && b[1] == 'x') ? 2 : 0;
-
-        for (uint256 i = startIndex; i < b.length; i++) {
+        for (uint256 i = 0; i < b.length; i++) {
             uint8 c = uint8(b[i]);
 
             // Check if the character is 0-9
             if (c >= 48 && c <= 57) {
-                result = result * 16 + (c - 48);
-            } else if (c >= 65 && c <= 70) {// Check if the character is A-F
-                result = result * 16 + (c - 55);
-            } else if (c >= 97 && c <= 102) {// Check if the character is a-f
-                result = result * 16 + (c - 87);
+                result = result * 10 + (c - 48); // Base 10 conversion
             } else {
                 revert("Invalid character: not a number");
             }
@@ -76,6 +69,26 @@ contract ConversionsTest is Test  {
 
         return result;
     }
+
+    function uintToString(uint256 value) public pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
+    }
+
 
     function getTimeDifference(uint256 timestamp1, uint256 timestamp2) public pure returns (uint256) {
         require(timestamp1 <= timestamp2, "Timestamp1 should be earlier than or equal to Timestamp2.");

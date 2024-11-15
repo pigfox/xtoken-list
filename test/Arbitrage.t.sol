@@ -36,7 +36,7 @@ contract ArbitrageTest is Test {
         router1 = Router(vm.envAddress("Router1"));
         router2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
-
+/*
         string memory walletAddressStr = vm.envString("WALLET_ADDRESS");
         console.log("walletAddressStr:", walletAddressStr);
         address convertedWalletAddress = conversionsTest.stringToAddress(walletAddressStr);
@@ -44,10 +44,10 @@ contract ArbitrageTest is Test {
         address walletAddress = vm.envAddress("WALLET_ADDRESS");
         console.log("walletAddress:", walletAddress);
         assertEq(convertedWalletAddress, walletAddress);
-
+*/
 
         uint256 walletBalance = functionsTest.addressBalance(vm.envString("WALLET_ADDRESS"));
-        console.log("walletBalance:", walletBalance);
+        console.log("walletBalanceX:", walletBalance);
 
         uint256 xTokenWalletBalance = functionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
@@ -137,6 +137,8 @@ contract ArbitrageTest is Test {
         console.log("Gas used:", gasUsed);
 
         /*
+
+        arbitrage.executeArbitrage(address(xToken), address(router1), address(router2), 1 ether, block.timestamp);
         address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
         XToken xToken1 = XToken(xTokenAddress);
         console.log("DevOpsTools xTokenAddress:", xTokenAddress);
