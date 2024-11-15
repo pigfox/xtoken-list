@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.26;
-import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
-import {Test} from "../lib/forge-std/src/Test.sol";
-import {console} from "../lib/forge-std/src/console.sol";
+import {Test, console} from "../lib/forge-std/src/Test.sol";
 import {Router} from "../src/Router.sol";
 import {XToken} from "../src/XToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
@@ -26,16 +24,11 @@ contract ArbitrageTest is Test {
     uint public expectedTxHashLength = 66;
 
     function setUp() public {
-        //_testMint();
         ownerAddress = vm.envAddress("WALLET_ADDRESS");
         functionsTest = new FunctionsTest();
         xTokenAddress = vm.envAddress("XToken");
         console.log("Owner Address:", ownerAddress);
-        vm.startPrank(ownerAddress);
-        //vm.allowCheatcodes(ownerAddress);
-        //vm.allowCheatcodes(xTokenAddress);
-        //vm.allowCheatcodes(address(this));
-        //xToken = XToken(vm.envAddress("XToken"));
+        //vm.startPrank(ownerAddress);
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
         router1 = Router(vm.envAddress("Router1"));
         router2 = Router(vm.envAddress("Router2"));
@@ -61,11 +54,8 @@ contract ArbitrageTest is Test {
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
 
+        console.log("Setup completed successfully.");
 
-/*
-
-        vm.stopPrank();
-*/
 /*
         console.log("Arbitrage Address:", address(arbitrage));
         console.log("Router1 Address:", address(router1));
