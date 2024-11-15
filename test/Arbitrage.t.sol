@@ -6,11 +6,13 @@ import {XToken} from "../src/XToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
 import {Vault} from "../src/Vault.sol";
 import {FunctionsTest} from "./Functions.sol";
+import {ConversionsTest} from "./Conversions.sol";
 
 contract ArbitrageTest is Test {
     address public ownerAddress;
     address public xTokenAddress;
     FunctionsTest public functionsTest;
+    ConversionsTest public conversionsTest;
     XToken public xToken;
     Router public router1;
     Router public router2;
@@ -26,6 +28,7 @@ contract ArbitrageTest is Test {
     function setUp() public {
         ownerAddress = vm.envAddress("WALLET_ADDRESS");
         functionsTest = new FunctionsTest();
+        conversionsTest = new ConversionsTest();
         xTokenAddress = vm.envAddress("XToken");
         console.log("Owner Address:", ownerAddress);
         //vm.startPrank(ownerAddress);
@@ -33,6 +36,11 @@ contract ArbitrageTest is Test {
         router1 = Router(vm.envAddress("Router1"));
         router2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
+
+        string memory walletAddressStr = vm.envString("WALLET_ADDRESS");
+        address walletAddress = conversionsTest.stringToAddress(walletAddressStr);
+        assertEq(walletAddress, vm.envAddress("WALLET_ADDRESS"));
+
 
         uint256 walletBalance = functionsTest.addressBalance(vm.envString("WALLET_ADDRESS"));
         console.log("walletBalance:", walletBalance);
