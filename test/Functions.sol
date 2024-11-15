@@ -47,14 +47,39 @@ contract FunctionsTest is Test{
     event MintEvent(address indexed tokenAddress, uint256 amount);
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event ApproveEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
+    event BalanceEvent(address indexed walletAddress);
 
     constructor() {
         conversionsTest = new ConversionsTest();
     }
 
-    function walletBalance() public view returns (uint256) {
-        //cast balance <WALLET_ADDRESS> --rpc-url <RPC_URL>
-        return address(this).balance;
+    function addressBalance(string calldata _contractAddress) public returns (uint256) {
+        /*
+        cast balance 0xb04d6a4949fa623629e0ED6bd4Ecb78A8C847693 --rpc-url https://ethereum-sepolia-rpc.publicnode.com
+        5343635260568317891
+        */
+        string[] memory inputs = new string[](5);
+        inputs[0] = "cast";
+        inputs[1] = "balance";
+        inputs[2] = _contractAddress;
+        inputs[3] = "--rpc-url";
+        inputs[4] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        //inputs[5] = "--format";
+        //inputs[6] = "decimal";
+
+        console.log("Executing FFI call:");
+        for (uint i = 0; i < inputs.length; i++) {
+            console.log(inputs[i]);
+        }
+        bytes memory result = vm.ffi(inputs);
+
+        if (result.length == 0) {
+            console.log("Error: cast call returned empty result");
+            revert("Failed to retrieve wallet balance");
+        }
+        console.log("Balance Result: ", string(result));
+
+        return conversionsTest.stringToUint(string(result));
     }
 
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {

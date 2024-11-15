@@ -34,6 +34,9 @@ contract ArbitrageTest is Test {
         router2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
 
+        uint256 walletBalance = functionsTest.addressBalance(vm.envString("WALLET_ADDRESS"));
+        console.log("walletBalance:", walletBalance);
+
         uint256 xTokenWalletBalance = functionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
