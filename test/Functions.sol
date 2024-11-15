@@ -64,13 +64,6 @@ contract FunctionsTest is Test{
         inputs[2] = _contractAddress;
         inputs[3] = "--rpc-url";
         inputs[4] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        //inputs[5] = "--format";
-        //inputs[6] = "decimal";
-
-        console.log("Executing FFI call:");
-        for (uint i = 0; i < inputs.length; i++) {
-            console.log(inputs[i]);
-        }
         bytes memory result = vm.ffi(inputs);
 
         if (result.length == 0) {
