@@ -55,14 +55,6 @@ contract ArbitrageTest is Test {
 
 
 /*
-        bytes memory result  = functions.supplyTokensTo(vm.envString("XToken"), vm.envString("Router1"),1 ether);
-        if (0 < result.length) {
-            bytes memory output = abi.decode(result, (bytes));
-            console.log(string(output));
-        }else{
-            console.log("Error: cast call returned empty result");
-            revert("Failed supplyTokensTo()");
-        }
 
         vm.stopPrank();
 */

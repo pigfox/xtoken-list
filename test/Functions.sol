@@ -43,6 +43,7 @@ contract FunctionsTest is Test{
     }
     ConversionsTest public conversionsTest;
 
+    event GetTokenBalanceOfEvent(address indexed tokenAddress, address indexed holderAddress);
     event MintEvent(address indexed tokenAddress, uint256 amount);
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
 
@@ -52,6 +53,7 @@ contract FunctionsTest is Test{
 
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
         //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
+        emit GetTokenBalanceOfEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_holderAddress));
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
