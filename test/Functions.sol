@@ -48,7 +48,8 @@ contract FunctionsTest is Test{
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event ApproveEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event BalanceEvent(address indexed contractAddress);
-    event SetTokenPriceEvent(address indexed tokenAddress, uint256 price);
+    event SetTokenPriceEvent(address indexed routerAddress, address indexed tokenAddress, uint256 price);
+    event GetTokenPriceEvent(address indexed routerAddress, address indexed tokenAddress);
 
     constructor() {
         conversionsTest = new ConversionsTest();
@@ -220,20 +221,21 @@ contract FunctionsTest is Test{
 
     function setTokenPrice(string calldata _router, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
         // cast send "$Router1" "setTokenPrice(address,uint256)" "$XToken" 9876 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        emit SetTokenPriceEvent(conversionsTest.stringToAddress(_router), conversionsTest.stringToAddress(_tokenAddress), _amount);
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
         inputs[2] = _router;
         inputs[3] = "setTokenPrice(address,uint256)";
         inputs[4] = _tokenAddress;
-        inputs[4] = conversionsTest.uintToString(_amount);
-        inputs[5] = "--json";
-        inputs[6] = "--rpc-url";
-        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        inputs[8] = "--from";
-        inputs[9] = vm.envString("WALLET_ADDRESS");
-        inputs[10] = "--private-key";
-        inputs[11] = vm.envString("PRIVATE_KEY");
+        inputs[5] = conversionsTest.uintToString(_amount);
+        inputs[6] = "--json";
+        inputs[7] = "--rpc-url";
+        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[9] = "--from";
+        inputs[10] = vm.envString("WALLET_ADDRESS");
+        inputs[11] = "--private-key";
+        inputs[12] = vm.envString("PRIVATE_KEY");
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
@@ -259,7 +261,8 @@ contract FunctionsTest is Test{
 
     function getTokenPrice(string calldata _router, string calldata _tokenAddress) public returns (uint256) {
         // cast call "$Router1" "getTokenPrice(address)" "$XToken" --rpc-url "$rpc_url"
-        string[] memory inputs = new string[](8);
+        emit GetTokenPriceEvent(conversionsTest.stringToAddress(_router), conversionsTest.stringToAddress(_tokenAddress));
+        string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
         inputs[2] = _router;

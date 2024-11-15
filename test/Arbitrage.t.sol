@@ -68,6 +68,22 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        (txHash, status) = functionsTest.setTokenPrice(vm.envString("Router1"), vm.envString("XToken"), initialRouter1TokenPrice);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        (txHash, status) = functionsTest.setTokenPrice(vm.envString("Router2"), vm.envString("XToken"), initialRouter2TokenPrice);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        uint256 router1TokenPrice = functionsTest.getTokenPrice(vm.envString("Router1"), vm.envString("XToken"));
+        assertEq(router1TokenPrice, initialRouter1TokenPrice);
+
+        uint256 router2TokenPrice = functionsTest.getTokenPrice(vm.envString("Router2"), vm.envString("XToken"));
+        assertEq(router2TokenPrice, initialRouter2TokenPrice);
+
+
+
 
         console.log("Setup completed successfully.");
 
