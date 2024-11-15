@@ -59,4 +59,11 @@ contract ConversionsTest is Test  {
 
         return result;
     }
+
+    function getTimeDifference(uint256 timestamp1, uint256 timestamp2) public pure returns (uint256) {
+        require(timestamp1 <= timestamp2, "Timestamp1 should be earlier than or equal to Timestamp2.");
+
+        uint256 difference = timestamp2 - timestamp1;
+        return difference; // Difference in seconds
+    }
 }
