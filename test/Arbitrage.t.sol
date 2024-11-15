@@ -56,6 +56,10 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        (txHash, status) = functionsTest.approve(vm.envString("XToken"), vm.envString("Router2"),1 ether);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
 
 
 /*
