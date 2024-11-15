@@ -38,8 +38,12 @@ contract ArbitrageTest is Test {
         vault = Vault(payable(vm.envAddress("Vault")));
 
         string memory walletAddressStr = vm.envString("WALLET_ADDRESS");
-        address walletAddress = conversionsTest.stringToAddress(walletAddressStr);
-        assertEq(walletAddress, vm.envAddress("WALLET_ADDRESS"));
+        console.log("walletAddressStr:", walletAddressStr);
+        address convertedWalletAddress = conversionsTest.stringToAddress(walletAddressStr);
+        console.log("convertedWalletAddress:", convertedWalletAddress);
+        address walletAddress = vm.envAddress("WALLET_ADDRESS");
+        console.log("walletAddress:", walletAddress);
+        assertEq(convertedWalletAddress, walletAddress);
 
 
         uint256 walletBalance = functionsTest.addressBalance(vm.envString("WALLET_ADDRESS"));
