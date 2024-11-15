@@ -153,7 +153,7 @@ contract FunctionsTest is Test{
         return(transactionHashStr,statusStr);
     }
 
-    function approve(string calldata _tokenAddress, string calldata _spenderAddress, uint256 _amount) public returns (string memory, string memory){
+    function approve(string calldata _tokenAddress, string calldata _spenderAddress) public returns (string memory, string memory){
         // cast send "$XToken" "approve(address,uint256)" "$Router1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
@@ -161,7 +161,7 @@ contract FunctionsTest is Test{
         inputs[2] = _tokenAddress;
         inputs[3] = "approve(address,uint256)";
         inputs[4] = _spenderAddress;
-        inputs[5] =  vm.toString(_amount);
+        inputs[5] =  maxAmount(); //vm.toString(_amount);
         inputs[6] = "--json";
         inputs[7] = "--rpc-url";
         inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
@@ -190,5 +190,10 @@ contract FunctionsTest is Test{
         string memory transactionHashStr = vm.toString(transactionHash);
 
         return(transactionHashStr,statusStr);
+    }
+
+    function maxAmount() internal view returns(string memory){
+        string memory maxUint256Str = conversionsTest.toHexString(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        return maxUint256Str;
     }
 }
