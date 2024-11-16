@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-interface IDexRouter {
-    function getTokenBalance(address token) external view returns (uint256);
+interface IDex {
+    function getPrice(address tokenB) external view returns (uint256);
 }
 
 contract Arbitrage {
@@ -25,54 +25,52 @@ contract Arbitrage {
         profitAddress = _profitAddress;
     }
 
-    // Approves the routers to spend XToken
-    function _approveRouters(address xToken, address fromRouter, address toRouter, uint256 amount) internal {
-
-        bool fromRouterApproved = IERC20(xToken).approve(fromRouter, amount);
-        require(fromRouterApproved, "From router approval failed");
-
-        bool toRouterApproved = IERC20(xToken).approve(toRouter, amount);
-        require(toRouterApproved, "To router approval failed");
-
-        bool arbitrageApproved = IERC20(xToken).approve(address(this), type(uint256).max);
-        require(arbitrageApproved, "Arbitrage approval failed");
+    // Approve tokens for DEXes
+    function _approveToken(address token, address dex, uint256 amount) internal {
+        require(IERC20(token).approve(dex, amount), "Token approval failed");
     }
 
-    // Perform arbitrage if profitable
+    // Execute arbitrage if Dex1 price < Dex2 price
     function executeArbitrage(
-        address xTokenAddress,
-        address fromRouterAddress,
-        address toRouterAddress,
-        uint256 amount,
-        uint256 deadline
+        address dex1,
+        address dex2,
+        address xToken,
+        uint256 amount
     ) external onlyOwner {
-        require(block.timestamp <= deadline, "Deadline exceeded");
-        _approveRouters(xTokenAddress, fromRouterAddress, toRouterAddress, amount);
-        uint256 initialBalance = IERC20(xTokenAddress).balanceOf(fromRouterAddress);
-        require(initialBalance >= amount, "Insufficient balance in fromRouter");
+        // Get prices from DEXes
+        uint256 price1 = IDex(dex1).getPrice(xToken); // Price of XToken on Dex1
+        uint256 price2 = IDex(dex2).getPrice(xToken); // Price of XToken on Dex2
 
-        ERC20 token = ERC20(xTokenAddress);
-        token.approve(fromRouterAddress, amount);
-        bool transferredFromRouterAddress = token.transferFrom(fromRouterAddress, address(this), amount);
-        require(transferredFromRouterAddress, "Transfer from fromRouter failed");
+        require(price1 < price2, "No arbitrage opportunity");
 
-        uint256 amountBReceived = IERC20(xTokenAddress).balanceOf(address(this));
-        token.approve(address(this), amount);
-        bool transferredFromArbitrage = token.transferFrom(address(this), toRouterAddress, amountBReceived);
-        require(transferredFromArbitrage, "Transfer from arbitrage failed");
+        // Approve DEXes to spend tokens
+        _approveToken(xToken, dex1, amount);
+        _approveToken(xToken, dex2, amount);
 
-        // Calculate the profit made from the arbitrage trade
-        uint256 finalBalance = IERC20(xTokenAddress).balanceOf(address(this));
-        uint256 profit = finalBalance > initialBalance ? finalBalance - initialBalance : 0;
+        // Transfer from Dex1 to Arbitrage contract
+        require(
+            IERC20(xToken).transferFrom(dex1, address(this), amount),
+            "Transfer from Dex1 failed"
+        );
 
-        // Send the profit to the profit recipient
+        // Swap from Arbitrage to Dex2
+        require(
+            IERC20(xToken).transfer(dex2, amount),
+            "Transfer to Dex2 failed"
+        );
+
+        // Calculate the profit
+        uint256 finalBalance = IERC20(xToken).balanceOf(address(this));
+        uint256 profit = finalBalance > amount ? finalBalance - amount : 0;
+
+        // Send the profit to the profit address
         if (profit > 0) {
-            require(IERC20(xTokenAddress).transfer(profitAddress, profit), "Profit transfer failed");
+            require(IERC20(xToken).transfer(profitAddress, profit), "Profit transfer failed");
         }
     }
 
-    // Withdraw any token from the contract (including XToken and other tokens)
+    // Withdraw any token from the contract
     function withdrawTokens(address token, uint256 amount) external onlyOwner {
-        IERC20(token).transfer(owner, amount);
+        require(IERC20(token).transfer(owner, amount), "Withdrawal failed");
     }
 }
