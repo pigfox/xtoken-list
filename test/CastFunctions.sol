@@ -10,7 +10,7 @@ import {stdJson} from "../lib/forge-std/src/StdJson.sol";
 
 
 
-contract FunctionsTest is Test{
+contract CastFunctionsTest is Test{
     using stdJson for string;
 
     struct LogEntry {
