@@ -10,7 +10,7 @@ interface IERC20 {
 
 contract Router {
     mapping(address => uint256) public tokenPrices;
-    //mapping(address => uint256) public tokenBalances;
+    mapping(address => uint256) public tokenLiquidity;
 
     // Get the balance of a specific token held by this contract
     function getTokenBalance(address token) external view returns (uint256) {
@@ -21,8 +21,16 @@ contract Router {
         tokenPrices[_token] = _balance;
     }
 
-    function getTokenPrice(address _token) external view returns (uint256) {
+    function getTokenPrice(address _token) public view returns (uint256) {
         return tokenPrices[_token];
+    }
+
+    function setTokenLiquidity(address _token, uint256 _balance) public {
+        tokenLiquidity[_token] = _balance;
+    }
+
+    function getLiquidity(address _token) public view returns (uint256) {
+        return tokenLiquidity[_token];
     }
 
     // Generic function to swap a specific amount of `tokenIn` for `tokenOut`

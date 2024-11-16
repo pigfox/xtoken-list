@@ -60,6 +60,10 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        (txHash, status) = functionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("Router2"),1 ether);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
         (txHash, status) = functionsTest.approve(vm.envString("XToken"), vm.envString("Router1"));
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
@@ -86,68 +90,33 @@ contract ArbitrageTest is Test {
 
 
         console.log("Setup completed successfully.");
-
-/*
-        console.log("Arbitrage Address:", address(arbitrage));
-        console.log("Router1 Address:", address(router1));
-        console.log("Router2 Address:", address(router2));
-        console.log("Vault Address:", address(vault));
-        console.log("XToken Address:", address(xToken));
-        _initializeTokenPrices();
-        _addLiquidityAndApprovals();
-        vm.stopPrank();
-        console.log("Setup completed successfully.");
-        */
-    }
-/*
-
-    // Helper function to initialize and verify token prices
-    function _initializeTokenPrices() internal {
-        console.log("owner:", ownerAddress);
-        console.log("msg.sender:", msg.sender);
-        //require(msg.sender == owner, "Not authorized");
-        console.log("Function Initialize Token Prices");
-        //xToken.approve(address(router1), type(uint256).max);
-        //xToken.approve(address(router2), type(uint256).max);
-        router1.setTokenPrice(address(xToken), initialRouter1TokenPrice);
-        router2.setTokenPrice(address(xToken), initialRouter2TokenPrice);
-
-        uint256 router1TokenPrice = router1.getTokenPrice(address(xToken));
-        uint256 router2TokenPrice = router2.getTokenPrice(address(xToken));
-
-        require(router1TokenPrice == initialRouter1TokenPrice, "Router1 token price mismatch");
-        require(router2TokenPrice == initialRouter2TokenPrice, "Router2 token price mismatch");
-
-        console.log("@router1TokenPrice:", router1TokenPrice);
-        console.log("@router2TokenPrice:", router2TokenPrice);
     }
 
-    // Helper function to add liquidity and set approvals
-    function _addLiquidityAndApprovals() internal {
-        xToken.supplyTokenTo(address(this), initialArbitrageTokens);
-        uint256 thisBalance = xToken.getTokenBalanceAt(address(this));
-        assertEq(xToken.getTokenBalanceAt(address(this)), initialArbitrageTokens);
-
-        uint256 router1Tokens = thisBalance / 2;
-        console.log("@78 router1Tokens:", router1Tokens);
-        xToken.supplyTokenTo(address(router1), router1Tokens);
-        uint256 router1Balance = xToken.getTokenBalanceAt(address(router1));
-        console.log("@80 router1Balance:", router1Balance);
-
-        uint256 router2Tokens = thisBalance / 4;
-        xToken.supplyTokenTo(address(router2), thisBalance / 4);
-        uint256 router2Balance = xToken.getTokenBalanceAt(address(router2));
-        assertEq(router2Balance, router2Tokens);
-
-        console.log("Initial token balances:");
-        console.log("XToken@thisBalance:", thisBalance);
-        console.log("router1Balance:", router1Balance);
-        console.log("router2Balance:", router2Balance);
-    }
-*/
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
+        uint256 router1TokenPrice = functionsTest.getTokenPrice(vm.envString("Router1"), vm.envString("XToken"));
+        console.log("--router1TokenPrice:", router1TokenPrice);
+        uint256 router2TokenPrice = functionsTest.getTokenPrice(vm.envString("Router2"), vm.envString("XToken"));
+        console.log("--router2TokenPrice:", router2TokenPrice);
+
+        uint256 router1TokenBalance = functionsTest.getTokenBalanceOf(vm.envString("Router1"), vm.envString("XToken"));
+        console.log("--router1TokenBalance:", router1TokenBalance);
+        uint256 router2TokenBalance = functionsTest.getTokenBalanceOf(vm.envString("Router2"), vm.envString("XToken"));
+        console.log("--router2TokenBalance:", router2TokenBalance);
+
+        if (router1TokenPrice == router2TokenPrice) {
+            revert("Prices are equal");
+        }
+
+        if (router1TokenPrice < router2TokenPrice){
+            console.log("Buy from router1 sell to router2");
+            arbitrage.executeArbitrage(address(xToken), address(router1), address(router2), router1TokenBalance, block.timestamp);
+        }
+        if (router2TokenPrice < router1TokenPrice){
+            console.log("Buy from router2 sell to router1");
+            arbitrage.executeArbitrage(address(xToken), address(router2), address(router1), router2TokenBalance, block.timestamp);
+        }
 
         uint256 gasUsed = gasStart - gasleft();
         console.log("Gas used:", gasUsed);
