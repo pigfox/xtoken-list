@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.26;
 import {Test, console} from "../lib/forge-std/src/Test.sol";
-import {Router} from "../src/Router.sol";
+import {Dex} from "../src/Dex.sol";
 import {XToken} from "../src/XToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
 import {Vault} from "../src/Vault.sol";
 import {CastFunctionsTest} from "./CastFunctions.sol";
 import {ConversionsTest} from "./Conversions.sol";
 
-contract ArbitrageTest is Test {
+contract SingleArbitrageTest is Test {
     address public ownerAddress;
     address public xTokenAddress;
     CastFunctionsTest public castFunctionsTest;
     ConversionsTest public conversionsTest;
     XToken public xToken;
-    Router public router1;
-    Router public router2;
+    Dex public dex1;
+    Dex public dex2;
     Arbitrage public arbitrage;
     Vault public vault;
     uint256 public maxTokenSupply = 10 ether;
@@ -33,8 +33,8 @@ contract ArbitrageTest is Test {
         console.log("Owner Address:", ownerAddress);
         //vm.startPrank(ownerAddress);
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
-        router1 = Router(vm.envAddress("Router1"));
-        router2 = Router(vm.envAddress("Router2"));
+        dex1 = Router(vm.envAddress("Router1"));
+        dex2 = Router(vm.envAddress("Router2"));
         vault = Vault(payable(vm.envAddress("Vault")));
 /*
         string memory walletAddressStr = vm.envString("WALLET_ADDRESS");
@@ -111,11 +111,11 @@ contract ArbitrageTest is Test {
 
         if (router1TokenPrice < router2TokenPrice){
             console.log("Buy from router1 sell to router2");
-            arbitrage.executeArbitrage(address(xToken), address(router1), address(router2), router1TokenBalance, block.timestamp);
+            arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), router1TokenBalance, block.timestamp);
         }
         if (router2TokenPrice < router1TokenPrice){
             console.log("Buy from router2 sell to router1");
-            arbitrage.executeArbitrage(address(xToken), address(router2), address(router1), router2TokenBalance, block.timestamp);
+            arbitrage.executeArbitrage(address(xToken), address(dex2), address(dex1), router2TokenBalance, block.timestamp);
         }
 
         uint256 gasUsed = gasStart - gasleft();

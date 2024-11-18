@@ -7,7 +7,7 @@ forge clean
 
 #contract="MsgSender"
 #function="test_run"
-contract="Arbitrage"
+contract="SingleTokenArbitrage"
 function="executeArbitrage"
 
 rpc_url=https://ethereum-sepolia-rpc.publicnode.com
