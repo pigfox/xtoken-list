@@ -64,11 +64,15 @@ contract SingleTokenArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        uint256 SingleTokenDex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("SingleTokenDex1"));
+        assertEq(SingleTokenDex1TokenBalance, initialSingleTokenDex1TokenSupply);
+
         (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex2"),initialSingleTokenDex2TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        //test
+        uint256 SingleTokenDex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("SingleTokenDex2"));
+        assertEq(SingleTokenDex2TokenBalance, initialSingleTokenDex2TokenSupply);
 
         (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("SingleTokenDex1"));
         assertEq(expectedStatusOk, status);
