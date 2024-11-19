@@ -19,8 +19,12 @@ contract SingleTokenArbitrageTest is Test {
     SingleTokenArbitrage public singleTokenArbitrage;
     Vault public vault;
     uint256 public maxTokenSupply = 10 ether;
+    uint256 public initialSingleTokenDex1TokenSupply = 3e18;
+    uint256 public initialSingleTokenDex2TokenSupply = 2e18;
+
     uint256 public initialSingleTokenDex1TokenPrice = 120;
     uint256 public initialSingleTokenDex2TokenPrice = 80;
+
     uint256 public initialArbitrageTokens = 5e18;
     string public expectedStatusOk = "0x1";
     uint public expectedTxHashLength = 66;
@@ -56,13 +60,15 @@ contract SingleTokenArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex1"),1 ether);
+        (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex1"),initialSingleTokenDex1TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex2"),1 ether);
+        (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex2"),initialSingleTokenDex2TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        //test
 
         (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("SingleTokenDex1"));
         assertEq(expectedStatusOk, status);
@@ -91,7 +97,7 @@ contract SingleTokenArbitrageTest is Test {
 
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
-        /*
+/*
         uint256 gasStart = gasleft();
         uint256 SingleTokenDex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("SingleTokenDex1"), vm.envString("XToken"));
         console.log("--SingleTokenDex1TokenPrice:", SingleTokenDex1TokenPrice);
