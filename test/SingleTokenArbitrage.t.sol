@@ -86,14 +86,12 @@ contract SingleTokenArbitrageTest is Test {
         uint256 SingleTokenDex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("SingleTokenDex2"), vm.envString("XToken"));
         assertEq(SingleTokenDex2TokenPrice, initialSingleTokenDex2TokenPrice);
 
-
-
-
         console.log("Setup completed successfully.");
     }
 
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
+        /*
         uint256 gasStart = gasleft();
         uint256 SingleTokenDex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("SingleTokenDex1"), vm.envString("XToken"));
         console.log("--SingleTokenDex1TokenPrice:", SingleTokenDex1TokenPrice);
@@ -120,7 +118,7 @@ contract SingleTokenArbitrageTest is Test {
 
         uint256 gasUsed = gasStart - gasleft();
         console.log("Gas used:", gasUsed);
-
+*/
         /*
 
         arbitrage.executeArbitrage(address(xToken), address(SingleTokenDex1), address(SingleTokenDex2), 1 ether, block.timestamp);

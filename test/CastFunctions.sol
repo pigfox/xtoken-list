@@ -48,8 +48,8 @@ contract CastFunctionsTest is Test{
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event ApproveEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event BalanceEvent(address indexed contractAddress);
-    event SetTokenPriceEvent(address indexed routerAddress, address indexed tokenAddress, uint256 price);
-    event GetTokenPriceEvent(address indexed routerAddress, address indexed tokenAddress);
+    event SetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress, uint256 price);
+    event GetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress);
 
     constructor() {
         conversionsTest = new ConversionsTest();
@@ -179,7 +179,7 @@ contract CastFunctionsTest is Test{
     }
 
     function approve(string calldata _tokenAddress, string calldata _spenderAddress) public returns (string memory, string memory){
-        // cast send "$XToken" "approve(address,uint256)" "$Router1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        // cast send "$XToken" "approve(address,uint256)" "$dex1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         uint256 amount = type(uint256).max;
         emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_spenderAddress), amount);
         string[] memory inputs = new string[](13);
@@ -219,13 +219,13 @@ contract CastFunctionsTest is Test{
         return(transactionHashStr,statusStr);
     }
 
-    function setTokenPrice(string calldata _router, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
-        // cast send "$Router1" "setTokenPrice(address,uint256)" "$XToken" 9876 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-        emit SetTokenPriceEvent(conversionsTest.stringToAddress(_router), conversionsTest.stringToAddress(_tokenAddress), _amount);
+    function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+        // cast send "$dex1" "setTokenPrice(address,uint256)" "$XToken" 9876 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        emit SetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress), _amount);
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
-        inputs[2] = _router;
+        inputs[2] = _dex;
         inputs[3] = "setTokenPrice(address,uint256)";
         inputs[4] = _tokenAddress;
         inputs[5] = conversionsTest.uintToString(_amount);
@@ -259,14 +259,15 @@ contract CastFunctionsTest is Test{
         return(transactionHashStr,statusStr);
     }
 
-    function getTokenPrice(string calldata _router, string calldata _tokenAddress) public returns (uint256) {
-        // cast call "$Router1" "getTokenPrice(address)" "$XToken" --rpc-url "$rpc_url"
-        emit GetTokenPriceEvent(conversionsTest.stringToAddress(_router), conversionsTest.stringToAddress(_tokenAddress));
+    function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public returns (uint256) {
+        // cast call 0xeb442627f7a67a1735F06C254B693FF279BF27E7 getPrice(address) 0xBc35bD49d5de2929522E5Cc3F40460D74d24c24C --rpc-url https://ethereum-sepolia-rpc.publicnode.com
+        //0x0000000000000000000000000000000000000000000000000000000000000078
+        emit GetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress));
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
-        inputs[2] = _router;
-        inputs[3] = "getTokenPrice(address)";
+        inputs[2] = _dex;
+        inputs[3] = "getPrice(address)";
         inputs[4] = _tokenAddress;
         inputs[5] = "--rpc-url";
         inputs[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");
