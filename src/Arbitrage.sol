@@ -32,11 +32,14 @@ contract Arbitrage {
 
     // Execute arbitrage if Dex1 price < Dex2 price
     function executeArbitrage(
+        address xToken,
         address dex1,
         address dex2,
-        address xToken,
-        uint256 amount
+        uint256 amount,
+        uint256 deadline
     ) external onlyOwner {
+        // Check if the transaction is within the deadline
+        require(block.timestamp <= deadline + 300, "Transaction deadline exceeded");
         // Get prices from DEXes
         uint256 price1 = IDex(dex1).getPrice(xToken); // Price of XToken on Dex1
         uint256 price2 = IDex(dex2).getPrice(xToken); // Price of XToken on Dex2

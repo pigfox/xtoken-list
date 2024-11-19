@@ -37,8 +37,12 @@ contract SingleTokenArbitrage {
         address token,
         address dex1,
         address dex2,
-        uint256 amount
+        uint256 amount,
+        uint256 deadline
     ) external onlyOwner {
+        // Check if the transaction is within the deadline
+        require(block.timestamp <= deadline + 300, "Transaction deadline exceeded");
+
         uint256 price1 = IDexRouter(dex1).getPrice(token); // Get price on Dex1
         uint256 price2 = IDexRouter(dex2).getPrice(token); // Get price on Dex2
 
