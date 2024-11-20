@@ -49,8 +49,16 @@ contract SingleTokenArbitrageTest is Test {
         console.log("walletAddress:", walletAddress);
         assertEq(convertedWalletAddress, walletAddress);
 */
-        (string memory txHash, string memory  status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex1"), vm.envString("XToken"), vm.envString("TrashCan"));
-        assertEq(expectedStatusOk, status);
+        (string memory txHash, string memory status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex1"), vm.envString("XToken"), vm.envString("TrashCan"));
+        if (keccak256(abi.encodePacked(expectedStatusOk)) != keccak256(abi.encodePacked(status))) {
+            revert("Error emptying SingleTokenDex1");
+        }
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        (txHash, status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex2"), vm.envString("XToken"), vm.envString("TrashCan"));
+        if (keccak256(abi.encodePacked(expectedStatusOk)) != keccak256(abi.encodePacked(status))) {
+            revert("Error emptying SingleTokenDex2");
+        }
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
         (txHash, status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex2"), vm.envString("XToken"), vm.envString("TrashCan"));

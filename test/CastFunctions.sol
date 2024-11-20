@@ -8,8 +8,6 @@ import {Test, console} from "../lib/forge-std/src/Test.sol";
 import {XToken} from "../src/XToken.sol";
 import {stdJson} from "../lib/forge-std/src/StdJson.sol";
 
-
-
 contract CastFunctionsTest is Test{
     using stdJson for string;
 
@@ -42,6 +40,8 @@ contract CastFunctionsTest is Test{
         address contractAddress; // Nullable field represented as an address
     }
     ConversionsTest public conversionsTest;
+    string public expectedStatusOk = "0x1";
+    uint public expectedTxHashLength = 66;
 
     event GetTokenBalanceOfEvent(address indexed tokenAddress, address indexed holderAddress);
     event MintEvent(address indexed tokenAddress, uint256 amount);
@@ -283,6 +283,17 @@ contract CastFunctionsTest is Test{
 
     function emptyDex(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress) public returns (string memory, string memory){
         // cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
+        require(bytes(_receiverAddress).length == 42, "Error: Invalid receiver address");
+        require(bytes(_tokenAddress).length == 42, "Error: Invalid token address");
+        require(bytes(_dex).length == 42, "Error: Invalid dex address");
+
+        // Step 1: Approve the transfer of tokens if not already approved
+        (string memory txHash, string memory statusStr) = approve(_tokenAddress, _dex);
+        assertEq(expectedStatusOk, statusStr);
+        console.log("Approval statusStr1: ", statusStr);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+        console.log("Approval transaction hash1: ", txHash);
+
         string[] memory inputsBalance = new string[](7);
         inputsBalance[0] = "cast";
         inputsBalance[1] = "call";
@@ -300,6 +311,7 @@ contract CastFunctionsTest is Test{
         }
 
         uint256 balance = abi.decode(balanceResult, (uint256));
+        payable(conversionsTest.stringToAddress(_receiverAddress)).transfer(address(this).balance);
 
         // Dynamically build the inputs for the `cast send` command
         string[] memory inputsSend = new string[](13);
@@ -331,10 +343,13 @@ contract CastFunctionsTest is Test{
         uint256[] memory statusValues = abi.decode(statusBytes, (uint256[]));
         uint256 statusInt = statusValues[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        string memory statusStr = conversionsTest.toHexString(statusInt);
+        statusStr = conversionsTest.toHexString(statusInt);
 
         bytes memory transactionHashBytes = sendJson.parseRaw(".transactionHash");
         string memory transactionHashStr = vm.toString(transactionHashBytes);
+
+        console.log("Approval statusStr3: ", statusStr);
+        console.log("Approval transaction hash3: ", txHash);
 
         return (transactionHashStr, statusStr);
     }
