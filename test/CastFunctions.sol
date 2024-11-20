@@ -289,10 +289,8 @@ contract CastFunctionsTest is Test{
 
         // Step 1: Approve the transfer of tokens if not already approved
         (string memory txHash, string memory statusStr) = approve(_tokenAddress, _dex);
-        assertEq(expectedStatusOk, statusStr);
-        console.log("Approval statusStr1: ", statusStr);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-        console.log("Approval transaction hash1: ", txHash);
+        require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
+        require(expectedTxHashLength == bytes(txHash).length, "txHash length is not as expected");
 
         string[] memory inputsBalance = new string[](7);
         inputsBalance[0] = "cast";
@@ -347,6 +345,8 @@ contract CastFunctionsTest is Test{
 
         bytes memory transactionHashBytes = sendJson.parseRaw(".transactionHash");
         string memory transactionHashStr = vm.toString(transactionHashBytes);
+        require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
+        require(expectedTxHashLength == bytes(transactionHashStr).length, "txHash length is not as expected");
 
         console.log("Approval statusStr3: ", statusStr);
         console.log("Approval transaction hash3: ", txHash);
