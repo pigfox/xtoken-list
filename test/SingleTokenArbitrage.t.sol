@@ -49,6 +49,13 @@ contract SingleTokenArbitrageTest is Test {
         console.log("walletAddress:", walletAddress);
         assertEq(convertedWalletAddress, walletAddress);
 */
+        (string memory txHash, string memory  status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex1"), vm.envString("XToken"), vm.envString("TrashCan"));
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        (txHash, status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex2"), vm.envString("XToken"), vm.envString("TrashCan"));
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
 
         uint256 walletBalance = castFunctionsTest.addressBalance(vm.envString("WALLET_ADDRESS"));
         console.log("walletBalanceX:", walletBalance);
@@ -56,7 +63,7 @@ contract SingleTokenArbitrageTest is Test {
         uint256 xTokenWalletBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
-        (string memory txHash, string memory status) = castFunctionsTest.mint(vm.envString("XToken"), 1 ether);
+        (txHash, status) = castFunctionsTest.mint(vm.envString("XToken"), 1 ether);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 

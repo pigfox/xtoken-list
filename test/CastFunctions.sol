@@ -280,4 +280,66 @@ contract CastFunctionsTest is Test{
 
         return abi.decode(result, (uint256));
     }
+
+    function emptyDex(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress)
+    public
+    returns (string memory, string memory)
+    {
+        // cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
+        string[] memory inputsBalance = new string[](7);
+        inputsBalance[0] = "cast";
+        inputsBalance[1] = "call";
+        inputsBalance[2] = _tokenAddress;
+        inputsBalance[3] = "balanceOf(address)";
+        inputsBalance[4] = _dex;
+        inputsBalance[5] = "--rpc-url";
+        inputsBalance[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+
+        // Call `cast call` to get the balance
+        bytes memory balanceResult = vm.ffi(inputsBalance);
+        if (0 == balanceResult.length) {
+            console.log("Error: cast call for balance returned empty result");
+            revert("Error: cast call for balance returned empty result");
+        }
+
+        uint256 balance = abi.decode(balanceResult, (uint256));
+
+        // Dynamically build the inputs for the `cast send` command
+        string[] memory inputsSend = new string[](13);
+        inputsSend[0] = "cast";
+        inputsSend[1] = "send";
+        inputsSend[2] = _tokenAddress;
+        inputsSend[3] = "transfer(address,uint256)";
+        inputsSend[4] = _receiverAddress;
+        inputsSend[5] = conversionsTest.uintToString(balance);
+        inputsSend[6] = "--json";
+        inputsSend[7] = "--rpc-url";
+        inputsSend[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputsSend[9] = "--from";
+        inputsSend[10] = vm.envString("WALLET_ADDRESS");
+        inputsSend[11] = "--private-key";
+        inputsSend[12] = vm.envString("PRIVATE_KEY");
+
+        // Call `cast send` to transfer the tokens
+        bytes memory sendResult = vm.ffi(inputsSend);
+        if (0 == sendResult.length) {
+            console.log("Error: cast send returned empty result");
+            revert("Error: cast send returned empty result");
+        }
+
+        string memory sendJson = string(sendResult);
+
+        // Parse the results
+        bytes memory statusBytes = sendJson.parseRaw(".status");
+        uint256[] memory statusValues = abi.decode(statusBytes, (uint256[]));
+        uint256 statusInt = statusValues[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory statusStr = conversionsTest.toHexString(statusInt);
+
+        bytes memory transactionHashBytes = sendJson.parseRaw(".transactionHash");
+        string memory transactionHashStr = vm.toString(transactionHashBytes);
+
+        return (transactionHashStr, statusStr);
+    }
+
 }
