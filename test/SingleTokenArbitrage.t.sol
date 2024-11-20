@@ -70,10 +70,10 @@ contract SingleTokenArbitrageTest is Test {
         (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex1"),initialSingleTokenDex1TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
-        console.log("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
+
         uint256 SingleTokenDex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("SingleTokenDex1"));
         assertEq(SingleTokenDex1TokenBalance, initialSingleTokenDex1TokenSupply);
-console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+
         (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex2"),initialSingleTokenDex2TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
@@ -103,7 +103,7 @@ console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
         uint256 SingleTokenDex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("SingleTokenDex2"), vm.envString("XToken"));
         assertEq(SingleTokenDex2TokenPrice, initialSingleTokenDex2TokenPrice);
 
-        console.log("Setup completed successfully.");
+        console.log("----------------------->Setup completed successfully<------------------------");
     }
 
     function test_executeArbitrage()public{
