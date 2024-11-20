@@ -281,10 +281,7 @@ contract CastFunctionsTest is Test{
         return abi.decode(result, (uint256));
     }
 
-    function emptyDex(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress)
-    public
-    returns (string memory, string memory)
-    {
+    function emptyDex(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress) public returns (string memory, string memory){
         // cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         string[] memory inputsBalance = new string[](7);
         inputsBalance[0] = "cast";

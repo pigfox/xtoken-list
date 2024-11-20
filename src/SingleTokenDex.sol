@@ -58,7 +58,7 @@ contract SingleTokenDex {
     function getPrice(address token) external view returns (uint256) {
         return tokenPrices[token];
     }
-
+/*
     // Swap one token for another (XToken -> TokenB or vice versa)
     function swapTokens(address fromToken, address toToken, uint256 amountIn) external {
         require(amountIn > 0, "Amount must be greater than 0");
@@ -86,7 +86,7 @@ contract SingleTokenDex {
 
         emit TokenSwapped(fromToken, toToken, amountIn, amountOut);
     }
-
+*/
     // Function to view reserves of a specific token
     function getReserve(address token) external view returns (uint256) {
         return reserves[token];

@@ -63,17 +63,17 @@ contract SingleTokenArbitrageTest is Test {
         uint256 xTokenWalletBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
 
-        (txHash, status) = castFunctionsTest.mint(vm.envString("XToken"), 1 ether);
+        (txHash, status) = castFunctionsTest.mint(vm.envString("XToken"), initialArbitrageTokens);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
         (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex1"),initialSingleTokenDex1TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
-
+        console.log("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
         uint256 SingleTokenDex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("SingleTokenDex1"));
         assertEq(SingleTokenDex1TokenBalance, initialSingleTokenDex1TokenSupply);
-
+console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
         (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex2"),initialSingleTokenDex2TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
