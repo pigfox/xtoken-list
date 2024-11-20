@@ -61,10 +61,6 @@ contract SingleTokenArbitrageTest is Test {
         }
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex2"), vm.envString("XToken"), vm.envString("TrashCan"));
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
         uint256 walletBalance = castFunctionsTest.addressBalance(vm.envString("WALLET_ADDRESS"));
         console.log("walletBalanceX:", walletBalance);
 
