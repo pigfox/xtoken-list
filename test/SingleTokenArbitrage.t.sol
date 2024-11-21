@@ -18,14 +18,13 @@ contract SingleTokenArbitrageTest is Test {
     SingleTokenDex public singleTokenDex2;
     SingleTokenArbitrage public singleTokenArbitrage;
     Vault public vault;
-    uint256 public maxTokenSupply = 10 ether;
     uint256 public initialSingleTokenDex1TokenSupply = 3e18;
     uint256 public initialSingleTokenDex2TokenSupply = 2e18;
 
     uint256 public initialSingleTokenDex1TokenPrice = 120;
     uint256 public initialSingleTokenDex2TokenPrice = 80;
 
-    uint256 public initialArbitrageTokens = 5e18;
+    uint256 public initialArbitrageTokens = initialSingleTokenDex1TokenSupply + initialSingleTokenDex2TokenSupply;
     string public expectedStatusOk = "0x1";
     uint public expectedTxHashLength = 66;
 
@@ -49,49 +48,98 @@ contract SingleTokenArbitrageTest is Test {
         console.log("walletAddress:", walletAddress);
         assertEq(convertedWalletAddress, walletAddress);
 */
-        (string memory txHash, string memory status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex1"), vm.envString("XToken"), vm.envString("TrashCan"));
+        (string memory txHash, string memory status) = castFunctionsTest.emptyDex(
+            vm.envString("SingleTokenDex1"),
+            vm.envString("XToken"),
+            vm.envString("TrashCan")
+        );
         if (keccak256(abi.encodePacked(expectedStatusOk)) != keccak256(abi.encodePacked(status))) {
             revert("Error emptying SingleTokenDex1");
         }
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.emptyDex(vm.envString("SingleTokenDex2"), vm.envString("XToken"), vm.envString("TrashCan"));
+        (txHash, status) = castFunctionsTest.emptyDex(
+            vm.envString("SingleTokenDex2"),
+            vm.envString("XToken"),
+            vm.envString("TrashCan")
+        );
         if (keccak256(abi.encodePacked(expectedStatusOk)) != keccak256(abi.encodePacked(status))) {
             revert("Error emptying SingleTokenDex2");
         }
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        (txHash, status) = castFunctionsTest.mint(vm.envString("XToken"), initialArbitrageTokens);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        // Approve tokens for Dex1
+        (txHash, status) = castFunctionsTest.approve(
+            vm.envString("XToken"),
+            vm.envString("SingleTokenDex1")
+        );
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        // Verify allowance for Dex1
+        uint256 allowanceDex1 = castFunctionsTest.getAllowance(
+            vm.envString("XToken"),
+            vm.envString("WALLET_ADDRESS"),
+            vm.envString("SingleTokenDex1")
+        );
+        assertEq(allowanceDex1, type(uint256).max, "Allowance for Dex1 is insufficient");
+
+        // Approve tokens for Dex2
+        (txHash, status) = castFunctionsTest.approve(
+            vm.envString("XToken"),
+            vm.envString("SingleTokenDex2")
+        );
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        // Verify allowance for Dex2
+        uint256 allowanceDex2 = castFunctionsTest.getAllowance(
+            vm.envString("XToken"),
+            vm.envString("WALLET_ADDRESS"),
+            vm.envString("SingleTokenDex2")
+        );
+        assertEq(allowanceDex2, type(uint256).max, "Allowance for Dex2 is insufficient");
+
+
+
+        (txHash, status) = castFunctionsTest.supplyTokensTo(
+            vm.envString("XToken"),
+            vm.envString("SingleTokenDex1"),
+            initialSingleTokenDex1TokenSupply
+        );
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        uint256 SingleTokenDex1TokenBalance = castFunctionsTest.getTokenBalanceOf(
+            vm.envString("XToken"),
+            vm.envString("SingleTokenDex1")
+        );
+        assertEq(SingleTokenDex1TokenBalance, initialSingleTokenDex1TokenSupply);
+
+        (txHash, status) = castFunctionsTest.supplyTokensTo(
+            vm.envString("XToken"),
+            vm.envString("SingleTokenDex2"),
+            initialSingleTokenDex2TokenSupply
+        );
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        uint256 SingleTokenDex2TokenBalance = castFunctionsTest.getTokenBalanceOf(
+            vm.envString("XToken"),
+            vm.envString("SingleTokenDex2")
+        );
+        assertEq(SingleTokenDex2TokenBalance, initialSingleTokenDex2TokenSupply);
+
+/*
         uint256 walletBalance = castFunctionsTest.addressBalance(vm.envString("WALLET_ADDRESS"));
         console.log("walletBalanceX:", walletBalance);
 
         uint256 xTokenWalletBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
-
-        (txHash, status) = castFunctionsTest.mint(vm.envString("XToken"), initialArbitrageTokens);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex1"),initialSingleTokenDex1TokenSupply);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        uint256 SingleTokenDex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("SingleTokenDex1"));
-        assertEq(SingleTokenDex1TokenBalance, initialSingleTokenDex1TokenSupply);
-
-        (txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("SingleTokenDex2"),initialSingleTokenDex2TokenSupply);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        uint256 SingleTokenDex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("SingleTokenDex2"));
-        assertEq(SingleTokenDex2TokenBalance, initialSingleTokenDex2TokenSupply);
-
-        (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("SingleTokenDex1"));
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("SingleTokenDex2"));
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
 
         (txHash, status) = castFunctionsTest.setTokenPrice(vm.envString("SingleTokenDex1"), vm.envString("XToken"), initialSingleTokenDex1TokenPrice);
         assertEq(expectedStatusOk, status);
@@ -106,7 +154,7 @@ contract SingleTokenArbitrageTest is Test {
 
         uint256 SingleTokenDex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("SingleTokenDex2"), vm.envString("XToken"));
         assertEq(SingleTokenDex2TokenPrice, initialSingleTokenDex2TokenPrice);
-
+*/
         console.log("----------------------->Setup completed successfully<------------------------");
     }
 

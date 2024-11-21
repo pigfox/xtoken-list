@@ -354,4 +354,30 @@ contract CastFunctionsTest is Test{
         return (transactionHashStr, statusStr);
     }
 
+    function getAllowance(
+        string calldata _tokenAddress,
+        string calldata _ownerAddress,
+        string calldata _spenderAddress
+    ) public returns (uint256) {
+        // cast call "$XToken" "allowance(address,address)" "$owner" "$spender" --rpc-url "$rpc_url"
+        string[] memory inputs = new string[](9);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = _tokenAddress;
+        inputs[3] = "allowance(address,address)";
+        inputs[4] = _ownerAddress;
+        inputs[5] = _spenderAddress;
+        inputs[6] = "--json";
+        inputs[7] = "--rpc-url";
+        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+
+        bytes memory result = vm.ffi(inputs);
+        if (0 == result.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        return abi.decode(result, (uint256));
+    }
+
 }
