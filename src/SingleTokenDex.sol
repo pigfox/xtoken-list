@@ -55,7 +55,7 @@ contract SingleTokenDex {
     }
 
     // Fetch the price of a token
-    function getPrice(address token) external view returns (uint256) {
+    function getTokenPrice(address token) external view returns (uint256) {
         return tokenPrices[token];
     }
 

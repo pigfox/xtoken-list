@@ -10,4 +10,18 @@ import {stdJson} from "../lib/forge-std/src/StdJson.sol";
 
 contract SingleTokenDexCastFctnsTest is Test{
     using stdJson for string;
+
+    ConversionsTest public conversionsTest;
+    string public expectedStatusOk = "0x1";
+    uint public expectedTxHashLength = 66;
+
+    constructor() {
+        conversionsTest = new ConversionsTest();
+    }
+
+    //depositTokens()
+    //withdrawTokens()
+    //setTokenPrice()
+    //getTokenPrice()
+    //getReserve()
 }
