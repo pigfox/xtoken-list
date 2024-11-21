@@ -58,35 +58,7 @@ contract SingleTokenDex {
     function getPrice(address token) external view returns (uint256) {
         return tokenPrices[token];
     }
-/*
-    // Swap one token for another (XToken -> TokenB or vice versa)
-    function swapTokens(address fromToken, address toToken, uint256 amountIn) external {
-        require(amountIn > 0, "Amount must be greater than 0");
-        uint256 fromTokenPrice = tokenPrices[fromToken];
-        uint256 toTokenPrice = tokenPrices[toToken];
 
-        require(fromTokenPrice > 0 && toTokenPrice > 0, "Token prices not set");
-
-        // Calculate the amount of the destination token that can be obtained
-        uint256 amountOut = (amountIn * fromTokenPrice) / toTokenPrice;
-
-        // Check if there are enough reserves to execute the swap
-        require(reserves[fromToken] >= amountIn, "Insufficient reserve of fromToken");
-        require(reserves[toToken] >= amountOut, "Insufficient reserve of toToken");
-
-        // Perform the swap
-        reserves[fromToken] -= amountIn;
-        reserves[toToken] += amountOut;
-
-        bool success = IERC20(fromToken).transferFrom(msg.sender, address(this), amountIn);
-        require(success, "From token transfer failed");
-
-        success = IERC20(toToken).transfer(msg.sender, amountOut);
-        require(success, "To token transfer failed");
-
-        emit TokenSwapped(fromToken, toToken, amountIn, amountOut);
-    }
-*/
     // Function to view reserves of a specific token
     function getReserve(address token) external view returns (uint256) {
         return reserves[token];
