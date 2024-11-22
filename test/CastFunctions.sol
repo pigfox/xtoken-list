@@ -20,6 +20,7 @@ contract CastFunctionsTest is Test{
     event BalanceEvent(address indexed contractAddress);
     event SetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress, uint256 price);
     event GetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress);
+    event GetAllowanceEvent(address indexed tokenAddress, address indexed ownerAddress, address indexed spenderAddress);
 
     constructor() {
         conversionsTest = new ConversionsTest();
@@ -252,7 +253,7 @@ contract CastFunctionsTest is Test{
             console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
-
+        emit GetAllowanceEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_ownerAddress), conversionsTest.stringToAddress(_spenderAddress));
         return abi.decode(result, (uint256));
     }
 
