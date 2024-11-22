@@ -147,7 +147,6 @@ contract CastFunctionsTest is Test{
     function approve(string calldata _tokenAddress, string calldata _spenderAddress) public returns (string memory, string memory){
         // cast send "$XToken" "approve(address,uint256)" "$dex1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         uint256 amount = type(uint256).max;
-        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_spenderAddress), amount);
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
@@ -168,21 +167,16 @@ contract CastFunctionsTest is Test{
             console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
-        string memory json = string(castResult);
 
         string memory result = string(
-            abi.encodePacked(json)
+            abi.encodePacked(string(castResult))
         );
 
-        bytes memory status = result.parseRaw(".status");
-        uint256[] memory values = abi.decode(status, (uint256[]));
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        string memory statusStr = conversionsTest.toHexString(statusInt);
-        bytes memory transactionHash = result.parseRaw(".transactionHash");
-        string memory transactionHashStr = vm.toString(transactionHash);
-
-        return(transactionHashStr,statusStr);
+        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_spenderAddress), amount);
+        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
     function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
