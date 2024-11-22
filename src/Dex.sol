@@ -21,11 +21,11 @@ contract Dex {
         tokenPrice[_address] = _newPrice;
     }
 
-    function getTokenPrice(address _address) external view returns (uint256) {
+    function getTokenPriceOf(address _address) external view returns (uint256) {
         return tokenPrice[_address];
     }
 
-    function getTokenSupply(address _address) external view returns (uint256) {
+    function getTokenBalanceOf(address _address) external view returns (uint256) {
         return tokenSupply[_address];
     }
 

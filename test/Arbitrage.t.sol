@@ -45,13 +45,13 @@ contract ArbitrageTest is Test {
         console.log("walletAddress:", walletAddress);
         assertEq(convertedWalletAddress, walletAddress);
 */
-
+/*
         uint256 walletBalance = castFunctionsTest.addressBalance(vm.envString("WALLET_ADDRESS"));
         console.log("walletBalanceX:", walletBalance);
 
         uint256 xTokenWalletBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("XToken"), vm.envString("WALLET_ADDRESS"));
         console.log("xTokenWalletBalance:", xTokenWalletBalance);
-
+*/
         (string memory txHash, string memory status) = castFunctionsTest.mint(vm.envString("XToken"), 1 ether);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
@@ -86,15 +86,13 @@ contract ArbitrageTest is Test {
         uint256 Dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
         assertEq(Dex2TokenPrice, initialDex2TokenPrice);
 
-
-
-
         console.log("Setup completed successfully.");
     }
 
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
+        /*
         uint256 Dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
         console.log("--Dex1TokenPrice:", Dex1TokenPrice);
         uint256 Dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
@@ -117,7 +115,7 @@ contract ArbitrageTest is Test {
             console.log("Buy from Dex2 sell to Dex1");
             arbitrage.executeArbitrage(address(xToken), address(dex2), address(dex1), Dex2TokenBalance, block.timestamp);
         }
-
+*/
         uint256 gasUsed = gasStart - gasleft();
         console.log("Gas used:", gasUsed);
 

@@ -48,14 +48,17 @@ contract CastFunctionsTest is Test{
     }
 
     function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
-        //cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
-        emit GetTokenBalanceOfEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_holderAddress));
+        //cast call "$Dex1" "getTokenBalanceOf(address)" "$XToken" --rpc-url "$rpc_url"
+        /*
+        cast call 0x8bA8113C0d0a71eAB75aeF49B980CdeAcE4630C9 getTokenBalanceOf(address) 0xBc35bD49d5de2929522E5Cc3F40460D74d24c24C --rpc-url https://ethereum-sepolia-rpc.publicnode.com
+        0x0000000000000000000000000000000000000000000000000000000000000000
+        */
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
-        inputs[2] = _tokenAddress;
-        inputs[3] = "balanceOf(address)";
-        inputs[4] = _holderAddress;
+        inputs[2] = _holderAddress;
+        inputs[3] = "getTokenBalanceOf(address)";
+        inputs[4] = _tokenAddress;
         inputs[5] = "--rpc-url";
         inputs[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");
         bytes memory result = vm.ffi(inputs);
@@ -65,8 +68,9 @@ contract CastFunctionsTest is Test{
             revert("Failed to retrieve contract address");
         }
 
-         uint256 balance = abi.decode(result, (uint256));
-         return balance;
+        uint256 balance = abi.decode(result, (uint256));
+        emit GetTokenBalanceOfEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_holderAddress));
+        return balance;
     }
 
     function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
@@ -230,14 +234,13 @@ contract CastFunctionsTest is Test{
     }
 
     function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public returns (uint256) {
-        // cast call 0xeb442627f7a67a1735F06C254B693FF279BF27E7 getPrice(address) 0xBc35bD49d5de2929522E5Cc3F40460D74d24c24C --rpc-url https://ethereum-sepolia-rpc.publicnode.com
-        //0x0000000000000000000000000000000000000000000000000000000000000078
+        // cast call 0xeb442627f7a67a1735F06C254B693FF279BF27E7 getTokenPrice(address) 0xBc35bD49d5de2929522E5Cc3F40460D74d24c24C --rpc-url https://ethereum-sepolia-rpc.publicnode.com
         emit GetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress));
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
         inputs[2] = _dex;
-        inputs[3] = "getPrice(address)";
+        inputs[3] = "getTokenPriceOf(address)";
         inputs[4] = _tokenAddress;
         inputs[5] = "--rpc-url";
         inputs[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");
