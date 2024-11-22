@@ -4,57 +4,55 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Dex {
-    struct Pool {
-        uint256 reserveA; // Reserve of token A
-        uint256 reserveB; // Reserve of token B
+    mapping(address => uint256) public tokenSupply;
+    mapping(address => uint256) public tokenPrice;
+    address public owner;
+
+    constructor() {
+        owner = msg.sender;
     }
 
-    mapping(address => mapping(address => Pool)) public pools; // Dex -> Token -> Pool
-
-    event LiquidityAdded(address indexed dex, address indexed token, uint256 amountA, uint256 amountB);
-    event LiquidityRemoved(address indexed dex, address indexed token, uint256 amountA, uint256 amountB);
-
-    // Add liquidity to the DEX
-    function addLiquidity(
-        address tokenA,
-        address tokenB,
-        uint256 amountA,
-        uint256 amountB
-    ) external {
-        Pool storage pool = pools[msg.sender][tokenB];
-        pool.reserveA += amountA;
-        pool.reserveB += amountB;
-
-        emit LiquidityAdded(msg.sender, tokenB, amountA, amountB);
-
-        require(IERC20(tokenA).transferFrom(msg.sender, address(this), amountA), "Transfer tokenA failed");
-        require(IERC20(tokenB).transferFrom(msg.sender, address(this), amountB), "Transfer tokenB failed");
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");
+        _;
     }
 
-    // Remove liquidity from the DEX
-    function removeLiquidity(
-        address tokenA,
-        address tokenB,
-        uint256 amountA,
-        uint256 amountB
-    ) external {
-        Pool storage pool = pools[msg.sender][tokenB];
-        require(pool.reserveA >= amountA && pool.reserveB >= amountB, "Insufficient reserves");
-
-        pool.reserveA -= amountA;
-        pool.reserveB -= amountB;
-
-        emit LiquidityRemoved(msg.sender, tokenB, amountA, amountB);
-
-        require(IERC20(tokenA).transfer(msg.sender, amountA), "Transfer tokenA failed");
-        require(IERC20(tokenB).transfer(msg.sender, amountB), "Transfer tokenB failed");
+    function setTokenPrice(address _address, uint256 _newPrice) public onlyOwner{
+        tokenPrice[_address] = _newPrice;
     }
 
-    // Get the price of token A in terms of token B
-    function getPrice(address tokenB) external view returns (uint256) {
-        Pool storage pool = pools[msg.sender][tokenB];
-        require(pool.reserveA > 0 && pool.reserveB > 0, "Invalid pool reserves");
+    function getTokenPrice(address _address) external view returns (uint256) {
+        return tokenPrice[_address];
+    }
 
-        return (pool.reserveB * 1e18) / pool.reserveA; // Price of 1 A in terms of B
+    function getTokenSupply(address _address) external view returns (uint256) {
+        return tokenSupply[_address];
+    }
+
+    function depositTokens(address _token, uint256 _amount) external {
+        require(_amount > 0, "Amount must be greater than 0");
+        bool success = IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        require(success, "Token transfer failed");
+
+        tokenSupply[_token] += _amount;
+    }
+
+    function withdrawTokens(address _token, uint256 _amount) external onlyOwner{
+        require(_amount > 0 && tokenSupply[_token] >= _amount, "Insufficient balance");
+        tokenSupply[_token] -= _amount;
+
+        bool success = IERC20(_token).transfer(msg.sender, _amount);
+        require(success, "Token transfer failed");
+    }
+
+    // Allow the contract to receive ETH
+    receive() external payable {}
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function withdraw(uint256 _amount) public onlyOwner {
+        require(_amount <= address(this).balance, "Insufficient balance");
+        payable(owner).transfer(_amount);
     }
 }

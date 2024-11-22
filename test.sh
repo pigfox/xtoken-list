@@ -7,7 +7,7 @@ forge clean
 
 #contract="MsgSender"
 #function="test_run"
-contract="SingleTokenArbitrage"
+contract="Arbitrage"
 function="executeArbitrage"
 
 rpc_url=https://ethereum-sepolia-rpc.publicnode.com
@@ -22,8 +22,11 @@ echo "Testing $contract::$function..."
 #cast send "$XToken" "approve(address,uint256)" "$Router1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #-----------
 #setTokenPrice(address _token, uint256 _balance)
-#
-#getTokenPrice(address _token)
+#depositTokens(address token, uint256 amount)
+#cast send "$SingleTokenDex1" "depositTokens(address,uint256)" "$XToken" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+#cast send "$XToken" "supplyTokenTo(address,uint256)" "$SingleTokenDex1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+#cast call "$XToken" "balanceOf(address)" "$SingleTokenDex1" --rpc-url "$rpc_url"
+#cast call "$SingleTokenDex1" "getReserve(address)" "$XToken" --rpc-url "$rpc_url"
 #cast call "$SingleTokenDex1" "getPrice(address)" "$XToken" --rpc-url "$rpc_url"
 #cast balance "$WALLET_ADDRESS" --rpc-url "$rpc_url"
 #cast send "$XToken" "supplyTokenTo(address,uint256)" "$Arbitrage" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"

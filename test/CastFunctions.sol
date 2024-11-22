@@ -324,11 +324,7 @@ contract CastFunctionsTest is Test{
         return (transactionHashStr, statusStr);
     }
 
-    function getAllowance(
-        string calldata _tokenAddress,
-        string calldata _ownerAddress,
-        string calldata _spenderAddress
-    ) public returns (uint256) {
+    function getAllowance(string calldata _tokenAddress, string calldata _ownerAddress, string calldata _spenderAddress) public returns (uint256) {
         // cast call "$XToken" "allowance(address,address)" "$owner" "$spender" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](9);
         inputs[0] = "cast";
