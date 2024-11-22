@@ -215,7 +215,6 @@ contract CastFunctionsTest is Test{
 
     function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public returns (uint256) {
         // cast call 0xeb442627f7a67a1735F06C254B693FF279BF27E7 getTokenPrice(address) 0xBc35bD49d5de2929522E5Cc3F40460D74d24c24C --rpc-url https://ethereum-sepolia-rpc.publicnode.com
-        emit GetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress));
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
@@ -229,6 +228,29 @@ contract CastFunctionsTest is Test{
         if (result.length == 0) {
             console.log("Error: cast call returned empty result");
             revert("Failed to retrieve token price");
+        }
+
+        emit GetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress));
+        return abi.decode(result, (uint256));
+    }
+
+    function getAllowance(string calldata _tokenAddress, string calldata _ownerAddress, string calldata _spenderAddress) public returns (uint256) {
+        // cast call "$XToken" "allowance(address,address)" "$owner" "$spender" --rpc-url "$rpc_url"
+        string[] memory inputs = new string[](9);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = _tokenAddress;
+        inputs[3] = "allowance(address,address)";
+        inputs[4] = _ownerAddress;
+        inputs[5] = _spenderAddress;
+        inputs[6] = "--json";
+        inputs[7] = "--rpc-url";
+        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+
+        bytes memory result = vm.ffi(inputs);
+        if (0 == result.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
         }
 
         return abi.decode(result, (uint256));
@@ -307,25 +329,4 @@ contract CastFunctionsTest is Test{
         return (transactionHashStr, statusStr);
     }
 
-    function getAllowance(string calldata _tokenAddress, string calldata _ownerAddress, string calldata _spenderAddress) public returns (uint256) {
-        // cast call "$XToken" "allowance(address,address)" "$owner" "$spender" --rpc-url "$rpc_url"
-        string[] memory inputs = new string[](9);
-        inputs[0] = "cast";
-        inputs[1] = "call";
-        inputs[2] = _tokenAddress;
-        inputs[3] = "allowance(address,address)";
-        inputs[4] = _ownerAddress;
-        inputs[5] = _spenderAddress;
-        inputs[6] = "--json";
-        inputs[7] = "--rpc-url";
-        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-
-        bytes memory result = vm.ffi(inputs);
-        if (0 == result.length) {
-            console.log("Error: cast call returned empty result");
-            revert("Error: cast call returned empty result");
-        }
-
-        return abi.decode(result, (uint256));
-    }
 }
