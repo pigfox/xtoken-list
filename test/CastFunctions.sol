@@ -30,7 +30,6 @@ contract CastFunctionsTest is Test{
         cast balance 0xb04d6a4949fa623629e0ED6bd4Ecb78A8C847693 --rpc-url https://ethereum-sepolia-rpc.publicnode.com
         5343635260568317891
         */
-        emit BalanceEvent(conversionsTest.stringToAddress(_contractAddress));
         string[] memory inputs = new string[](5);
         inputs[0] = "cast";
         inputs[1] = "balance";
@@ -44,6 +43,7 @@ contract CastFunctionsTest is Test{
             revert("Failed to retrieve wallet balance");
         }
 
+        emit BalanceEvent(conversionsTest.stringToAddress(_contractAddress));
         return conversionsTest.stringToUint(string(result));
     }
 
@@ -348,5 +348,4 @@ contract CastFunctionsTest is Test{
 
         return abi.decode(result, (uint256));
     }
-
 }
