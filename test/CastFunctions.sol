@@ -74,7 +74,6 @@ contract CastFunctionsTest is Test{
     }
 
     function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
-        emit MintEvent(conversionsTest.stringToAddress(_tokenAddress), _amount);
         // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
@@ -95,10 +94,9 @@ contract CastFunctionsTest is Test{
             console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
-        string memory json = string(castResult);
 
         string memory result = string(
-            abi.encodePacked(json)
+            abi.encodePacked(string(castResult))
         );
 
         bytes memory status = result.parseRaw(".status");
@@ -108,7 +106,7 @@ contract CastFunctionsTest is Test{
         string memory statusStr = conversionsTest.toHexString(statusInt);
         bytes memory transactionHash = result.parseRaw(".transactionHash");
         string memory transactionHashStr = vm.toString(transactionHash);
-
+        emit MintEvent(conversionsTest.stringToAddress(_tokenAddress), _amount);
         return(transactionHashStr,statusStr);
     }
 
