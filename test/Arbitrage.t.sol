@@ -57,15 +57,19 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        //(txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("Dex1"),initialDex1TokenPrice);
         (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex1"), vm.envString("XToken"),initialDex1TokenPrice);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        //(txHash, status) = castFunctionsTest.supplyTokensTo(vm.envString("XToken"), vm.envString("Dex2"),initialDex2TokenSupply);
+        uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
+        assertEq(dex1TokenBalance, initialDex1TokenSupply);
+
         (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex2"), vm.envString("XToken"),initialDex2TokenPrice);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
+        assertEq(dex2TokenBalance, initialDex2TokenSupply);
 
         (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("Dex1"));
         assertEq(expectedStatusOk, status);
@@ -96,17 +100,10 @@ contract ArbitrageTest is Test {
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
 
-        uint256 Dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
-        console.log("--Dex1TokenPrice:", Dex1TokenPrice);
-        uint256 Dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
-        console.log("--Dex2TokenPrice:", Dex2TokenPrice);
+        uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
+        uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
 
-        uint256 Dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
-        console.log("--Dex1TokenBalance:", Dex1TokenBalance);
-        uint256 Dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
-        console.log("--Dex2TokenBalance:", Dex2TokenBalance);
-
-        if (Dex1TokenPrice == Dex2TokenPrice) {
+        if (dex1TokenPrice == dex2TokenPrice) {
             revert("Prices are equal");
         }
         /*
