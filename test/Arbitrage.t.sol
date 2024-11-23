@@ -92,7 +92,7 @@ contract ArbitrageTest is Test {
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
-        /*
+
         uint256 Dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
         console.log("--Dex1TokenPrice:", Dex1TokenPrice);
         uint256 Dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
@@ -106,7 +106,7 @@ contract ArbitrageTest is Test {
         if (Dex1TokenPrice == Dex2TokenPrice) {
             revert("Prices are equal");
         }
-
+        /*
         if (Dex1TokenPrice < Dex2TokenPrice){
             console.log("Buy from Dex1 sell to Dex2");
             arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), Dex1TokenBalance, block.timestamp);

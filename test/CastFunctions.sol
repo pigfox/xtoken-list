@@ -48,7 +48,7 @@ contract CastFunctionsTest is Test{
         return conversionsTest.stringToUint(string(result));
     }
 
-    function getTokenBalanceOf(string calldata _tokenAddress, string calldata _holderAddress) public returns (uint256) {
+    function getTokenBalanceOf(string calldata _dexAddress, string calldata _tokenAddress) public returns (uint256) {
         //cast call "$Dex1" "getTokenBalanceOf(address)" "$XToken" --rpc-url "$rpc_url"
         /*
         cast call 0x8bA8113C0d0a71eAB75aeF49B980CdeAcE4630C9 getTokenBalanceOf(address) 0xBc35bD49d5de2929522E5Cc3F40460D74d24c24C --rpc-url https://ethereum-sepolia-rpc.publicnode.com
@@ -57,7 +57,7 @@ contract CastFunctionsTest is Test{
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
-        inputs[2] = _holderAddress;
+        inputs[2] = _dexAddress;
         inputs[3] = "getTokenBalanceOf(address)";
         inputs[4] = _tokenAddress;
         inputs[5] = "--rpc-url";
@@ -70,7 +70,7 @@ contract CastFunctionsTest is Test{
         }
 
         uint256 balance = abi.decode(result, (uint256));
-        emit GetTokenBalanceOfEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_holderAddress));
+        emit GetTokenBalanceOfEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_dexAddress));
         return balance;
     }
 
