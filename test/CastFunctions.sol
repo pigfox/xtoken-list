@@ -16,6 +16,7 @@ contract CastFunctionsTest is Test{
     event GetTokenBalanceOfEvent(address indexed tokenAddress, address indexed holderAddress);
     event MintEvent(address indexed tokenAddress, uint256 amount);
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
+    event DepositTokensEvent(address indexed dexAddress, address indexed tokenAddress, uint256 amount);
     event ApproveEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event BalanceEvent(address indexed contractAddress);
     event SetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress, uint256 price);
@@ -111,6 +112,7 @@ contract CastFunctionsTest is Test{
         return(transactionHashStr,statusStr);
     }
 
+    //deprecated..
     function supplyTokensTo(string calldata _supplierAddress, string calldata _receiverAddress, uint256 _amount) public returns (string memory, string memory) {
         // cast send "$XToken" "supplyTokenTo(address,uint256)" "$Arbitrage" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](13);
@@ -142,6 +144,39 @@ contract CastFunctionsTest is Test{
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
         emit SupplyTokensEvent(conversionsTest.stringToAddress(_supplierAddress), conversionsTest.stringToAddress(_receiverAddress),_amount);
+        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
+    }
+
+    function depositTokens(string calldata _dexAddress, string calldata _tokenAddress, uint256 _amount)public returns (string memory, string memory){
+        string[] memory inputs = new string[](13);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _dexAddress;
+        inputs[3] = "depositTokens(address,uint256)";
+        inputs[4] = _tokenAddress;
+        inputs[5] = vm.toString(_amount);
+        inputs[6] = "--json";
+        inputs[7] = "--rpc-url";
+        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[9] = "--from";
+        inputs[10] = vm.envString("WALLET_ADDRESS");
+        inputs[11] = "--private-key";
+        inputs[12] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(
+            abi.encodePacked(string(castResult))
+        );
+
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        emit DepositTokensEvent(conversionsTest.stringToAddress(_dexAddress), conversionsTest.stringToAddress(_tokenAddress),_amount);
         return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
