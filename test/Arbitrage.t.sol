@@ -18,10 +18,11 @@ contract ArbitrageTest is Test {
     Dex public dex2 = new Dex();
     Arbitrage public arbitrage;
     Vault public vault;
-    uint256 public maxTokenSupply = 10 ether;
+    uint256 public initialDex1TokenSupply = 7e18;
+    uint256 public initialDex2TokenSupply = 13e18;
+    uint256 public maxTokenSupply = initialDex1TokenSupply + initialDex2TokenSupply;
     uint256 public initialDex1TokenPrice = 120;
     uint256 public initialDex2TokenPrice = 80;
-    uint256 public initialArbitrageTokens = 5e18;
     string public expectedStatusOk = "0x1";
     uint public expectedTxHashLength = 66;
 
