@@ -8,6 +8,9 @@ contract Dex {
     mapping(address => uint256) public tokenPrice;
     address public owner;
 
+    event TokensDeposited(address indexed tokenAddress, uint256 amount);
+    event TokenPriceSet(address indexed tokenAddress, uint256 price);
+
     constructor() {
         owner = msg.sender;
     }
@@ -19,6 +22,7 @@ contract Dex {
 
     function setTokenPrice(address _address, uint256 _newPrice) public onlyOwner{
         tokenPrice[_address] = _newPrice;
+        emit TokenPriceSet(_address, _newPrice);
     }
 
     function getTokenPriceOf(address _address) external view returns (uint256) {
@@ -35,6 +39,7 @@ contract Dex {
         require(success, "Token transfer failed");
 
         tokenSupply[_token] += _amount;
+        emit TokensDeposited(_token, _amount);
     }
 
     function withdrawTokens(address _token, uint256 _amount) external onlyOwner{
