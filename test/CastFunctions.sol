@@ -147,7 +147,7 @@ contract CastFunctionsTest is Test{
         return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function depositTokens(string calldata _dexAddress, string calldata _tokenAddress, uint256 _amount)public returns (string memory, string memory){
+    function depositTokens(string calldata _dexAddress, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
