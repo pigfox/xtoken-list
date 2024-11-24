@@ -22,6 +22,7 @@ contract CastFunctionsTest is Test{
     event SetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress, uint256 price);
     event GetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress);
     event GetAllowanceEvent(address indexed tokenAddress, address indexed ownerAddress, address indexed spenderAddress);
+    event WithdrawTokensEvent(address indexed tokenAddress, address indexed sourceAddress, address indexed destinationAddress, uint256 amount);
 
     constructor() {
         conversionsTest = new ConversionsTest();
@@ -293,76 +294,54 @@ contract CastFunctionsTest is Test{
         return abi.decode(result, (uint256));
     }
 
+    function withdrawTokens(string calldata _token, string calldata _source, string memory _destination, uint256 _amount) public returns (string memory, string memory){
+        //cast send "$Dex1" "withdrawTokens(address,address,uint256)" "$XToken" "$TrashCan" 100000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string[] memory inputs = new string[](14);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _source;
+        inputs[3] = "withdrawTokens(address,address,uint256)";
+        inputs[4] = _token;
+        inputs[5] = _destination;
+        inputs[6] = vm.toString(_amount);
+        inputs[7] = "--json";
+        inputs[8] = "--rpc-url";
+        inputs[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[10] = "--from";
+        inputs[11] = vm.envString("WALLET_ADDRESS");
+        inputs[12] = "--private-key";
+        inputs[13] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(
+            abi.encodePacked(string(castResult))
+        );
+
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        //emit WithdrawTokensEvent(conversionsTest.stringToAddress(_token), conversionsTest.stringToAddress(_source), conversionsTest.stringToAddress(_destination), _amount);
+        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
+    }
+
     function emptyDex(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress) public returns (string memory, string memory){
-        // cast call "$XToken" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
         require(bytes(_receiverAddress).length == 42, "Error: Invalid receiver address");
         require(bytes(_tokenAddress).length == 42, "Error: Invalid token address");
         require(bytes(_dex).length == 42, "Error: Invalid dex address");
 
-        // Step 1: Approve the transfer of tokens if not already approved
-        (string memory txHash, string memory statusStr) = approve(_dex,_tokenAddress);
-        require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
-        require(expectedTxHashLength == bytes(txHash).length, "txHash length is not as expected");
-
-        string[] memory inputsBalance = new string[](7);
-        inputsBalance[0] = "cast";
-        inputsBalance[1] = "call";
-        inputsBalance[2] = _tokenAddress;
-        inputsBalance[3] = "balanceOf(address)";
-        inputsBalance[4] = _dex;
-        inputsBalance[5] = "--rpc-url";
-        inputsBalance[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-
-        // Call `cast call` to get the balance
-        bytes memory balanceResult = vm.ffi(inputsBalance);
-        if (0 == balanceResult.length) {
-            console.log("Error: cast call for balance returned empty result");
-            revert("Error: cast call for balance returned empty result");
+        uint256 balance = getTokenBalanceOf(_dex, _tokenAddress);
+        if (balance == 0) {
+            return ("Zero balance", "0x0");
         }
 
-        uint256 balance = abi.decode(balanceResult, (uint256));
-        payable(conversionsTest.stringToAddress(_receiverAddress)).transfer(address(this).balance);
-
-        // Dynamically build the inputs for the `cast send` command
-        string[] memory inputsSend = new string[](13);
-        inputsSend[0] = "cast";
-        inputsSend[1] = "send";
-        inputsSend[2] = _tokenAddress;
-        inputsSend[3] = "transfer(address,uint256)";
-        inputsSend[4] = _receiverAddress;
-        inputsSend[5] = conversionsTest.uintToString(balance);
-        inputsSend[6] = "--json";
-        inputsSend[7] = "--rpc-url";
-        inputsSend[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        inputsSend[9] = "--from";
-        inputsSend[10] = vm.envString("WALLET_ADDRESS");
-        inputsSend[11] = "--private-key";
-        inputsSend[12] = vm.envString("PRIVATE_KEY");
-
-        // Call `cast send` to transfer the tokens
-        bytes memory sendResult = vm.ffi(inputsSend);
-        if (0 == sendResult.length) {
-            console.log("Error: cast send returned empty result");
-            revert("Error: cast send returned empty result");
-        }
-
-        string memory sendJson = string(sendResult);
-
-        // Parse the results
-        bytes memory statusBytes = sendJson.parseRaw(".status");
-        uint256[] memory statusValues = abi.decode(statusBytes, (uint256[]));
-        uint256 statusInt = statusValues[0];
-        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        statusStr = conversionsTest.toHexString(statusInt);
-
-        bytes memory transactionHashBytes = sendJson.parseRaw(".transactionHash");
-        string memory transactionHashStr = vm.toString(transactionHashBytes);
+        (string memory txHashStr, string memory statusStr) = approve(_dex, _tokenAddress);
         require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
-        require(expectedTxHashLength == bytes(transactionHashStr).length, "txHash length is not as expected");
-
-        console.log("Approval statusStr3: ", statusStr);
-        console.log("Approval transaction hash3: ", txHash);
-
-        return (transactionHashStr, statusStr);
+        (txHashStr, statusStr) =  withdrawTokens(_tokenAddress, _dex ,vm.envString("TrashCan"), balance);
+        return (txHashStr, statusStr);
     }
 }

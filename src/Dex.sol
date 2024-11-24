@@ -42,11 +42,11 @@ contract Dex {
         emit TokensDeposited(_token, _amount);
     }
 
-    function withdrawTokens(address _token, uint256 _amount) external onlyOwner{
+    function withdrawTokens(address _token, address _destination, uint256 _amount) external onlyOwner{
         require(_amount > 0 && tokenSupply[_token] >= _amount, "Insufficient balance");
         tokenSupply[_token] -= _amount;
 
-        bool success = IERC20(_token).transfer(msg.sender, _amount);
+        bool success = IERC20(_token).transfer(_destination, _amount);
         require(success, "Token transfer failed");
     }
 
