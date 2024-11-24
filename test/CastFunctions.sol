@@ -148,6 +148,7 @@ contract CastFunctionsTest is Test{
     }
 
     function depositTokens(string calldata _dexAddress, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+        approve(_tokenAddress, _dexAddress);
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
