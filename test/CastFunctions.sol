@@ -148,7 +148,7 @@ contract CastFunctionsTest is Test{
     }
 
     function depositTokens(string calldata _dexAddress, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
-        approve(_tokenAddress, _dexAddress);
+        approve(_dexAddress, _tokenAddress);
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
@@ -181,7 +181,7 @@ contract CastFunctionsTest is Test{
         return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function approve(string calldata _tokenAddress, string calldata _spenderAddress) public returns (string memory, string memory){
+    function approve(string calldata _dexAddress, string calldata _tokenAddress) public returns (string memory, string memory){
         // cast send "$XToken" "approve(address,uint256)" "$dex1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         uint256 amount = type(uint256).max;
         string[] memory inputs = new string[](13);
@@ -189,7 +189,7 @@ contract CastFunctionsTest is Test{
         inputs[1] = "send";
         inputs[2] = _tokenAddress;
         inputs[3] = "approve(address,uint256)";
-        inputs[4] = _spenderAddress;
+        inputs[4] = _dexAddress;
         inputs[5] =  conversionsTest.uintToString(amount);
         inputs[6] = "--json";
         inputs[7] = "--rpc-url";
@@ -212,7 +212,7 @@ contract CastFunctionsTest is Test{
         uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_spenderAddress), amount);
+        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_dexAddress), amount);
         return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
@@ -300,7 +300,7 @@ contract CastFunctionsTest is Test{
         require(bytes(_dex).length == 42, "Error: Invalid dex address");
 
         // Step 1: Approve the transfer of tokens if not already approved
-        (string memory txHash, string memory statusStr) = approve(_tokenAddress, _dex);
+        (string memory txHash, string memory statusStr) = approve(_dex,_tokenAddress);
         require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
         require(expectedTxHashLength == bytes(txHash).length, "txHash length is not as expected");
 
@@ -365,5 +365,4 @@ contract CastFunctionsTest is Test{
 
         return (transactionHashStr, statusStr);
     }
-
 }

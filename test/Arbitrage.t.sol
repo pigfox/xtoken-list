@@ -71,11 +71,11 @@ contract ArbitrageTest is Test {
         uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
         assertEq(dex2TokenBalance, initialDex2TokenSupply);
 
-        (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("Dex1"));
+        (txHash, status) = castFunctionsTest.approve(vm.envString("Dex1"), vm.envString("XToken"));
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("Dex2"));
+        (txHash, status) = castFunctionsTest.approve(vm.envString("Dex2"), vm.envString("XToken"));
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
