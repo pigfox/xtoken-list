@@ -4,7 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Dex {
-    mapping(address => uint256) public tokenSupply;
+    mapping(address => uint256) public tokenBalance;
     mapping(address => uint256) public tokenPrice;
     address public owner;
 
@@ -30,7 +30,7 @@ contract Dex {
     }
 
     function getTokenBalanceOf(address _address) external view returns (uint256) {
-        return tokenSupply[_address];
+        return tokenBalance[_address];
     }
 
     function depositTokens(address _token, uint256 _amount) external {
@@ -38,13 +38,13 @@ contract Dex {
         bool success = IERC20(_token).transferFrom(msg.sender, address(this), _amount);
         require(success, "Token transfer failed");
 
-        tokenSupply[_token] += _amount;
+        tokenBalance[_token] += _amount;
         emit TokensDeposited(_token, _amount);
     }
 
     function withdrawTokens(address _token, address _destination, uint256 _amount) external onlyOwner{
-        require(_amount > 0 && tokenSupply[_token] >= _amount, "Insufficient balance");
-        tokenSupply[_token] -= _amount;
+        require(_amount > 0 && tokenBalance[_token] >= _amount, "Insufficient balance");
+        tokenBalance[_token] -= _amount;
 
         bool success = IERC20(_token).transfer(_destination, _amount);
         require(success, "Token transfer failed");
