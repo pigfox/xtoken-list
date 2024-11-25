@@ -81,7 +81,7 @@ contract ArbitrageTest is Test {
 
         uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
         assertEq(dex2TokenBalance, initialDex2TokenSupply);
-/**/
+
         (txHash, status) = castFunctionsTest.approve(vm.envString("Dex1"), vm.envString("XToken"));
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
@@ -96,14 +96,14 @@ contract ArbitrageTest is Test {
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
-        /*
+
         uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
 
         if (dex1TokenPrice == dex2TokenPrice) {
             revert("Prices are equal");
         }
-
+        /*
         if (Dex1TokenPrice < Dex2TokenPrice){
             console.log("Buy from Dex1 sell to Dex2");
             arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), Dex1TokenBalance, block.timestamp);
