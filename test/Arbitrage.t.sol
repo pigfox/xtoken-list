@@ -102,17 +102,16 @@ contract ArbitrageTest is Test {
 
         if (dex1TokenPrice == dex2TokenPrice) {
             revert("Prices are equal");
-        }
-        /*
-        if (Dex1TokenPrice < Dex2TokenPrice){
+        } else if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
-            arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), Dex1TokenBalance, block.timestamp);
-        }
-        if (Dex2TokenPrice < Dex1TokenPrice){
+            uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
+            arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), dex1TokenBalance, block.timestamp);
+        } else if(dex2TokenPrice < dex1TokenPrice){
             console.log("Buy from Dex2 sell to Dex1");
-            arbitrage.executeArbitrage(address(xToken), address(dex2), address(dex1), Dex2TokenBalance, block.timestamp);
+            uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
+            arbitrage.executeArbitrage(address(xToken), address(dex2), address(dex1), dex2TokenBalance, block.timestamp);
         }
-*/
+
         uint256 gasUsed = gasStart - gasleft();
         console.log("Gas used:", gasUsed);
 
