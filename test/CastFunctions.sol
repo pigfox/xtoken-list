@@ -198,8 +198,9 @@ contract CastFunctionsTest is Test{
         string memory result = string(castResult);
 
         // Parse the status and transaction hash
-        uint256 status = abi.decode(result.parseRaw(".status"), (uint256));
-        status = (status == 0) ? 0 : status >> (256 - 8); // Extract meaningful status
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
         string memory txHash = string(result.parseRaw(".transactionHash"));
 
         emit DepositTokensEvent(
@@ -208,7 +209,7 @@ contract CastFunctionsTest is Test{
             _amount
         );
 
-        return (txHash, conversionsTest.toHexString(status));
+        return (txHash, conversionsTest.toHexString(statusInt));
     }
 
     function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
