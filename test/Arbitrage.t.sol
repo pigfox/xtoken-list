@@ -114,52 +114,6 @@ contract ArbitrageTest is Test {
 
         uint256 gasUsed = gasStart - gasleft();
         console.log("Gas used:", gasUsed);
-
-        /*
-
-        arbitrage.executeArbitrage(address(xToken), address(Dex1), address(Dex2), 1 ether, block.timestamp);
-        address xTokenAddress = DevOpsTools.get_most_recent_deployment("XToken", block.chainid);
-        XToken xToken1 = XToken(xTokenAddress);
-        console.log("DevOpsTools xTokenAddress:", xTokenAddress);
-
-        console.log("vm.envAddress(\"XToken\"):", vm.envAddress("XToken"));
-        XToken xToken2 = XToken(vm.envAddress("XToken"));//address from deployed contract on Sepolia
-
-
-        vm.startPrank(ownerAddress);
-        console.log("Function Test SwapTokens");
-        address arbitrageOwner = arbitrage.owner();
-        console.log("arbitrageOwner:",arbitrageOwner);
-        assert(msg.sender == ownerAddress);
-        uint256 initialVaultBalance = vault.tokenBalance(address(xToken));
-        uint256 initialVaultETHBalance = vault.ethBalance();
-        uint256 Dex1TokenPrice = Dex1.getTokenPrice(address(xToken));
-        console.log("--Dex1 address:", address(Dex1));
-        console.log("--Dex1TokenPrice:", Dex1TokenPrice);
-        console.log("--Dex2 address:", address(Dex2));
-        uint256 Dex2TokenPrice = Dex2.getTokenPrice(address(xToken));
-        console.log("--Dex2TokenPrice:", Dex2TokenPrice);
-
-        if (Dex1TokenPrice == Dex2TokenPrice) {
-           revert("Prices are equal");
-        }
-
-        if (Dex1TokenPrice < Dex2TokenPrice){
-            console.log("Buy from Dex1 sell to Dex2");
-            uint256 Dex1TokenBalance = xToken.balanceOf(address(Dex1));
-            arbitrage.executeArbitrage(address(xToken), address(Dex1), address(Dex2), Dex1TokenBalance, block.timestamp);
-        }
-        if (Dex2TokenPrice < Dex1TokenPrice){
-            console.log("Buy from Dex2 sell to Dex1");
-            uint256 Dex2TokenBalance = xToken.balanceOf(address(Dex2));
-            arbitrage.executeArbitrage(address(xToken), address(Dex2), address(Dex1), Dex2TokenBalance, block.timestamp);
-        }
-        vm.stopPrank();
-        uint finalVaultBalance = vault.tokenBalance(address(xToken));
-        assertNotEq(finalVaultBalance, initialVaultBalance);
-        uint finalVaultETHBalance = vault.ethBalance();
-        assertNotEq(finalVaultETHBalance, initialVaultETHBalance);
-        */
     }
 /*
     function test_setProfitAddress()public{
