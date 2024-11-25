@@ -45,7 +45,11 @@ contract ArbitrageTest is Test {
         address walletAddress = vm.envAddress("WALLET_ADDRESS");
         console.log("walletAddress:", walletAddress);
         assertEq(convertedWalletAddress, walletAddress);
+
 */
+        //castFunctionsTest.emptyDex(vm.envString("Dex1"), vm.envString("XToken"), vm.envString("TrashCan"));
+        //castFunctionsTest.emptyDex(vm.envString("Dex2"), vm.envString("XToken"), vm.envString("TrashCan"));
+
         (string memory txHash, string memory status) = castFunctionsTest.mint(vm.envString("XToken"), maxTokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
