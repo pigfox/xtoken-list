@@ -51,7 +51,21 @@ contract ArbitrageTest is Test {
 
         castFunctionsTest.emptyDex(vm.envString("Dex2"), vm.envString("XToken"), vm.envString("TrashCan"));
 
-        (string memory txHash, string memory status) = castFunctionsTest.mint(vm.envString("XToken"), maxTokenSupply);
+        (string memory txHash, string memory status)  = castFunctionsTest.setTokenPrice(vm.envString("Dex1"), vm.envString("XToken"), initialDex1TokenPrice);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        (txHash, status) = castFunctionsTest.setTokenPrice(vm.envString("Dex2"), vm.envString("XToken"), initialDex2TokenPrice);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
+        assertEq(dex1TokenPrice, initialDex1TokenPrice);
+
+        uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
+        assertEq(dex2TokenPrice, initialDex2TokenPrice);
+
+        (txHash, status) = castFunctionsTest.mint(vm.envString("XToken"), maxTokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
@@ -60,9 +74,6 @@ contract ArbitrageTest is Test {
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
-
-        console.log("dex1TokenBalance", dex1TokenBalance);
-        console.log("initialDex1TokenSupply", initialDex1TokenSupply);
         assertEq(dex1TokenBalance, initialDex1TokenSupply);
 
         (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex2"), vm.envString("XToken"),vm.envString("XToken"),initialDex2TokenSupply);
@@ -80,21 +91,6 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.setTokenPrice(vm.envString("Dex1"), vm.envString("XToken"), initialDex1TokenPrice);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        (txHash, status) = castFunctionsTest.setTokenPrice(vm.envString("Dex2"), vm.envString("XToken"), initialDex2TokenPrice);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        uint256 Dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
-        Dex1TokenPrice;
-        //assertEq(Dex1TokenPrice, initialDex1TokenPrice);
-
-        uint256 Dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
-        Dex2TokenPrice;
-        //assertEq(Dex2TokenPrice, initialDex2TokenPrice);
 */
         console.log("Setup completed successfully.");
     }
