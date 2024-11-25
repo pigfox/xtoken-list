@@ -106,7 +106,7 @@ contract ArbitrageTest is Test {
             console.log("Buy from Dex1 sell to Dex2");
             uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
             arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), dex1TokenBalance, block.timestamp);
-        } else if(dex2TokenPrice < dex1TokenPrice){
+        } else if (dex2TokenPrice < dex1TokenPrice){
             console.log("Buy from Dex2 sell to Dex1");
             uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
             arbitrage.executeArbitrage(address(xToken), address(dex2), address(dex1), dex2TokenBalance, block.timestamp);
