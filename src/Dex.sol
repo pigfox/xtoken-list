@@ -33,9 +33,9 @@ contract Dex {
         return tokenBalance[_address];
     }
 
-    function depositTokens(address _token, uint256 _amount) external {
+    function depositTokens(address _token, address _source, uint256 _amount) external {
         require(_amount > 0, "Amount must be greater than 0");
-        bool success = IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        bool success = IERC20(_token).transferFrom(_source, address(this), _amount);
         require(success, "Token transfer failed");
 
         tokenBalance[_token] += _amount;

@@ -50,7 +50,7 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex1"), vm.envString("XToken"),initialDex1TokenPrice);
+        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex1"), vm.envString("XToken"),vm.envString("XToken"),initialDex1TokenPrice);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
@@ -58,7 +58,7 @@ contract ArbitrageTest is Test {
         //dex1TokenBalance;
         assertEq(dex1TokenBalance, initialDex1TokenSupply);
 
-        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex2"), vm.envString("XToken"),initialDex2TokenPrice);
+        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex2"), vm.envString("XToken"),vm.envString("XToken"),initialDex2TokenPrice);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
