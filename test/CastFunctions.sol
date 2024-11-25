@@ -173,14 +173,13 @@ contract CastFunctionsTest is Test{
         inputs[12] = "--private-key";
         inputs[13] = vm.envString("PRIVATE_KEY");
 */
-        _amount = type(uint256).max;
         string[] memory inputs = new string[](14);
         inputs[0] = "cast";
         inputs[1] = "send";
         inputs[2] = _dexAddress;
         inputs[3] = "depositTokens(address,address,uint256)";
         inputs[4] = _tokenAddress;
-        inputs[5] = _sourceAddress;
+        inputs[5] = vm.envString("WALLET_ADDRESS");//_sourceAddress;
         inputs[6] = vm.toString(_amount);
         inputs[7] = "--json";
         inputs[8] = "--rpc-url";
@@ -188,7 +187,9 @@ contract CastFunctionsTest is Test{
         inputs[10] = "--from";
         inputs[11] = vm.envString("WALLET_ADDRESS");
         inputs[12] = "--private-key";
-        inputs[13] = vm.envString("PRIVATE_KEY");bytes memory castResult = vm.ffi(inputs);
+        inputs[13] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
 
         if (castResult.length == 0) {
             revert("Error: deposit cast call returned empty result");
@@ -208,27 +209,6 @@ contract CastFunctionsTest is Test{
         );
 
         return (txHash, conversionsTest.toHexString(status));
-    }
-
-    function _buildDepositArray(string calldata _dexAddress, string calldata _sourceAddress, string calldata _tokenAddress, uint256 _amount) internal returns(string[] memory){
-        _amount = type(uint256).max;
-        string[] memory inputs = new string[](14);
-        inputs[0] = "cast";
-        inputs[1] = "send";
-        inputs[2] = _dexAddress;
-        inputs[3] = "depositTokens(address,address,uint256)";
-        inputs[4] = _tokenAddress;
-        inputs[5] = vm.envString("WALLET_ADDRESS");//_sourceAddress;
-        inputs[6] = vm.toString(_amount);
-        inputs[7] = "--json";
-        inputs[8] = "--rpc-url";
-        inputs[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        inputs[10] = "--from";
-        inputs[11] = vm.envString("WALLET_ADDRESS");
-        inputs[12] = "--private-key";
-        inputs[13] = vm.envString("PRIVATE_KEY");
-
-        return inputs;
     }
 
     function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
