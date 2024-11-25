@@ -337,7 +337,7 @@ contract CastFunctionsTest is Test{
 
         (string memory txHashStr, string memory statusStr) = approve(_dex, _tokenAddress);
         //require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
-        (txHashStr, statusStr) =  withdrawTokens(_tokenAddress, _dex ,vm.envString("TrashCan"), balance);
+        (txHashStr, statusStr) =  withdrawTokens(_tokenAddress, _dex ,_receiverAddress, balance);
         return (txHashStr, statusStr);
     }
 }
