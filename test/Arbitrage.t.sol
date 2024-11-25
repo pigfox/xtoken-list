@@ -55,22 +55,22 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex1"), vm.envString("XToken"),vm.envString("XToken"),initialDex1TokenPrice);
+        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex1"), vm.envString("XToken"),vm.envString("XToken"),initialDex1TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
 
         console.log("dex1TokenBalance", dex1TokenBalance);
-        console.log("initialDex1TokenPrice", initialDex1TokenPrice);
-        assertEq(dex1TokenBalance, initialDex1TokenPrice);
+        console.log("initialDex1TokenSupply", initialDex1TokenSupply);
+        assertEq(dex1TokenBalance, initialDex1TokenSupply);
 
-        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex2"), vm.envString("XToken"),vm.envString("XToken"),initialDex2TokenPrice);
+        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex2"), vm.envString("XToken"),vm.envString("XToken"),initialDex2TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
         uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
-        assertEq(dex2TokenBalance, initialDex2TokenPrice);
+        assertEq(dex2TokenBalance, initialDex2TokenSupply);
 /*
         (txHash, status) = castFunctionsTest.approve(vm.envString("Dex1"), vm.envString("XToken"));
         assertEq(expectedStatusOk, status);

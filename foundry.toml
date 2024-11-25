@@ -6,7 +6,6 @@ optimizer = true
 optimizer_runs = 200
 # Use intermediate representation (IR) compilation
 via_ir = true
-
 debug = true  # Enable debug information
 solc = "0.8.26"  # Use the version compatible with your contracts
 #rpc_url = "http://127.0.0.1:8545"
@@ -19,6 +18,8 @@ broadcast = 'broadcast'
 show_progress = true
 build_info = true
 ffi = true
+# Enable warnings
+warnings_as_errors = true
 fs_permissions = [
     { access = "read", path = "./broadcast" },
     { access = "read", path = "./reports" },
