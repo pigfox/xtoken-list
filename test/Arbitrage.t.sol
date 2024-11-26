@@ -29,22 +29,28 @@ contract ArbitrageTest is Test {
     uint256 public maxAllowance = type(uint256).max;
 
     function setUp() public {
+        vm.startPrank(vm.envAddress("WALLET_ADDRESS"));
+        wallet = new Wallet(vm.envAddress("WALLET_ADDRESS"));
+
+        assertEq(wallet.getOwner(), vm.envAddress("WALLET_ADDRESS"));
+
         dex1 = Dex(payable(vm.envAddress("Dex1")));
         dex2 = Dex(payable(vm.envAddress("Dex2")));
         vault = Vault(payable(vm.envAddress("Vault")));
 
-        wallet = new Wallet(vm.envAddress("WALLET_ADDRESS"));
         castFunctionsTest = new CastFunctionsTest();
         conversionsTest = new ConversionsTest();
         xTokenAddress = vm.envAddress("XToken");
-
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
-        vm.startPrank(vm.envAddress("WALLET_ADDRESS"));
+
+
         wallet.addAccessor(vm.envAddress("Arbitrage"), vm.envAddress("Arbitrage"));
+        /*
         console.logAddress(wallet.getOwner());
         console.logAddress(vm.envAddress("WALLET_ADDRESS"));
-        assertEq(wallet.getOwner(), vm.envAddress("WALLET_ADDRESS"));
+
         console.logAddress(vm.envAddress("Arbitrage"));
+        */
         vm.stopPrank();
 
         //IArbitrageContract(vm.envAddress("Arbitrage")).addAccessor(address(0));
