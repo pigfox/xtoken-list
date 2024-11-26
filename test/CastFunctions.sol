@@ -17,7 +17,7 @@ contract CastFunctionsTest is Test{
     event MintEvent(address indexed tokenAddress, uint256 amount);
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event DepositTokensEvent(address indexed dexAddress, address indexed tokenAddress, uint256 amount);
-    event ApproveEvent(address indexed sourceAddress, address indexed tokenAddress, uint256 amount);
+    event ApproveEvent(address indexed tokenAddress, address indexed ownerAddress,  uint256 amount);
     event BalanceEvent(address indexed contractAddress);
     event SetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress, uint256 price);
     event GetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress);
@@ -113,16 +113,15 @@ contract CastFunctionsTest is Test{
         return(transactionHashStr,statusStr);
     }
 
-    function approve(string calldata _sourceAddress, string calldata _tokenAddress) public returns (string memory, string memory){
+    function approve(string calldata _tokenAddress, string calldata _ownerAddress, uint256 _amount) public returns (string memory, string memory){
         //cast send "$XToken" "approve(address,uint256)" "$Dex1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-        uint256 amount = type(uint256).max;
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
         inputs[2] = _tokenAddress;
         inputs[3] = "approve(address,uint256)";
-        inputs[4] = _sourceAddress;
-        inputs[5] = conversionsTest.uintToString(amount);
+        inputs[4] = _ownerAddress;
+        inputs[5] = conversionsTest.uintToString(_amount);
         inputs[6] = "--json";
         inputs[7] = "--rpc-url";
         inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
@@ -145,23 +144,23 @@ contract CastFunctionsTest is Test{
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
 
         emit ApproveEvent(
-            conversionsTest.stringToAddress(_sourceAddress),
             conversionsTest.stringToAddress(_tokenAddress),
-            amount
+            conversionsTest.stringToAddress(_ownerAddress),
+            _amount
         );
 
         return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function depositTokens(string calldata _dexAddress, string calldata _sourceAddress, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+    function depositTokens(string calldata _dex, string calldata _token, uint256 _amount) public returns (string memory, string memory){
         //cast send "$Dex1" "depositTokens(address,address,uint256)" "$XToken" "$WALLET_ADDRESS" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-        approve(_dexAddress, _tokenAddress);
+        //approve(_dexAddress, _tokenAddress);
         string[] memory inputs = new string[](14);
         inputs[0] = "cast";
         inputs[1] = "send";
-        inputs[2] = _dexAddress;
+        inputs[2] = _dex;
         inputs[3] = "depositTokens(address,address,uint256)";
-        inputs[4] = _tokenAddress;
+        inputs[4] = _token;
         inputs[5] = vm.envString("WALLET_ADDRESS");//_sourceAddress;
         inputs[6] = vm.toString(_amount);
         inputs[7] = "--json";
@@ -186,8 +185,8 @@ contract CastFunctionsTest is Test{
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
 
         emit DepositTokensEvent(
-            conversionsTest.stringToAddress(_dexAddress),
-            conversionsTest.stringToAddress(_tokenAddress),
+            conversionsTest.stringToAddress(_dex),
+            conversionsTest.stringToAddress(_token),
             _amount
         );
 
@@ -249,15 +248,15 @@ contract CastFunctionsTest is Test{
         return abi.decode(result, (uint256));
     }
 
-    function getAllowance(string calldata _tokenAddress, string calldata _ownerAddress, string calldata _spenderAddress) public returns (uint256) {
+    function getAllowance(string calldata _token, string calldata _owner, string calldata _spender) public returns (uint256) {
         // cast call "$XToken" "allowance(address,address)" "$owner" "$spender" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](9);
         inputs[0] = "cast";
         inputs[1] = "call";
-        inputs[2] = _tokenAddress;
+        inputs[2] = _token;
         inputs[3] = "allowance(address,address)";
-        inputs[4] = _ownerAddress;
-        inputs[5] = _spenderAddress;
+        inputs[4] = _owner;
+        inputs[5] = _spender;
         inputs[6] = "--json";
         inputs[7] = "--rpc-url";
         inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
@@ -267,16 +266,16 @@ contract CastFunctionsTest is Test{
             console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
-        emit GetAllowanceEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_ownerAddress), conversionsTest.stringToAddress(_spenderAddress));
+        emit GetAllowanceEvent(conversionsTest.stringToAddress(_token), conversionsTest.stringToAddress(_owner), conversionsTest.stringToAddress(_spender));
         return abi.decode(result, (uint256));
     }
 
-    function withdrawTokens(string calldata _token, string calldata _source, string memory _destination, uint256 _amount) public returns (string memory, string memory){
-        //cast send "$Dex1" "withdrawTokens(address,address,uint256)" "$XToken" "$TrashCan" 100000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+    function withdrawTokens(string calldata _token, string calldata _owner, string memory _destination, uint256 _amount) public returns (string memory, string memory){
+        //cast send "$Dex1" "withdrawTokens(address,address,uint256)" "$XToken" "$TrashCan" 28000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](14);
         inputs[0] = "cast";
         inputs[1] = "send";
-        inputs[2] = _source;
+        inputs[2] = _owner;
         inputs[3] = "withdrawTokens(address,address,uint256)";
         inputs[4] = _token;
         inputs[5] = _destination;
@@ -302,11 +301,15 @@ contract CastFunctionsTest is Test{
         uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        //emit WithdrawTokensEvent(conversionsTest.stringToAddress(_token), conversionsTest.stringToAddress(_source), conversionsTest.stringToAddress(_destination), _amount);
+        emit WithdrawTokensEvent(
+            conversionsTest.stringToAddress(_token),
+            conversionsTest.stringToAddress(_owner),
+            conversionsTest.stringToAddress(_destination),
+            _amount);
         return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function emptyDex(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress) public returns (string memory, string memory){
+    function emptyDex(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress, uint256 _maxAllowance) public returns (string memory, string memory){
         require(bytes(_receiverAddress).length == 42, "Error: Invalid receiver address");
         require(bytes(_tokenAddress).length == 42, "Error: Invalid token address");
         require(bytes(_dex).length == 42, "Error: Invalid dex address");
@@ -315,10 +318,12 @@ contract CastFunctionsTest is Test{
         if (balance == 0) {
             return ("Zero balance", "0x0");
         }
+        console.log("dex", _dex);
+        console.log("balance:", balance);
 
-        (string memory txHashStr, string memory statusStr) = approve(_dex, _tokenAddress);
-        //require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
-        (txHashStr, statusStr) =  withdrawTokens(_tokenAddress, _dex ,_receiverAddress, balance);
+        (string memory txHashStr, string memory statusStr) = approve(_dex, _tokenAddress, _maxAllowance);
+        require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
+        (txHashStr, statusStr) =  withdrawTokens(_tokenAddress, _dex,_receiverAddress, balance);
         return (txHashStr, statusStr);
     }
 }
