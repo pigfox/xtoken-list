@@ -7,13 +7,14 @@ import {Arbitrage} from "../src/Arbitrage.sol";
 import {Vault} from "../src/Vault.sol";
 import {CastFunctionsTest} from "./CastFunctions.sol";
 import {ConversionsTest} from "./Conversions.sol";
+import {Wallet} from "../src/Wallet.sol";
 
 contract ArbitrageTest is Test {
-    address public ownerAddress;
     address public xTokenAddress;
     CastFunctionsTest public castFunctionsTest;
     ConversionsTest public conversionsTest;
     XToken public xToken;
+    Wallet public wallet;
     Dex public dex1 = new Dex();
     Dex public dex2 = new Dex();
     Arbitrage public arbitrage;
@@ -30,24 +31,17 @@ contract ArbitrageTest is Test {
     function setUp() public {
         dex1 = Dex(payable(vm.envAddress("Dex1")));
         dex2 = Dex(payable(vm.envAddress("Dex2")));
+        vault = Vault(payable(vm.envAddress("Vault")));
 
-        ownerAddress = vm.envAddress("WALLET_ADDRESS");
+        wallet = Wallet(vm.envAddress("WALLET_ADDRESS"));
         castFunctionsTest = new CastFunctionsTest();
         conversionsTest = new ConversionsTest();
         xTokenAddress = vm.envAddress("XToken");
-        console.log("Owner Address:", ownerAddress);
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
-        vault = Vault(payable(vm.envAddress("Vault")));
-/*
-        string memory walletAddressStr = vm.envString("WALLET_ADDRESS");
-        console.log("walletAddressStr:", walletAddressStr);
-        address convertedWalletAddress = conversionsTest.stringToAddress(walletAddressStr);
-        console.log("convertedWalletAddress:", convertedWalletAddress);
-        address walletAddress = vm.envAddress("WALLET_ADDRESS");
-        console.log("walletAddress:", walletAddress);
-        assertEq(convertedWalletAddress, walletAddress);
+        vm.prank(address(wallet));
+        wallet.addAccessor(vm.envAddress("Arbitrage"), vm.envAddress("Arbitrage"));
+        vm.stopPrank();
 
-*/
         /*
         (string memory txHash, string memory status) = castFunctionsTest.approve(vm.envString("Dex1"), vm.envString("XToken"), maxAllowance);
         assertEq(expectedStatusOk, status);

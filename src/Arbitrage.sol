@@ -11,9 +11,13 @@ contract Arbitrage {
     address public owner;
     address public profitAddress;
 
+    // Mapping to track access rights
+    mapping(address => bool) public accessors;
+
     constructor() {
         owner = msg.sender;
         profitAddress = msg.sender;
+        accessors[msg.sender] = true; // Grant access to the owner by default
     }
 
     modifier onlyOwner() {
@@ -21,8 +25,27 @@ contract Arbitrage {
         _;
     }
 
+    modifier onlyAccessor() {
+        require(accessors[msg.sender], "Not an authorized accessor");
+        _;
+    }
+
+    function setOwner(address _owner) external onlyOwner {
+        owner = _owner;
+    }
+
     function setProfitAddress(address _profitAddress) external onlyOwner {
         profitAddress = _profitAddress;
+    }
+
+    // Add an address to the group of accessors
+    function addAccessor(address _accessor) external onlyOwner {
+        accessors[_accessor] = true;
+    }
+
+    // Remove an address from the group of accessors
+    function removeAccessor(address _accessor) external onlyOwner {
+        accessors[_accessor] = false;
     }
 
     // Approve tokens for DEXes
@@ -37,12 +60,9 @@ contract Arbitrage {
         address dex2,
         uint256 amount,
         uint256 deadline
-    ) external onlyOwner {
+    ) external onlyAccessor {
         // Check if the transaction is within the deadline
         require(block.timestamp <= deadline, "Transaction deadline exceeded");
-        // Get prices from DEXes
-        //uint256 dex1price = IDex(dex1).getPrice(token); // Price of XToken on Dex1
-        //uint256 dex2price = IDex(dex2).getPrice(token); // Price of XToken on Dex2
 
         // Approve DEXes to spend tokens
         _approveToken(token, dex1, amount);
