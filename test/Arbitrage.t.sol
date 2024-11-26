@@ -68,11 +68,13 @@ contract ArbitrageTest is Test {
         assertEq(arbitrageAllowance, maxAllowance);
 */
 
-        castFunctionsTest.emptyDex(vm.envString("Dex1"), vm.envString("WALLET_ADDRESS"), vm.envString("TrashCan"), maxAllowance);
+        castFunctionsTest.clearDexBalances(vm.envString("Dex1"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
+        //castFunctionsTest.emptyDex(vm.envString("Dex1"), vm.envString("WALLET_ADDRESS"), vm.envString("TrashCan"), maxAllowance);
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
         assertEq(dex1TokenBalance, 0);
 
-        castFunctionsTest.emptyDex(vm.envString("Dex2"), vm.envString("WALLET_ADDRESS"), vm.envString("TrashCan"), maxAllowance);
+        castFunctionsTest.clearDexBalances(vm.envString("Dex2"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
+        //castFunctionsTest.emptyDex(vm.envString("Dex2"), vm.envString("WALLET_ADDRESS"), vm.envString("TrashCan"), maxAllowance);
         uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
         assertEq(dex2TokenBalance, 0);
 

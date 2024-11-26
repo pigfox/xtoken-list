@@ -326,4 +326,69 @@ contract CastFunctionsTest is Test{
         (txHashStr, statusStr) =  withdrawTokens(_tokenAddress, _dex,_receiverAddress, balance);
         return (txHashStr, statusStr);
     }
+
+    function clearDexBalances(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress, uint256 _maxAllowance) public {
+        require(bytes(_receiverAddress).length == 42, "Error: Invalid receiver address");
+        require(bytes(_tokenAddress).length == 42, "Error: Invalid token address");
+        require(bytes(_dex).length == 42, "Error: Invalid dex address");
+
+        // Fetch the balance using `cast call`
+        string[] memory balanceCommand = new string[](8);
+        balanceCommand[0] = "cast";
+        balanceCommand[1] = "call";
+        balanceCommand[2] = _dex;
+        balanceCommand[3] = string.concat("getTokenBalanceOf(address)");
+        balanceCommand[4] = string.concat(_tokenAddress);
+        balanceCommand[5] = "--json";
+        balanceCommand[6] = "--rpc-url";
+        balanceCommand[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+
+        bytes memory result = vm.ffi(balanceCommand);
+        uint256 balance = abi.decode(result, (uint256));
+        if (balance == 0) {
+            console.log("Dex balance is already zero.");
+            return;
+        }
+
+        // Approve the token transfer
+        string[] memory approveCommand = new string[](14);
+        approveCommand[0] = "cast";
+        approveCommand[1] = "send";
+        approveCommand[2] = _dex;
+        approveCommand[3] = string.concat("approve(address,uint256)");
+        approveCommand[4] = _tokenAddress;
+        approveCommand[5] = _receiverAddress;
+        approveCommand[6] = vm.toString(_maxAllowance);
+        approveCommand[7] = "--json";
+        approveCommand[8] = "--rpc-url";
+        approveCommand[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        approveCommand[10] = "--from";
+        approveCommand[11] = vm.envString("WALLET_ADDRESS");
+        approveCommand[12] = "--private-key";
+        approveCommand[13] = vm.envString("PRIVATE_KEY");
+
+        result = vm.ffi(approveCommand);
+        console.log("Approval Transaction Hash:", string(result));
+
+        // Withdraw tokens
+        string[] memory withdrawCommand = new string[](14);
+        withdrawCommand[0] = "cast";
+        withdrawCommand[1] = "send";
+        withdrawCommand[2] = _dex;
+        withdrawCommand[3] = string.concat("withdrawTokens(address,address,uint256)");
+        withdrawCommand[4] = _tokenAddress;
+        withdrawCommand[5] = _receiverAddress;
+        withdrawCommand[6] = vm.toString(balance);
+        withdrawCommand[7] = "--json";
+        withdrawCommand[8] = "--rpc-url";
+        withdrawCommand[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        withdrawCommand[10] = "--from";
+        withdrawCommand[11] = vm.envString("WALLET_ADDRESS");
+        withdrawCommand[12] = "--private-key";
+        withdrawCommand[13] = vm.envString("PRIVATE_KEY");
+
+        result = vm.ffi(withdrawCommand);
+        console.log("Withdrawal Transaction Hash:", string(result));
+    }
+
 }
