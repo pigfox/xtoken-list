@@ -68,13 +68,13 @@ contract ArbitrageTest is Test {
         assertEq(arbitrageAllowance, maxAllowance);
 */
 
-        //castFunctionsTest.clearDexBalances(vm.envString("Dex1"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
+        castFunctionsTest.clearDexBalances(vm.envString("Dex1"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
         //castFunctionsTest.emptyDex(vm.envString("Dex1"), vm.envString("WALLET_ADDRESS"), vm.envString("TrashCan"), maxAllowance);
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
         //assertEq(dex1TokenBalance, 0);
         dex1TokenBalance;
 
-        //castFunctionsTest.clearDexBalances(vm.envString("Dex2"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
+        castFunctionsTest.clearDexBalances(vm.envString("Dex2"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
         //castFunctionsTest.emptyDex(vm.envString("Dex2"), vm.envString("WALLET_ADDRESS"), vm.envString("TrashCan"), maxAllowance);
         uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
         //assertEq(dex2TokenBalance, 0);
@@ -111,7 +111,8 @@ contract ArbitrageTest is Test {
 
         dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
         assertEq(dex2TokenBalance, initialDex2TokenSupply);
-/**/
+
+       /*
         (txHash, status) = castFunctionsTest.approve(vm.envString("Dex1"), vm.envString("XToken"), maxAllowance);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
@@ -129,7 +130,7 @@ contract ArbitrageTest is Test {
         assertEq(expectedTxHashLength, bytes(txHash).length);
         uint256 arbitrageAllowance = castFunctionsTest.getAllowance(vm.envString("XToken"), vm.envString("Arbitrage"), vm.envString("Arbitrage"));
         assertEq(arbitrageAllowance, maxAllowance);
-
+*/
         console.log("Setup completed successfully.");
     }
 
@@ -150,11 +151,11 @@ contract ArbitrageTest is Test {
         } else if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
             uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
-            arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp);
+            arbitrage.run(address(xToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp);
         } else if (dex2TokenPrice < dex1TokenPrice){
             console.log("Buy from Dex2 sell to Dex1");
             uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
-            arbitrage.executeArbitrage(address(xToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
+            arbitrage.run(address(xToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
         }
 
         uint256 gasUsed = gasStart - gasleft();

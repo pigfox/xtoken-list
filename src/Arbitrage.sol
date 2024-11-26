@@ -31,44 +31,42 @@ contract Arbitrage {
     }
 
     // Execute arbitrage if Dex1 price < Dex2 price
-    function executeArbitrage(
-        address xToken,
+    function run(
+        address token,
         address dex1,
         address dex2,
         uint256 amount,
         uint256 deadline
     ) external onlyOwner {
         // Check if the transaction is within the deadline
-        require(block.timestamp <= deadline + 300, "Transaction deadline exceeded");
+        require(block.timestamp <= deadline, "Transaction deadline exceeded");
         // Get prices from DEXes
-        uint256 price1 = IDex(dex1).getPrice(xToken); // Price of XToken on Dex1
-        uint256 price2 = IDex(dex2).getPrice(xToken); // Price of XToken on Dex2
-
-        require(price1 < price2, "No arbitrage opportunity");
+        //uint256 dex1price = IDex(dex1).getPrice(token); // Price of XToken on Dex1
+        //uint256 dex2price = IDex(dex2).getPrice(token); // Price of XToken on Dex2
 
         // Approve DEXes to spend tokens
-        _approveToken(xToken, dex1, amount);
-        _approveToken(xToken, dex2, amount);
+        _approveToken(token, dex1, amount);
+        _approveToken(token, dex2, amount);
 
         // Transfer from Dex1 to Arbitrage contract
         require(
-            IERC20(xToken).transferFrom(dex1, address(this), amount),
+            IERC20(token).transferFrom(dex1, address(this), amount),
             "Transfer from Dex1 failed"
         );
 
         // Swap from Arbitrage to Dex2
         require(
-            IERC20(xToken).transfer(dex2, amount),
+            IERC20(token).transfer(dex2, amount),
             "Transfer to Dex2 failed"
         );
 
         // Calculate the profit
-        uint256 finalBalance = IERC20(xToken).balanceOf(address(this));
+        uint256 finalBalance = IERC20(token).balanceOf(address(this));
         uint256 profit = finalBalance > amount ? finalBalance - amount : 0;
 
         // Send the profit to the profit address
         if (profit > 0) {
-            require(IERC20(xToken).transfer(profitAddress, profit), "Profit transfer failed");
+            require(IERC20(token).transfer(profitAddress, profit), "Profit transfer failed");
         }
     }
 

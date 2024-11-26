@@ -355,9 +355,9 @@ contract CastFunctionsTest is Test{
         string[] memory approveCommand = new string[](13);
         approveCommand[0] = "cast";
         approveCommand[1] = "send";
-        approveCommand[2] = _dex;
-        approveCommand[3] = string.concat("approve(address,uint256)");
-        approveCommand[4] = _tokenAddress;
+        approveCommand[2] = _tokenAddress;
+        approveCommand[3] = "approve(address,uint256)"; //string.concat("approve(address,uint256)");
+        approveCommand[4] = _dex;
         approveCommand[5] = vm.toString(_maxAllowance);
         approveCommand[6] = "--json";
         approveCommand[7] = "--rpc-url";
