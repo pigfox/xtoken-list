@@ -350,22 +350,22 @@ contract CastFunctionsTest is Test{
             return;
         }
 
+        //cast send "$XToken" "approve(address,uint256)" "$Router1" 100 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         // Approve the token transfer
-        string[] memory approveCommand = new string[](14);
+        string[] memory approveCommand = new string[](13);
         approveCommand[0] = "cast";
         approveCommand[1] = "send";
         approveCommand[2] = _dex;
         approveCommand[3] = string.concat("approve(address,uint256)");
         approveCommand[4] = _tokenAddress;
-        approveCommand[5] = _receiverAddress;
-        approveCommand[6] = vm.toString(_maxAllowance);
-        approveCommand[7] = "--json";
-        approveCommand[8] = "--rpc-url";
-        approveCommand[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        approveCommand[10] = "--from";
-        approveCommand[11] = vm.envString("WALLET_ADDRESS");
-        approveCommand[12] = "--private-key";
-        approveCommand[13] = vm.envString("PRIVATE_KEY");
+        approveCommand[5] = vm.toString(_maxAllowance);
+        approveCommand[6] = "--json";
+        approveCommand[7] = "--rpc-url";
+        approveCommand[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        approveCommand[9] = "--from";
+        approveCommand[10] = vm.envString("WALLET_ADDRESS");
+        approveCommand[11] = "--private-key";
+        approveCommand[12] = vm.envString("PRIVATE_KEY");
 
         result = vm.ffi(approveCommand);
         console.log("Approval Transaction Hash:", string(result));
