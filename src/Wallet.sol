@@ -18,6 +18,10 @@ contract Wallet {
         _;
     }
 
+    function getOwner() public view returns (address) {
+        return owner;
+    }
+
     function addAccessor(address _target, address _accessor) public onlyOwner {
         IArbitrageContract(_target).addAccessor(_accessor);
     }
