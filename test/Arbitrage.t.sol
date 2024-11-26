@@ -90,6 +90,10 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        (txHash, status) = castFunctionsTest.approve(vm.envString("Arbitrage"), vm.envString("XToken"));
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
         console.log("Setup completed successfully.");
     }
 
@@ -100,16 +104,26 @@ contract ArbitrageTest is Test {
         uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
 
+        console.log("dex1TokenPrice", dex1TokenPrice);
+        console.log("dex2TokenPrice", dex2TokenPrice);
+
+        uint256 dex1Allowance = castFunctionsTest.getAllowance(vm.envString("XToken"), vm.envString("Dex1"), vm.envString("Arbitrage"));
+        console.log("Dex1 Allowance:", dex1Allowance);
+        uint256 dex2Allowance = castFunctionsTest.getAllowance(vm.envString("XToken"), vm.envString("Dex2"), vm.envString("Arbitrage"));
+        console.log("Dex2 Allowance:", dex2Allowance);
+
+        uint256 timeStamp = block.timestamp + 300;
+        console.log("Time Stamp:", timeStamp);
         if (dex1TokenPrice == dex2TokenPrice) {
             revert("Prices are equal");
         } else if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
             uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
-            arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), dex1TokenBalance, block.timestamp);
+            arbitrage.executeArbitrage(address(xToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp);
         } else if (dex2TokenPrice < dex1TokenPrice){
             console.log("Buy from Dex2 sell to Dex1");
             uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
-            arbitrage.executeArbitrage(address(xToken), address(dex2), address(dex1), dex2TokenBalance, block.timestamp);
+            arbitrage.executeArbitrage(address(xToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
         }
 
         uint256 gasUsed = gasStart - gasleft();
