@@ -34,6 +34,8 @@ contract ArbitrageTest is Test {
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
         assertEq(address(arbitrage), vm.envAddress("Arbitrage"));
         arbitrage.addAccessor(walletAddress);
+        arbitrage.setOwner(walletAddress);
+        assertEq(arbitrage.getOwner(), walletAddress);
         require(arbitrage.accessors(walletAddress), "Accessor not added");
         vm.stopPrank();
 
@@ -41,13 +43,6 @@ contract ArbitrageTest is Test {
         dex1 = Dex(payable(vm.envAddress("Dex1")));
         dex2 = Dex(payable(vm.envAddress("Dex2")));
         vault = Vault(payable(vm.envAddress("Vault")));
-
-        // Deploy Arbitrage contract
-        vm.startPrank(walletAddress);
-        arbitrage = new Arbitrage();
-        arbitrage.setOwner(walletAddress);
-        vm.stopPrank();
-        assertEq(arbitrage.getOwner(), walletAddress);
 
         // Grant access to walletAddress in Arbitrage
         vm.startPrank(walletAddress);
