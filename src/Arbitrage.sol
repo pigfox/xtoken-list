@@ -21,17 +21,21 @@ contract Arbitrage {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Not the owner");
+        require(msg.sender == owner, "Arbitrage - Not the owner");
         _;
     }
 
     modifier onlyAccessor() {
-        require(accessors[msg.sender], "Not an authorized accessor");
+        require(accessors[msg.sender], "Arbitrage - Not an authorized accessor");
         _;
     }
 
     function setOwner(address _owner) external onlyOwner {
         owner = _owner;
+    }
+
+    function getOwner() public view returns (address) {
+        return owner;
     }
 
     function setProfitAddress(address _profitAddress) external onlyOwner {

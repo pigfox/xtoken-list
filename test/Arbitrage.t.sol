@@ -29,28 +29,30 @@ contract ArbitrageTest is Test {
     uint256 public maxAllowance = type(uint256).max;
 
     function setUp() public {
-        vm.startPrank(vm.envAddress("WALLET_ADDRESS"));
-        wallet = new Wallet(vm.envAddress("WALLET_ADDRESS"));
+        address walletAddress = vm.envAddress("WALLET_ADDRESS");
 
-        assertEq(wallet.getOwner(), vm.envAddress("WALLET_ADDRESS"));
+        // Deploy wallet contract
+        vm.startPrank(walletAddress);
+        wallet = new Wallet(walletAddress);
+        vm.stopPrank();
+        assertEq(wallet.getOwner(), walletAddress);
 
+        // Set up Dex and Vault addresses
         dex1 = Dex(payable(vm.envAddress("Dex1")));
         dex2 = Dex(payable(vm.envAddress("Dex2")));
         vault = Vault(payable(vm.envAddress("Vault")));
 
-        castFunctionsTest = new CastFunctionsTest();
-        conversionsTest = new ConversionsTest();
-        xTokenAddress = vm.envAddress("XToken");
-        arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
+        // Deploy Arbitrage contract
+        vm.startPrank(walletAddress);
+        arbitrage = new Arbitrage();
+        arbitrage.setOwner(walletAddress);
+        vm.stopPrank();
+        assertEq(arbitrage.getOwner(), walletAddress);
 
-
-        wallet.addAccessor(vm.envAddress("Arbitrage"), vm.envAddress("Arbitrage"));
-        /*
-        console.logAddress(wallet.getOwner());
-        console.logAddress(vm.envAddress("WALLET_ADDRESS"));
-
-        console.logAddress(vm.envAddress("Arbitrage"));
-        */
+        // Grant access to walletAddress in Arbitrage
+        vm.startPrank(walletAddress);
+        arbitrage.addAccessor(walletAddress);
+        require(arbitrage.accessors(walletAddress), "Accessor not added");
         vm.stopPrank();
 
         //IArbitrageContract(vm.envAddress("Arbitrage")).addAccessor(address(0));
@@ -156,11 +158,15 @@ contract ArbitrageTest is Test {
         console.log("Time Stamp:", timeStamp);
         if (dex1TokenPrice == dex2TokenPrice) {
             revert("Prices are equal");
-        } else if (dex1TokenPrice < dex2TokenPrice) {
+        }
+        console.log("Function Test ExecuteArbitrage");
+        if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
             uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
             arbitrage.run(address(xToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp);
-        } else if (dex2TokenPrice < dex1TokenPrice){
+        }
+
+        if (dex2TokenPrice < dex1TokenPrice){
             console.log("Buy from Dex2 sell to Dex1");
             uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
             arbitrage.run(address(xToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
