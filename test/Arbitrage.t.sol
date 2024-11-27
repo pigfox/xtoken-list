@@ -100,14 +100,14 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        uint256 dex1Allowance = castFunctionsTest.getAllowance(xTokenAddressStr, walletAddressStr, arbitrageAddressStr);
+        uint256 dex1Allowance = castFunctionsTest.getAllowance(xTokenAddressStr, walletAddressStr, dex1AddressStr);
         assertEq(dex1Allowance, maxAllowance);
 
-        (txHash, status) = castFunctionsTest.approve(xTokenAddressStr, walletAddressStr, maxAllowance);
+        (txHash, status) = castFunctionsTest.approve(xTokenAddressStr, dex2AddressStr, maxAllowance);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        uint256 dex2Allowance = castFunctionsTest.getAllowance(xTokenAddressStr, walletAddressStr, arbitrageAddressStr);
+        uint256 dex2Allowance = castFunctionsTest.getAllowance(xTokenAddressStr, walletAddressStr, dex2AddressStr);
         assertEq(dex2Allowance, maxAllowance);
 
         (txHash, status) = castFunctionsTest.approve(xTokenAddressStr, arbitrageAddressStr, maxAllowance);
