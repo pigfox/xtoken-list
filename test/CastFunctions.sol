@@ -29,10 +29,7 @@ contract CastFunctionsTest is Test{
     }
 
     function addressBalance(string calldata _contractAddress) public returns (uint256) {
-        /*
-        cast balance 0xb04d6a4949fa623629e0ED6bd4Ecb78A8C847693 --rpc-url https://ethereum-sepolia-rpc.publicnode.com
-        5343635260568317891
-        */
+        //cast balance 0xb04d6a4949fa623629e0ED6bd4Ecb78A8C847693 --rpc-url https://ethereum-sepolia-rpc.publicnode.com 5343635260568317891
         string[] memory inputs = new string[](5);
         inputs[0] = "cast";
         inputs[1] = "balance";
@@ -52,10 +49,6 @@ contract CastFunctionsTest is Test{
 
     function getTokenBalanceOf(string calldata _dexAddress, string calldata _tokenAddress) public returns (uint256) {
         //cast call "$Dex1" "getTokenBalanceOf(address)" "$XToken" --rpc-url "$rpc_url"
-        /*
-        cast call 0x8bA8113C0d0a71eAB75aeF49B980CdeAcE4630C9 getTokenBalanceOf(address) 0xBc35bD49d5de2929522E5Cc3F40460D74d24c24C --rpc-url https://ethereum-sepolia-rpc.publicnode.com
-        0x0000000000000000000000000000000000000000000000000000000000000000
-        */
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
@@ -328,11 +321,14 @@ contract CastFunctionsTest is Test{
     }
 
     function clearDexBalances(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress, uint256 _maxAllowance) public {
-        require(bytes(_receiverAddress).length == 42, "Error: Invalid receiver address");
-        require(bytes(_tokenAddress).length == 42, "Error: Invalid token address");
-        require(bytes(_dex).length == 42, "Error: Invalid dex address");
+        console.log("clearDexBalances execution begins...");
+        console.log("bytes(_tokenAddress).length", bytes(_tokenAddress).length);
+        console.log("bytes(_receiverAddress).length", bytes(_receiverAddress).length);
+        console.log("bytes(_dex).length", bytes(_dex).length);
+        console.log("_maxAllowance", _maxAllowance);
 
-        // Fetch the balance using `cast call`
+        console.log("clearDexBalances@334");
+
         string[] memory balanceCommand = new string[](8);
         balanceCommand[0] = "cast";
         balanceCommand[1] = "call";
@@ -342,21 +338,22 @@ contract CastFunctionsTest is Test{
         balanceCommand[5] = "--json";
         balanceCommand[6] = "--rpc-url";
         balanceCommand[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-
+        console.log("clearDexBalances@345");
         bytes memory result = vm.ffi(balanceCommand);
+        console.log("clearDexBalances@337");
         uint256 balance = abi.decode(result, (uint256));
+        console.log("clearDexBalances@349");
         if (balance == 0) {
             console.log("Dex balance is already zero.");
             return;
         }
 
         //cast send "$XToken" "approve(address,uint256)" "$Router1" 100 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-        // Approve the token transfer
         string[] memory approveCommand = new string[](13);
         approveCommand[0] = "cast";
         approveCommand[1] = "send";
         approveCommand[2] = _tokenAddress;
-        approveCommand[3] = "approve(address,uint256)"; //string.concat("approve(address,uint256)");
+        approveCommand[3] = "approve(address,uint256)";
         approveCommand[4] = _dex;
         approveCommand[5] = vm.toString(_maxAllowance);
         approveCommand[6] = "--json";
@@ -370,7 +367,6 @@ contract CastFunctionsTest is Test{
         result = vm.ffi(approveCommand);
         console.log("Approval Transaction Hash:", string(result));
 
-        // Withdraw tokens
         string[] memory withdrawCommand = new string[](14);
         withdrawCommand[0] = "cast";
         withdrawCommand[1] = "send";
@@ -389,6 +385,6 @@ contract CastFunctionsTest is Test{
 
         result = vm.ffi(withdrawCommand);
         console.log("Withdrawal Transaction Hash:", string(result));
-    }
 
+    }
 }
