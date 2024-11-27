@@ -32,6 +32,7 @@ contract ArbitrageTest is Test {
         address walletAddress = vm.envAddress("WALLET_ADDRESS");
         vm.startPrank(walletAddress);
         arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
+        assertEq(address(arbitrage), vm.envAddress("Arbitrage"));
         arbitrage.addAccessor(walletAddress);
         require(arbitrage.accessors(walletAddress), "Accessor not added");
         vm.stopPrank();
