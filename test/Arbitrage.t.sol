@@ -11,6 +11,9 @@ import {Wallet} from "../src/Wallet.sol";
 
 contract ArbitrageTest is Test {
     //address public xTokenAddress;
+    string public dex1AddressStr;
+    string public dex2AddressStr;
+    string public xTokenAddressStr;
     Dex public dex1;
     Dex public dex2;
     CastFunctionsTest public castFunctionsTest = new CastFunctionsTest();
@@ -35,13 +38,13 @@ contract ArbitrageTest is Test {
         string memory arbitrageAddressStr = vm.envString("ARBITRAGE");
         address arbitrageAddress = conversionsTest.stringToAddress(arbitrageAddressStr);
 
-        string memory xTokenAddressStr = vm.envString("XTOKEN");
+        xTokenAddressStr = vm.envString("XTOKEN");
         //address xTokenAddress = conversionsTest.stringToAddress(xTokenAddressStr);
 
-        string memory dex1AddressStr = vm.envString("DEX1");
+        dex1AddressStr = vm.envString("DEX1");
         address dex1Address = conversionsTest.stringToAddress(dex1AddressStr);
 
-        string memory dex2AddressStr = vm.envString("DEX2");
+        dex2AddressStr = vm.envString("DEX2");
         address dex2Address = conversionsTest.stringToAddress(dex2AddressStr);
 
         vm.startPrank(walletAddress);
@@ -124,7 +127,7 @@ contract ArbitrageTest is Test {
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
-/*
+
         uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, xTokenAddressStr);
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, xTokenAddressStr);
 
@@ -136,7 +139,8 @@ contract ArbitrageTest is Test {
         if (dex1TokenPrice == dex2TokenPrice) {
             revert("Prices are equal");
         }
-        console.log("Function Test ExecuteArbitrage");
+        console.log("Function Test ExecuteArbitrage 2");
+        /*
         if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
             uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, xTokenAddressStr);
