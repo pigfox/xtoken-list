@@ -30,12 +30,11 @@ contract ArbitrageTest is Test {
 
     function setUp() public {
         address walletAddress = vm.envAddress("WALLET_ADDRESS");
-
-        // Deploy wallet contract
         vm.startPrank(walletAddress);
-        wallet = new Wallet(walletAddress);
+        arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
+        arbitrage.addAccessor(walletAddress);
+        require(arbitrage.accessors(walletAddress), "Accessor not added");
         vm.stopPrank();
-        assertEq(wallet.getOwner(), walletAddress);
 
         // Set up Dex and Vault addresses
         dex1 = Dex(payable(vm.envAddress("Dex1")));
@@ -77,13 +76,13 @@ contract ArbitrageTest is Test {
         uint256 arbitrageAllowance = castFunctionsTest.getAllowance(vm.envString("XToken"), vm.envString("Arbitrage"), vm.envString("Arbitrage"));
         assertEq(arbitrageAllowance, maxAllowance);
 */
-/*
+
         castFunctionsTest.clearDexBalances(vm.envString("Dex1"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
         //castFunctionsTest.emptyDex(vm.envString("Dex1"), vm.envString("WALLET_ADDRESS"), vm.envString("TrashCan"), maxAllowance);
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
-        //assertEq(dex1TokenBalance, 0);
-        dex1TokenBalance;
-
+        assertEq(dex1TokenBalance, 0);
+        //dex1TokenBalance;
+/*
         castFunctionsTest.clearDexBalances(vm.envString("Dex2"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
         //castFunctionsTest.emptyDex(vm.envString("Dex2"), vm.envString("WALLET_ADDRESS"), vm.envString("TrashCan"), maxAllowance);
         uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
