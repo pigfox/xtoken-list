@@ -31,9 +31,13 @@ contract ArbitrageTest is Test {
     function setUp() public {
         string memory walletAddressStr = vm.envString("WALLET_ADDRESS");
         address walletAddress = conversionsTest.stringToAddress(walletAddressStr);
+
+        string memory arbitrageAddressStr = vm.envString("ARBITRAGE");
+        address arbitrageAddress = conversionsTest.stringToAddress(arbitrageAddressStr);
+
         vm.startPrank(walletAddress);
-        arbitrage = Arbitrage(vm.envAddress("Arbitrage"));
-        assertEq(address(arbitrage), vm.envAddress("Arbitrage"));
+        arbitrage = Arbitrage(arbitrageAddress);
+        assertEq(address(arbitrage), arbitrageAddress);
         arbitrage.addAccessor(walletAddress);
         arbitrage.setOwner(walletAddress);
         assertEq(arbitrage.getOwner(), walletAddress);
