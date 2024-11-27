@@ -19,7 +19,7 @@ echo "Testing $contract::$function..."
 #cast call "$XToken" "totalSupply()" --rpc-url "$rpc_url"
 #cast send "$XToken" "mint(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #cast send "$XToken" "supplyTokenTo(address)(uint256)" "$Arbitrage" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-#cast send "$XToken" "approve(address,uint256)" "$Router1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+#cast send "$XToken" "approve(address,uint256)" "$Dex1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #-----------
 #cast send "$Dex1" "withdrawTokens(address,address,uint256)" "$XToken" "$TrashCan" 100000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #cast send "$Dex1" "withdrawTokens(address,address,uint256)" "$XToken" "$TrashCan" 28000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
@@ -29,7 +29,7 @@ echo "Testing $contract::$function..."
 #---set---
 #cast send "$XToken" "mint(uint256)(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #cast send "$XToken" "approve(address,uint256)" "$Dex1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-#cast call "$XToken" "allowance(address,address)" "$XToken" "$Dex1" --rpc-url "$rpc_url"
+#cast call "$XToken" "allowance(address,address)" "$WALLET_ADDRESS" "$Dex1" --rpc-url "$rpc_url"
 #cast send "$Dex1" "depositTokens(address,address,uint256)" "$XToken" "$WALLET_ADDRESS" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #---set---
 #cast send "$XToken" "supplyTokenTo(address,uint256)" "$SingleTokenDex1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"

@@ -256,7 +256,6 @@ contract CastFunctionsTest is Test{
 
         bytes memory result = vm.ffi(inputs);
         if (0 == result.length) {
-            console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
         emit GetAllowanceEvent(conversionsTest.stringToAddress(_token), conversionsTest.stringToAddress(_owner), conversionsTest.stringToAddress(_spender));
@@ -302,33 +301,7 @@ contract CastFunctionsTest is Test{
         return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function emptyDex(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress, uint256 _maxAllowance) public returns (string memory, string memory){
-        require(bytes(_receiverAddress).length == 42, "Error: Invalid receiver address");
-        require(bytes(_tokenAddress).length == 42, "Error: Invalid token address");
-        require(bytes(_dex).length == 42, "Error: Invalid dex address");
-
-        uint256 balance = getTokenBalanceOf(_dex, _tokenAddress);
-        if (balance == 0) {
-            return ("Zero balance", "0x0");
-        }
-        console.log("dex", _dex);
-        console.log("balance:", balance);
-
-        (string memory txHashStr, string memory statusStr) = approve(_dex, _tokenAddress, _maxAllowance);
-        require(keccak256(abi.encodePacked(expectedStatusOk)) == keccak256(abi.encodePacked(statusStr)), "statusStr is not OK");
-        (txHashStr, statusStr) =  withdrawTokens(_tokenAddress, _dex,_receiverAddress, balance);
-        return (txHashStr, statusStr);
-    }
-
     function clearDexBalances(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress, uint256 _maxAllowance) public {
-        console.log("clearDexBalances execution begins...");
-        console.log("bytes(_tokenAddress).length", bytes(_tokenAddress).length);
-        console.log("bytes(_receiverAddress).length", bytes(_receiverAddress).length);
-        console.log("bytes(_dex).length", bytes(_dex).length);
-        console.log("_maxAllowance", _maxAllowance);
-
-        console.log("clearDexBalances@334");
-
         string[] memory balanceCommand = new string[](8);
         balanceCommand[0] = "cast";
         balanceCommand[1] = "call";
@@ -338,11 +311,9 @@ contract CastFunctionsTest is Test{
         balanceCommand[5] = "--json";
         balanceCommand[6] = "--rpc-url";
         balanceCommand[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        console.log("clearDexBalances@345");
+
         bytes memory result = vm.ffi(balanceCommand);
-        console.log("clearDexBalances@337");
         uint256 balance = abi.decode(result, (uint256));
-        console.log("clearDexBalances@349");
         if (balance == 0) {
             console.log("Dex balance is already zero.");
             return;
@@ -385,6 +356,5 @@ contract CastFunctionsTest is Test{
 
         result = vm.ffi(withdrawCommand);
         console.log("Withdrawal Transaction Hash:", string(result));
-
     }
 }
