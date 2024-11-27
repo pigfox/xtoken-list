@@ -37,7 +37,7 @@ contract ArbitrageTest is Test {
         arbitrage.setOwner(walletAddress);
         assertEq(arbitrage.getOwner(), walletAddress);
         require(arbitrage.accessors(walletAddress), "Accessor not added");
-        vm.stopPrank();
+        //vm.stopPrank();
 
         // Set up Dex and Vault addresses
         dex1 = Dex(payable(vm.envAddress("Dex1")));
@@ -130,6 +130,7 @@ contract ArbitrageTest is Test {
         uint256 arbitrageAllowance = castFunctionsTest.getAllowance(vm.envString("XToken"), vm.envString("Arbitrage"), vm.envString("Arbitrage"));
         assertEq(arbitrageAllowance, maxAllowance);
 */
+        vm.stopPrank();
         console.log("Setup completed successfully.");
     }
 
