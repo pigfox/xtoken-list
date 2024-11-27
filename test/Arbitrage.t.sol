@@ -10,9 +10,9 @@ import {ConversionsTest} from "./Conversions.sol";
 import {Wallet} from "../src/Wallet.sol";
 
 contract ArbitrageTest is Test {
-    address public xTokenAddress;
-    Dex public dex1 = new Dex();
-    Dex public dex2 = new Dex();
+    //address public xTokenAddress;
+    Dex public dex1;
+    Dex public dex2;
     CastFunctionsTest public castFunctionsTest = new CastFunctionsTest();
     ConversionsTest public conversionsTest = new ConversionsTest();
     XToken public xToken;
@@ -35,6 +35,15 @@ contract ArbitrageTest is Test {
         string memory arbitrageAddressStr = vm.envString("ARBITRAGE");
         address arbitrageAddress = conversionsTest.stringToAddress(arbitrageAddressStr);
 
+        string memory xTokenAddressStr = vm.envString("XTOKEN");
+        //address xTokenAddress = conversionsTest.stringToAddress(xTokenAddressStr);
+
+        string memory dex1AddressStr = vm.envString("DEX1");
+        address dex1Address = conversionsTest.stringToAddress(dex1AddressStr);
+
+        string memory dex2AddressStr = vm.envString("DEX2");
+        address dex2Address = conversionsTest.stringToAddress(dex2AddressStr);
+
         vm.startPrank(walletAddress);
         arbitrage = Arbitrage(arbitrageAddress);
         assertEq(address(arbitrage), arbitrageAddress);
@@ -43,69 +52,69 @@ contract ArbitrageTest is Test {
         assertEq(arbitrage.getOwner(), walletAddress);
         require(arbitrage.accessors(walletAddress), "Accessor not added");
 
-        dex1 = Dex(payable(vm.envAddress("Dex1")));
-        dex2 = Dex(payable(vm.envAddress("Dex2")));
-        vault = Vault(payable(vm.envAddress("Vault")));
+        dex1 = Dex(payable(dex1Address));
+        dex2 = Dex(payable(dex2Address));
+        vault = Vault(payable(vm.envAddress("VAULT")));
 
-        castFunctionsTest.clearDexBalances(vm.envString("Dex1"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
-        uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
+        castFunctionsTest.clearDexBalances(dex1AddressStr, xTokenAddressStr, vm.envString("TrashCan"), maxAllowance);
+        uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, xTokenAddressStr);
         assertEq(dex1TokenBalance, 0);
 
-        castFunctionsTest.clearDexBalances(vm.envString("Dex2"), vm.envString("XToken"), vm.envString("TrashCan"), maxAllowance);
-        uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
+        castFunctionsTest.clearDexBalances(dex2AddressStr, xTokenAddressStr, vm.envString("TrashCan"), maxAllowance);
+        uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, xTokenAddressStr);
         assertEq(dex2TokenBalance, 0);
 
-        (string memory txHash, string memory status) = castFunctionsTest.setTokenPrice(vm.envString("Dex1"), vm.envString("XToken"), initialDex1TokenPrice);
+        (string memory txHash, string memory status) = castFunctionsTest.setTokenPrice(dex1AddressStr, xTokenAddressStr, initialDex1TokenPrice);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.setTokenPrice(vm.envString("Dex2"), vm.envString("XToken"), initialDex2TokenPrice);
+        (txHash, status) = castFunctionsTest.setTokenPrice(dex2AddressStr, xTokenAddressStr, initialDex2TokenPrice);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
+        uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, xTokenAddressStr);
         assertEq(dex1TokenPrice, initialDex1TokenPrice);
 
-        uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
+        uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, xTokenAddressStr);
         assertEq(dex2TokenPrice, initialDex2TokenPrice);
 
-        (txHash, status) = castFunctionsTest.mint(vm.envString("XToken"), maxTokenSupply);
+        (txHash, status) = castFunctionsTest.mint(xTokenAddressStr, maxTokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex1"), vm.envString("XToken"),initialDex1TokenSupply);
+        (txHash, status) = castFunctionsTest.depositTokens(dex1AddressStr, xTokenAddressStr,initialDex1TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
+        dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, xTokenAddressStr);
         assertEq(dex1TokenBalance, initialDex1TokenSupply);
 
-        (txHash, status) = castFunctionsTest.depositTokens(vm.envString("Dex2"), vm.envString("XToken"),initialDex2TokenSupply);
+        (txHash, status) = castFunctionsTest.depositTokens(dex2AddressStr, xTokenAddressStr,initialDex2TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
+        dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, xTokenAddressStr);
         assertEq(dex2TokenBalance, initialDex2TokenSupply);
 
-        (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("Dex1"), maxAllowance);
+        (txHash, status) = castFunctionsTest.approve(xTokenAddressStr, dex1AddressStr, maxAllowance);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        uint256 dex1Allowance = castFunctionsTest.getAllowance(vm.envString("XToken"), walletAddressStr, vm.envString("Arbitrage"));
+        uint256 dex1Allowance = castFunctionsTest.getAllowance(xTokenAddressStr, walletAddressStr, arbitrageAddressStr);
         assertEq(dex1Allowance, maxAllowance);
 
-        (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), walletAddressStr, maxAllowance);
+        (txHash, status) = castFunctionsTest.approve(xTokenAddressStr, walletAddressStr, maxAllowance);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        uint256 dex2Allowance = castFunctionsTest.getAllowance(vm.envString("XToken"), walletAddressStr, vm.envString("Arbitrage"));
+        uint256 dex2Allowance = castFunctionsTest.getAllowance(xTokenAddressStr, walletAddressStr, arbitrageAddressStr);
         assertEq(dex2Allowance, maxAllowance);
 
-        (txHash, status) = castFunctionsTest.approve(vm.envString("XToken"), vm.envString("Arbitrage"), maxAllowance);
+        (txHash, status) = castFunctionsTest.approve(xTokenAddressStr, arbitrageAddressStr, maxAllowance);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-        uint256 arbitrageAllowance = castFunctionsTest.getAllowance(vm.envString("XToken"), vm.envString("Arbitrage"), vm.envString("Arbitrage"));
+        uint256 arbitrageAllowance = castFunctionsTest.getAllowance(xTokenAddressStr, walletAddressStr, arbitrageAddressStr);
         assertEq(arbitrageAllowance, maxAllowance);
 
         vm.stopPrank();
@@ -116,8 +125,8 @@ contract ArbitrageTest is Test {
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
 /*
-        uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex1"), vm.envString("XToken"));
-        uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(vm.envString("Dex2"), vm.envString("XToken"));
+        uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, xTokenAddressStr);
+        uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, xTokenAddressStr);
 
         console.log("dex1TokenPrice", dex1TokenPrice);
         console.log("dex2TokenPrice", dex2TokenPrice);
@@ -130,13 +139,13 @@ contract ArbitrageTest is Test {
         console.log("Function Test ExecuteArbitrage");
         if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
-            uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex1"), vm.envString("XToken"));
+            uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, xTokenAddressStr);
             arbitrage.run(address(xToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp);
         }
 
         if (dex2TokenPrice < dex1TokenPrice){
             console.log("Buy from Dex2 sell to Dex1");
-            uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(vm.envString("Dex2"), vm.envString("XToken"));
+            uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, xTokenAddressStr);
             arbitrage.run(address(xToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
         }
 */
