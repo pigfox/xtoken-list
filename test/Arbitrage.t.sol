@@ -44,12 +44,6 @@ contract ArbitrageTest is Test {
         dex2 = Dex(payable(vm.envAddress("Dex2")));
         vault = Vault(payable(vm.envAddress("Vault")));
 
-        // Grant access to walletAddress in Arbitrage
-        vm.startPrank(walletAddress);
-        arbitrage.addAccessor(walletAddress);
-        require(arbitrage.accessors(walletAddress), "Accessor not added");
-        vm.stopPrank();
-
         //IArbitrageContract(vm.envAddress("Arbitrage")).addAccessor(address(0));
 
 
