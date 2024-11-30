@@ -8,6 +8,26 @@ contract Proxy {
         implementation = _implementation;
     }
 
+    fallback() external payable {
+        address impl = implementation;
+        require(impl != address(0), "Implementation address is not set");
+
+        // Delegate call to the implementation contract
+        (bool success, bytes memory data) = impl.delegatecall(msg.data);
+
+        // Check the result and either revert or return
+        if (!success) {
+            // Revert with the returned data
+            revert(string(data));
+        }
+        // Return the returned data
+        assembly {
+            return(add(data, 32), mload(data))
+        }
+    }
+
+
+    /*
     /// @notice Handles calls with data
     fallback() external payable {
         address impl = implementation;
@@ -25,7 +45,7 @@ contract Proxy {
             default { return(ptr, size) }
         }
     }
-
+*/
     /// @notice Handles plain Ether transfers with no data
     receive() external payable {
         // Optionally add custom logic here (e.g., emit an event)
