@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-
+/*
 import "forge-std/Script.sol";
 import "../src/Proxy.sol";
 
@@ -14,3 +14,4 @@ contract ProxyScript is Script {
         vm.stopBroadcast();
     }
 }
+*/

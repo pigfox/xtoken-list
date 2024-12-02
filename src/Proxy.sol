@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
 
+pragma solidity ^0.8.26;
+/*
 contract Proxy {
     address public implementation;
 
@@ -27,7 +28,7 @@ contract Proxy {
     }
 
 
-    /*
+
     /// @notice Handles calls with data
     fallback() external payable {
         address impl = implementation;
@@ -45,7 +46,7 @@ contract Proxy {
             default { return(ptr, size) }
         }
     }
-*/
+
     /// @notice Handles plain Ether transfers with no data
     receive() external payable {
         // Optionally add custom logic here (e.g., emit an event)
@@ -57,3 +58,4 @@ contract Proxy {
         implementation = _newImplementation;
     }
 }
+*/
