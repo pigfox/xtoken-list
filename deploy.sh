@@ -6,9 +6,14 @@ clear
 forge clean
 forge build
 
-contract="Airdrop"
+contract="Stake"
 echo "Deploying $contract..."
 forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify --optimize 200
+#---Multi-Chain Deployment---
+#forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$CHROME_WALLET_PRIVATE_KEY" --broadcast --verify --optimize 200
+#forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$AVAX_HTTP_RPC_URL" --private-key "$CHROME_WALLET_PRIVATE_KEY" --broadcast --verify --optimize 200
+
+
 #nonce=$(cast nonce "$WALLET_ADDRESS" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
 #forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$AVAX_HTTP_RPC_URL" --private-key "$PRIVATE_KEY" --nonce "$nonce" --broadcast --verify --optimize 200
 #CONSTRUCTOR_ARGS=$(cast abi-encode "constructor(string,string)" "PigfoxToken" "PFX")
