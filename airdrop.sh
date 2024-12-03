@@ -4,9 +4,9 @@ set -e
 clear
 . ./.env
 forge clean
-supplied_tokens=600000000
-approved_tokens=600000000
-airdropped_tokens=100000
+supplied_tokens=5000000000000000000000000
+approved_tokens=5000000000000000000000000
+airdropped_tokens=2000000000000000000000000
 RPC_URL="$SEPOLIA_HTTP_RPC_URL"
 
 cast send "$PIGFOX_TOKEN" "mint(uint256)" "$supplied_tokens" \
