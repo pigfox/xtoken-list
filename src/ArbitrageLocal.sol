@@ -34,7 +34,7 @@ contract ArbitrageLocal {
         profitAddress = _profitAddress;
     }
 
-    // Approves the routers to spend XToken
+    // Approves the routers to spend PigfoxToken.sol
     function _approveRouters(address xToken, address fromRouter, address toRouter, uint256 amount) internal {
         console.log("Approving routers");
 
@@ -91,7 +91,7 @@ contract ArbitrageLocal {
         }
     }
 
-    // Withdraw any token from the contract (including XToken and other tokens)
+    // Withdraw any token from the contract (including PigfoxToken.sol and other tokens)
     function withdrawTokens(address token, uint256 amount) external onlyOwner {
         IERC20(token).transfer(owner, amount);
     }

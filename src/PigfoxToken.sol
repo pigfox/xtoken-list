@@ -4,12 +4,12 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract XToken is ERC20 {
+contract PigfoxToken is ERC20 {
     event Minted(uint amount, address sender);
     event MintedTo(uint amount, address receiver);
     address public owner;
 
-    constructor() ERC20("XToken", "XTK") {
+    constructor() ERC20("PigfoxToken", "PFX") {
         owner = msg.sender;
     }
 

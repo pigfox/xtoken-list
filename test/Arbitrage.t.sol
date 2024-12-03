@@ -2,7 +2,7 @@
 pragma solidity ^0.8.26;
 import {Test, console} from "../lib/forge-std/src/Test.sol";
 import {Dex} from "../src/Dex.sol";
-import {XToken} from "../src/XToken.sol";
+import {PigfoxToken} from "../src/PigfoxToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
 import {Vault} from "../src/Vault.sol";
 import {CastFunctionsTest} from "./CastFunctions.sol";
@@ -18,7 +18,7 @@ contract ArbitrageTest is Test {
     Dex public dex2;
     CastFunctionsTest public castFunctionsTest = new CastFunctionsTest();
     ConversionsTest public conversionsTest = new ConversionsTest();
-    XToken public xToken;
+    PigfoxToken public xToken;
     Wallet public wallet;
     Arbitrage public arbitrage;
     Vault public vault;

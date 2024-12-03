@@ -4,7 +4,7 @@ pragma solidity ^0.8.26;
 import {ConversionsTest} from "./Conversions.sol";
 import {Dex} from "../src/Dex.sol";
 import {Test, console} from "../lib/forge-std/src/Test.sol";
-import {XToken} from "../src/XToken.sol";
+import {PigfoxToken} from "../src/PigfoxToken.sol";
 import {stdJson} from "../lib/forge-std/src/StdJson.sol";
 
 contract CastFunctionsTest is Test{
