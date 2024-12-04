@@ -9,8 +9,17 @@ contract PigfoxToken is ERC20 {
     event MintedTo(uint amount, address receiver);
     address public owner;
 
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+
     constructor() ERC20("PigfoxToken", "PFX") {
         owner = msg.sender;
+    }
+
+    function updateOwner(address _newOwner) public onlyOwner {
+        owner = _newOwner;
     }
 
     // Approve the spender to spend tokens on behalf of the owner
