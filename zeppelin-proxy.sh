@@ -7,9 +7,25 @@ forge clean
 rpc_url="$SEPOLIA_HTTP_RPC_URL"
 private_key="$PRIVATE_KEY"
 wallet_address="$WALLET_ADDRESS"
+zeppelin_proxy="$ZEPPELIN_PROXY"
+
+#cast block-number --rpc-url "$rpc_url"
+#cast call "$zeppelin_proxy" "admin()(address)" --rpc-url "$rpc_url"
+#cast code "$zeppelin_proxy" --rpc-url "$rpc_url"
+cast storage "$zeppelin_proxy" 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc --rpc-url "$rpc_url"
+
+
+
+#cast call "$zeppelin_proxy" "implementation()(address)" --rpc-url "$rpc_url"
+
+
+#cast send "$zeppelin_proxy" "setValue(uint256)" 42 --rpc-url "$rpc_url" --private-key "$private_key" --json
+
+#cast call "$zeppelin_proxy" "value()(uint256)" --rpc-url "$rpc_url"
+
 
 #cast call "$ZEPPELIN_PROXY_HELPER" "getAdmin(address)" "$ZEPPELIN_PROXY" --rpc-url "$rpc_url"
-cast call "$ZEPPELIN_PROXY_HELPER" "getImplementation(address)" "$ZEPPELIN_PROXY" --rpc-url "$rpc_url"
+#cast call "$ZEPPELIN_PROXY_HELPER" "getImplementation(address)" "$ZEPPELIN_PROXY" --rpc-url "$rpc_url"
 #cast send "$ZEPPELIN_PROXY_HELPER" "upgradeTo(address)" "$ZEPPELIN_IMPL_V2" --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 
 

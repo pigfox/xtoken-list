@@ -9,4 +9,8 @@ contract ZeppelinProxy {
     constructor(address _logic, address _admin, bytes memory _data) {
         proxy = new TransparentUpgradeableProxy(_logic, _admin, _data);
     }
+
+    function proxyAddress() external view returns (address) {
+        return address(proxy);
+    }
 }
