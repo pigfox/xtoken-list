@@ -20,6 +20,10 @@ contract Dex {
         _;
     }
 
+    function updateOwner(address _newOwner) public onlyOwner {
+        owner = _newOwner;
+    }
+
     function setTokenPrice(address _address, uint256 _newPrice) public onlyOwner{
         tokenPrice[_address] = _newPrice;
         emit TokenPriceSet(_address, _newPrice);
