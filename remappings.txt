@@ -1,0 +1,11 @@
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@uniswap/=lib/@uniswap/
+ds-test/=lib/openzeppelin-contracts/lib/forge-std/lib/ds-test/src/
+erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
+forge-std/=lib/forge-std/src/
+foundry-devops/=lib/foundry-devops/
+openzeppelin-contracts/=lib/openzeppelin-contracts/
+@layerzero/=lib/solidity-examples/
+
+
+
