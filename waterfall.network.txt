@@ -1,0 +1,16 @@
+Networks - RPC Endpoints
+MainNet
+Network Name: Waterfall
+RPC URL: https://rpc.waterfall.network/
+Chain ID: 181 (0xb5 in hex)
+Currency symbol: WATER
+Block Explorer URL: https://explorer.waterfall.network
+Testnet 9
+Testnet9 is used for developers and will be restarted frequently.
+
+Network Name: Waterfall 9 Test Network
+RPC URL: https://rpc.testnet9.waterfall.network/
+Chain ID: 1501869 (0x16EAAD in hex)
+Currency symbol: WATER
+Block Explorer URL: https://explorer.testnet9.waterfall.network
+Faucet: https://faucet.testnet9.waterfall.network

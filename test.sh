@@ -13,7 +13,7 @@ function="executeArbitrage"
 rpc_url=https://ethereum-sepolia-rpc.publicnode.com
 echo "Testing $contract::$function..."
 #cast call "$PIGFOX_TOKEN" --rpc-url "$rpc_url"
-#cast send "$PIGFOX_TOKEN" "mint(uint256)(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+#cast send "$PIGFOX_TOKEN" "mint(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY" --nonce 2445
 #cast call "$PIGFOX_TOKEN" "totalSupply()" --rpc-url "$rpc_url"
 #cast send "$PIGFOX_TOKEN" "mint(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #cast call "$PIGFOX_TOKEN" "totalSupply()" --rpc-url "$rpc_url"
