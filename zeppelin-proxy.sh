@@ -1,44 +1,30 @@
 #!/bin/sh
+#https://ethereum.stackexchange.com/questions/166984/attempting-to-create-a-proxy
 set -x
 set -e
 clear
 . ./.env
-forge clean
 rpc_url="$SEPOLIA_HTTP_RPC_URL"
 private_key="$PRIVATE_KEY"
 wallet_address="$WALLET_ADDRESS"
 zeppelin_proxy="$ZEPPELIN_PROXY"
+zeppelin_impl_v2="$ZEPPELIN_IMPL_V2"
+zeppelin_impl_v1="$ZEPPELIN_IMPL_V1"
+actual_proxy="$ACTUAL_PROXY"
 
-#cast block-number --rpc-url "$rpc_url"
-#cast call "$zeppelin_proxy" "admin()(address)" --rpc-url "$rpc_url"
-#cast code "$zeppelin_proxy" --rpc-url "$rpc_url"
-cast storage "$zeppelin_proxy" 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc --rpc-url "$rpc_url"
+: <<'EOF'
+First of all, your contract ZeppelinProxy deployed at 0x6956Cd3c767ffFCFe1077164aE204789DCE09C6B is not the TransparentUpgradeableProxy contract, instead it's the deployer of your TransparentUpgradeableProxy contract.
+Your deployed TransparentUpgradeableProxy contract is 0x60Da46a609f92DA1aDE987e49abbEf25cBfB2C8E.
+So, the correct command should be:
+EOF
 
+cast send "$actual_proxy" "setValue(uint256)" 55555 --rpc-url "$rpc_url" --private-key "$private_key"
 
+: <<'EOF'
+NOTE: The value remains unchanged in the implementation contract because it doesn't use its own storage.
+All storage operations are performed on the proxy.
+This is by design and ensures the implementation contract can be replaced without losing or modifying state stored in the proxy.
+You can check the same by fetching the value from the TransparentUpgradeableProxy contrac
+EOF
 
-#cast call "$zeppelin_proxy" "implementation()(address)" --rpc-url "$rpc_url"
-
-
-#cast send "$zeppelin_proxy" "setValue(uint256)" 42 --rpc-url "$rpc_url" --private-key "$private_key" --json
-
-#cast call "$zeppelin_proxy" "value()(uint256)" --rpc-url "$rpc_url"
-
-
-#cast call "$ZEPPELIN_PROXY_HELPER" "getAdmin(address)" "$ZEPPELIN_PROXY" --rpc-url "$rpc_url"
-#cast call "$ZEPPELIN_PROXY_HELPER" "getImplementation(address)" "$ZEPPELIN_PROXY" --rpc-url "$rpc_url"
-#cast send "$ZEPPELIN_PROXY_HELPER" "upgradeTo(address)" "$ZEPPELIN_IMPL_V2" --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-
-
-#cast call "$ZEPPELIN_PROXY" "admin()(address)" --rpc-url "$rpc_url"
-
-#cast call "$ZEPPELIN_PROXY" "implementation()(address)" --rpc-url "$rpc_url" --from "$wallet_address" --private-key "$private_key"
-
-#cast call "$ZEPPELIN_PROXY" "value()(uint256)"
-#cast send $ZEPPELIN_PROXY "upgradeTo(address)" $ZEPPELIN_IMPL_V2 --from $WALLET_ADDRESS
-#cast send $ZEPPELIN_PROXY "initialize(address)" $WALLET_ADDRESS --from $WALLET_ADDRESS
-#cast send $ZEPPELIN_PROXY "setValue(uint256)" 100 --from $WALLET_ADDRESS
-#cast call $ZEPPELIN_PROXY "value()(uint256)"
-#cast call $ZEPPELIN_PROXY "owner()(address)"
-#cast call $ZEPPELIN_PROXY "value()(uint256)" --rpc-url "$rpc_url"
-
-
+cast call "$actual_proxy" "getValue()" --rpc-url "$rpc_url"

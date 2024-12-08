@@ -6,7 +6,6 @@ import "../src/ZeppelinProxy.sol";
 
 contract ZeppelinProxyScript is Script {
     function run() external {
-        // Retrieve environment variables
         address zeppelinImplV1 = vm.envAddress("ZEPPELIN_IMPL_V1");
         address adminWallet = vm.envAddress("WALLET_ADDRESS");
         bytes memory initData = ""; // []byte in Go maps to empty bytes in Solidity
