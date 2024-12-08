@@ -18,7 +18,7 @@ Your deployed TransparentUpgradeableProxy contract is 0x60Da46a609f92DA1aDE987e4
 So, the correct command should be:
 EOF
 
-cast send "$actual_proxy" "setValue(uint256)" 5000 --rpc-url "$rpc_url" --private-key "$private_key"
+#cast send "$actual_proxy" "setValue(uint256)" 5000 --rpc-url "$rpc_url" --private-key "$private_key"
 
 : <<'EOF'
 NOTE: The value remains unchanged in the implementation contract because it doesn't use its own storage.
@@ -27,4 +27,10 @@ This is by design and ensures the implementation contract can be replaced withou
 You can check the same by fetching the value from the TransparentUpgradeableProxy contrac
 EOF
 
-cast call "$actual_proxy" "getValue()" --rpc-url "$rpc_url"
+#cast call "$actual_proxy" "value()" --rpc-url "$rpc_url" --json
+
+contract="ZeppelinTest"
+function="testProxyFunctionality"
+forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
+
+
