@@ -18,7 +18,7 @@ Your deployed TransparentUpgradeableProxy contract is 0x60Da46a609f92DA1aDE987e4
 So, the correct command should be:
 EOF
 
-cast send "$actual_proxy" "setValue(uint256)" 55555 --rpc-url "$rpc_url" --private-key "$private_key"
+cast send "$actual_proxy" "setValue(uint256)" 5000 --rpc-url "$rpc_url" --private-key "$private_key"
 
 : <<'EOF'
 NOTE: The value remains unchanged in the implementation contract because it doesn't use its own storage.
