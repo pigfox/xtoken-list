@@ -26,12 +26,68 @@ echo "Testing $contract::$function..."
 #cast call "$Dex1" "getTokenBalanceOf(address)" "$PIGFOX_TOKEN" --rpc-url "$rpc_url"
 #setTokenPrice(address _token, uint256 _balance)
 #depositTokens(address token, uint256 amount)
-#---set---
-cast send "$PIGFOX_TOKEN" "mint(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-cast call "$PIGFOX_TOKEN" "allowance(address,address)" "$WALLET_ADDRESS" "$DEX1" --rpc-url "$rpc_url"
-cast send "$DEX1" "depositTokens(address,address,uint256)" "$PIGFOX_TOKEN" "$WALLET_ADDRESS" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-#---set---
+#---set------------------------------------------------------------------------
+# 1. Mint tokens to the WALLET_ADDRESS (which is also the owner of the contract)
+cast send "$PIGFOX_TOKEN" "mint(uint256)" 1000000000000000000 \
+  --rpc-url "$rpc_url" \
+  --from "$WALLET_ADDRESS" \
+  --private-key "$PRIVATE_KEY"
+
+# 2. Approve DEX1 to spend up to 1 token (1e18) on behalf of WALLET_ADDRESS
+cast send "$PIGFOX_TOKEN" "approveSpender(address,uint256)" "$DEX1" 1000000000000000000 \
+  --rpc-url "$rpc_url" \
+  --from "$WALLET_ADDRESS" \
+  --private-key "$PRIVATE_KEY"
+
+# 3. Confirm the allowance for DEX1
+cast call "$PIGFOX_TOKEN" "allowance(address,address)" "$WALLET_ADDRESS" "$DEX1" \
+  --rpc-url "$rpc_url"
+
+# 4. Supply tokens directly to DEX1 (mint to DEX1) if needed
+cast send "$PIGFOX_TOKEN" "supplyTokenTo(address,uint256)" "$DEX1" 1000000000000000000 \
+  --rpc-url "$rpc_url" \
+  --from "$WALLET_ADDRESS" \
+  --private-key "$PRIVATE_KEY"
+
+# 5. Confirm the token balance at DEX1
+cast call "$PIGFOX_TOKEN" "getTokenBalanceAt(address)" "$DEX1" \
+  --rpc-url "$rpc_url"
+
+
+: <<'EOF'
+# 1. Mint tokens to WALLET_ADDRESS
+cast send "$PIGFOX_TOKEN" "mint(uint256)" 1000000000000000000 \
+  --rpc-url "$rpc_url" \
+  --from "$WALLET_ADDRESS" \
+  --private-key "$PRIVATE_KEY"
+
+# 2. Approve DEX1 to spend tokens on behalf of WALLET_ADDRESS
+cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" 1000000000000000000 \
+  --json \
+  --rpc-url "$rpc_url" \
+  --from "$WALLET_ADDRESS" \
+  --private-key "$PRIVATE_KEY"
+
+# 3. Check the allowance for DEX1 to ensure approval succeeded
+cast call "$PIGFOX_TOKEN" "allowance(address,address)" "$WALLET_ADDRESS" "$DEX1" \
+  --rpc-url "$rpc_url"
+
+# 4. Confirm initial token balance at DEX1
+cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$DEX1" \
+  --rpc-url "$rpc_url"
+
+# 5. Deposit tokens from PIGFOX_TOKEN to DEX1
+cast send "$DEX1" "depositTokens(address,address,uint256)" "$PIGFOX_TOKEN" "$PIGFOX_TOKEN" 1000000000000000000 \
+  --json \
+  --rpc-url "$rpc_url" \
+  --from "$WALLET_ADDRESS" \
+  --private-key "$PRIVATE_KEY"
+
+# 6. Confirm updated token balance at DEX1 post-deposit
+cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$DEX1" \
+  --rpc-url "$rpc_url"
+EOF
+#---set------------------------------------------------------------------------
 #cast send "$PIGFOX_TOKEN" "supplyTokenTo(address,uint256)" "$SingleTokenDex1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$SingleTokenDex1" --rpc-url "$rpc_url"
 #cast call "$SingleTokenDex1" "getReserve(address)" "$PIGFOX_TOKEN" --rpc-url "$rpc_url"
