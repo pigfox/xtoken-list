@@ -34,4 +34,10 @@ contract="ZeppelinTest"
 function="testAll"
 forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
 
-
+: <<'EOF'
+Let me know if you face any difficulty in upgrading.
+You just have to grab the address of the deployed ProxyAdmin contract from the AdminChanged event that
+you can listen to at the time of deployment of Transparent Upgradable Proxy, that I did using vm.recordLogs function.
+It’s the last log, therefore I accessed it using length-1 index.
+Later on, the same address can be used to instantiate the ProxyAdmin contract and calling the upgradeAndCall function.
+EOF
