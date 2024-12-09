@@ -30,7 +30,8 @@ EOF
 #cast call "$actual_proxy" "value()" --rpc-url "$rpc_url" --json
 
 contract="ZeppelinTest"
-function="testProxyFunctionality"
+#function="testProxyFunctionality"
+function="testAll"
 forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
 
 

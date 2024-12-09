@@ -30,6 +30,16 @@ contract ZeppelinTest is Test {
         (, proxyAdmin) = abi.decode(entries[entries.length - 1].data, (address, address));
     }
 
+    function testAll() public {
+        testAdminWallet();
+        testProxyFunctionality();
+        testUpgrade();
+    }
+
+    function testAdminWallet() public view{
+        assertEq(admin, admin);
+    }
+
     function testProxyFunctionality() public {
         ZeppelinImplV1 proxiedContract = ZeppelinImplV1(address(proxy));
         proxiedContract.setValue(42);
