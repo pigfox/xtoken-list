@@ -12,7 +12,7 @@ import {ZeppelinImplV1} from "../src/ZeppelinImplV1.sol";
 import {ZeppelinImplV2} from "../src/ZeppelinImplV2.sol";
 
 contract ZeppelinTest is Test {
-    address admin = makeAddr("admin");
+    address admin = vm.envString("WALLET_ADDRESS");
     TransparentUpgradeableProxy proxy;
     ZeppelinImplV1 implementationV1;
     ZeppelinImplV2 implementationV2;
