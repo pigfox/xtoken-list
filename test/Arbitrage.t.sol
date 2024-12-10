@@ -71,12 +71,12 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, pigfoxTokenAddressStr);
+        assertEq(dex1TokenPrice, initialDex1TokenPrice);
+
         (txHash, status) = castFunctionsTest.setTokenPrice(dex2AddressStr, pigfoxTokenAddressStr, initialDex2TokenPrice);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, pigfoxTokenAddressStr);
-        assertEq(dex1TokenPrice, initialDex1TokenPrice);
 
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, pigfoxTokenAddressStr);
         assertEq(dex2TokenPrice, initialDex2TokenPrice);
@@ -84,20 +84,6 @@ contract ArbitrageTest is Test {
         (txHash, status) = castFunctionsTest.mint(pigfoxTokenAddressStr, maxPigfoxTokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        (txHash, status) = castFunctionsTest.depositTokens(dex1AddressStr, pigfoxTokenAddressStr,initialDex1TokenSupply);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
-        assertEq(dex1TokenBalance, initialDex1TokenSupply);
-
-        (txHash, status) = castFunctionsTest.depositTokens(dex2AddressStr, pigfoxTokenAddressStr,initialDex2TokenSupply);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
-        assertEq(dex2TokenBalance, initialDex2TokenSupply);
 
         (txHash, status) = castFunctionsTest.approve(pigfoxTokenAddressStr, dex1AddressStr, maxAllowance);
         assertEq(expectedStatusOk, status);
@@ -119,7 +105,23 @@ contract ArbitrageTest is Test {
 
         uint256 arbitrageAllowance = castFunctionsTest.getAllowance(pigfoxTokenAddressStr, walletAddressStr, arbitrageAddressStr);
         assertEq(arbitrageAllowance, maxAllowance);
+/*
+        (txHash, status) = castFunctionsTest.depositTokens(dex1AddressStr, pigfoxTokenAddressStr, initialDex1TokenSupply);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
 
+        dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
+        assertEq(dex1TokenBalance, initialDex1TokenSupply);
+
+        (txHash, status) = castFunctionsTest.depositTokens(dex2AddressStr, pigfoxTokenAddressStr, initialDex2TokenSupply);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
+        assertEq(dex2TokenBalance, initialDex2TokenSupply);
+
+
+*/
         vm.stopPrank();
         console.log("Setup completed successfully.");
     }

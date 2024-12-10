@@ -40,4 +40,7 @@ You just have to grab the address of the deployed ProxyAdmin contract from the A
 you can listen to at the time of deployment of Transparent Upgradable Proxy, that I did using vm.recordLogs function.
 It’s the last log, therefore I accessed it using length-1 index.
 Later on, the same address can be used to instantiate the ProxyAdmin contract and calling the upgradeAndCall function.
+
+It’s not upgraded, because you haven’t called the upgradeAndCall function.
+You can refer to this test function to see how you can call that on the ProxyAdmin contract.
 EOF

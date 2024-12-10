@@ -27,6 +27,7 @@ echo "Testing $contract::$function..."
 #setTokenPrice(address _token, uint256 _balance)
 #depositTokens(address token, uint256 amount)
 #---set------------------------------------------------------------------------
+: <<'EOF'
 # 1. Mint tokens to the WALLET_ADDRESS (which is also the owner of the contract)
 cast send "$PIGFOX_TOKEN" "mint(uint256)" 1000000000000000000 \
   --rpc-url "$rpc_url" \
@@ -73,6 +74,8 @@ cast send "$PIGFOX_TOKEN" "supplyTokenTo(address,uint256)" "$DEX2" 1000000000000
 cast call "$PIGFOX_TOKEN" "getTokenBalanceAt(address)" "$DEX2" \
   --rpc-url "$rpc_url"
 
+
+#-------------------------------NOT Implemented below---------------------------
 # 10. Execute arbitrage on the ARBITRAGE contract with tokens from DEX1 and DEX2
 cast send "$ARBITRAGE" "executeArbitrage(address,address,uint256)" "$DEX1" "$DEX2" 1000000000000000000 \
   --rpc-url "$rpc_url" \
@@ -82,7 +85,7 @@ cast send "$ARBITRAGE" "executeArbitrage(address,address,uint256)" "$DEX1" "$DEX
 # 11. Confirm the arbitrage result from the ARBITRAGE contract
 cast call "$ARBITRAGE" "getArbitrageResult()" \
   --rpc-url "$rpc_url"
-
+EOF
 : <<'EOF'
 # 1. Mint tokens to the WALLET_ADDRESS (which is also the owner of the contract)
 cast send "$PIGFOX_TOKEN" "mint(uint256)" 1000000000000000000 \
@@ -121,7 +124,7 @@ EOF
 #cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
 #cast send "$PIGFOX_TOKEN" "mint(uint256)" 100000088840000000000667 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #-----------
-#forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
+forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
 
 
 #forge test --rpc-url "$rpc_url" --gas-report --verbosity --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
