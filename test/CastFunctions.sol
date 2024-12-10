@@ -48,24 +48,34 @@ contract CastFunctionsTest is Test{
     }
 
     function getTokenBalanceOf(string calldata _dexAddress, string calldata _tokenAddress) public returns (uint256) {
-        //cast call "$Dex1" "getTokenBalanceOf(address)" "$XToken" --rpc-url "$rpc_url"
+        //cast call "$PIGFOX_TOKEN" "getTokenBalanceAt(address)" "$DEX1" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
-        inputs[2] = _dexAddress;
-        inputs[3] = "getTokenBalanceOf(address)";
-        inputs[4] = _tokenAddress;
+        inputs[2] = _tokenAddress;
+        inputs[3] = "getTokenBalanceAt(address)"; // Ensure correct function signature
+        inputs[4] = _dexAddress;
         inputs[5] = "--rpc-url";
         inputs[6] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+
+        // Execute the command and get the result
         bytes memory result = vm.ffi(inputs);
 
+        // Check if the result is empty
         if (result.length == 0) {
             console.log("Error: cast call returned empty result");
-            revert("Failed to retrieve contract address");
+            revert("Failed to retrieve balance at contract address");
         }
 
+        // Decode the result
         uint256 balance = abi.decode(result, (uint256));
-        emit GetTokenBalanceOfEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_dexAddress));
+
+        // Emit an event with the decoded balance and addresses
+        emit GetTokenBalanceOfEvent(
+            conversionsTest.stringToAddress(_tokenAddress),
+            conversionsTest.stringToAddress(_dexAddress)
+        );
+
         return balance;
     }
 
@@ -146,23 +156,21 @@ contract CastFunctionsTest is Test{
     }
 
     function depositTokens(string calldata _dex, string calldata _token, uint256 _amount) public returns (string memory, string memory){
-        //cast send "$Dex1" "depositTokens(address,address,uint256)" "$XToken" "$WALLET_ADDRESS" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
-        //approve(_dexAddress, _tokenAddress);
-        string[] memory inputs = new string[](14);
+        //cast send "$PIGFOX_TOKEN" "supplyTokenTo(address,uint256)" "$DEX1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY" --json
+        string[] memory inputs = new string[](13);
         inputs[0] = "cast";
         inputs[1] = "send";
-        inputs[2] = _dex;
-        inputs[3] = "depositTokens(address,address,uint256)";
-        inputs[4] = _token;
-        inputs[5] = vm.envString("WALLET_ADDRESS");//_sourceAddress;
-        inputs[6] = vm.toString(_amount);
-        inputs[7] = "--json";
-        inputs[8] = "--rpc-url";
-        inputs[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        inputs[10] = "--from";
-        inputs[11] = vm.envString("WALLET_ADDRESS");
-        inputs[12] = "--private-key";
-        inputs[13] = vm.envString("PRIVATE_KEY");
+        inputs[2] = _token;
+        inputs[3] = "supplyTokenTo(address,uint256)";
+        inputs[4] = _dex;
+        inputs[5] = vm.toString(_amount);
+        inputs[6] = "--rpc-url";
+        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[8] = "--from";
+        inputs[9] = vm.envString("WALLET_ADDRESS");
+        inputs[10] = "--private-key";
+        inputs[11] = vm.envString("PRIVATE_KEY");
+        inputs[12] = "--json";
 
         bytes memory castResult = vm.ffi(inputs);
 
@@ -302,23 +310,9 @@ contract CastFunctionsTest is Test{
     }
 
     function clearDexBalances(string calldata _dex, string calldata _tokenAddress, string calldata _receiverAddress, uint256 _maxAllowance) public {
-        string[] memory balanceCommand = new string[](8);
-        balanceCommand[0] = "cast";
-        balanceCommand[1] = "call";
-        balanceCommand[2] = _dex;
-        balanceCommand[3] = string.concat("getTokenBalanceOf(address)");
-        balanceCommand[4] = string.concat(_tokenAddress);
-        balanceCommand[5] = "--json";
-        balanceCommand[6] = "--rpc-url";
-        balanceCommand[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-
-        bytes memory result = vm.ffi(balanceCommand);
-        uint256 balance = abi.decode(result, (uint256));
-        if (balance == 0) {
-            console.log("Dex balance is already zero.");
-            return;
-        }
-
+        uint256 balance = getTokenBalanceOf(_dex, _tokenAddress);
+        approve(_tokenAddress, _dex, _maxAllowance);
+/*
         //cast send "$XToken" "approve(address,uint256)" "$Router1" 100 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory approveCommand = new string[](13);
         approveCommand[0] = "cast";
@@ -335,26 +329,30 @@ contract CastFunctionsTest is Test{
         approveCommand[11] = "--private-key";
         approveCommand[12] = vm.envString("PRIVATE_KEY");
 
-        result = vm.ffi(approveCommand);
+        bytes memory result = vm.ffi(approveCommand);
         console.log("Approval Transaction Hash:", string(result));
+*/
 
-        string[] memory withdrawCommand = new string[](14);
+        //cast send $PIGFOX_TOKEN "transfer(address,uint256)"
+      //$DESTINATION $(cast call $PIGFOX_TOKEN "balanceOf(address)" $DEX)
+    //--rpc-url $SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
+        string[] memory withdrawCommand = new string[](13);
+        string;
         withdrawCommand[0] = "cast";
         withdrawCommand[1] = "send";
-        withdrawCommand[2] = _dex;
-        withdrawCommand[3] = string.concat("withdrawTokens(address,address,uint256)");
-        withdrawCommand[4] = _tokenAddress;
-        withdrawCommand[5] = _receiverAddress;
-        withdrawCommand[6] = vm.toString(balance);
-        withdrawCommand[7] = "--json";
-        withdrawCommand[8] = "--rpc-url";
-        withdrawCommand[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        withdrawCommand[10] = "--from";
-        withdrawCommand[11] = vm.envString("WALLET_ADDRESS");
-        withdrawCommand[12] = "--private-key";
-        withdrawCommand[13] = vm.envString("PRIVATE_KEY");
+        withdrawCommand[2] = _tokenAddress;
+        withdrawCommand[3] = "transfer(address,uint256)";
+        withdrawCommand[4] = _receiverAddress;
+        withdrawCommand[5] = vm.toString(balance);
+        withdrawCommand[6] = "--json";
+        withdrawCommand[7] = "--rpc-url";
+        withdrawCommand[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        withdrawCommand[9] = "--from";
+        withdrawCommand[10] = vm.envString("WALLET_ADDRESS");
+        withdrawCommand[11] = "--private-key";
+        withdrawCommand[12] = vm.envString("PRIVATE_KEY");
 
-        result = vm.ffi(withdrawCommand);
+        bytes memory result = vm.ffi(withdrawCommand);
         console.log("Withdrawal Transaction Hash:", string(result));
     }
 }

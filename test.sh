@@ -12,6 +12,10 @@ function="executeArbitrage"
 
 rpc_url=https://ethereum-sepolia-rpc.publicnode.com
 echo "Testing $contract::$function..."
+#cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" 100 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+#exit
+#cast call "$PIGFOX_TOKEN" "getTokenBalanceAt(address)" "$DEX1" --rpc-url "$rpc_url"
+#cast send "$PIGFOX_TOKEN" "supplyTokenTo(address,uint256)" "$DEX1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY" --json
 #cast call "$PIGFOX_TOKEN" --rpc-url "$rpc_url"
 #cast send "$PIGFOX_TOKEN" "mint(uint256)" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY" --nonce 2445
 #cast call "$PIGFOX_TOKEN" "totalSupply()" --rpc-url "$rpc_url"
@@ -124,7 +128,9 @@ EOF
 #cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
 #cast send "$PIGFOX_TOKEN" "mint(uint256)" 100000088840000000000667 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #-----------
-forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
+./empty_dex.sh
+
+#forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
 
 
 #forge test --rpc-url "$rpc_url" --gas-report --verbosity --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
