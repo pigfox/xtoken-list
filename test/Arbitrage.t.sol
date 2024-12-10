@@ -105,11 +105,11 @@ contract ArbitrageTest is Test {
 
         uint256 arbitrageAllowance = castFunctionsTest.getAllowance(pigfoxTokenAddressStr, walletAddressStr, arbitrageAddressStr);
         assertEq(arbitrageAllowance, maxAllowance);
-/*
+
         (txHash, status) = castFunctionsTest.depositTokens(dex1AddressStr, pigfoxTokenAddressStr, initialDex1TokenSupply);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
-
+/*
         dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
         assertEq(dex1TokenBalance, initialDex1TokenSupply);
 
