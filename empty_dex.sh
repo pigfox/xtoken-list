@@ -1,58 +1,66 @@
 #!/bin/sh
-set -x
 set -e
 clear
 . ./.env
+. ./hex2Int.sh  # Source the external file containing hex2Int
+
 echo "Empty DEX"
 
 # Fetch the balance of $DEX1 in $PIGFOX_TOKEN (in base units)
 BALANCE_RAW=$(cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$DEX1" --rpc-url "$SEPOLIA_PUBLIC_NODE")
+echo "Balance of $DEX1: $BALANCE_RAW"
 
-# Remove the '0x' prefix from the hexadecimal balance and clean any annotations
-BALANCE_RAW_DECIMAL=$(echo "$BALANCE_RAW" | sed 's/^0x//')
-BALANCE_RAW_DECIMAL_CLEAN=$(echo "$BALANCE_RAW_DECIMAL" | sed 's/\[.*\]//g' | sed 's/[[:space:]]//g')
+# Remove any non-hexadecimal parts like scientific notation
+BALANCE_RAW_HEX=$(echo "$BALANCE_RAW" | cut -d ' ' -f 1)
+echo "Balance of $DEX1 (Hex): $BALANCE_RAW_HEX"
 
-# Ensure the cleaned value is valid hexadecimal
-if ! echo "$BALANCE_RAW_DECIMAL_CLEAN" | grep -q '^[0-9a-fA-F]*$'; then
-  echo "Error: Invalid hexadecimal balance"
-  exit 1
-fi
-
-# Convert the raw balance from hex to decimal using `bc`
-BALANCE_DECIMAL=$(echo "ibase=16; $BALANCE_RAW_DECIMAL_CLEAN" | bc)
+# Convert the balance from hex to decimal using hex2Int
+BALANCE_DECIMAL=$(hex2Int "$BALANCE_RAW_HEX")
 
 # Assuming the token has 18 decimals (standard ERC20 token decimals)
 DECIMALS=18
 
-# Convert the raw balance to decimal (human-readable format) by dividing by 10^18
-# For base units, we just need to use the integer portion
-BALANCE_BASE_UNIT=$(echo "$BALANCE_DECIMAL * 10^$DECIMALS" | bc)
+# Convert the raw balance to human-readable format
+BALANCE_BASE_UNIT=$(echo "scale=$DECIMALS; $BALANCE_DECIMAL / (10 ^ $DECIMALS)" | bc)
 
-# Output the decimal balance and base unit balance
 echo "Balance in decimals: $BALANCE_DECIMAL"
 echo "Balance in base units: $BALANCE_BASE_UNIT"
 
 # Verify if $DEX1 has the correct approval
-ALLOWANCE=$(cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$WALLET_ADDRESS" "$DEX1" --rpc-url "$SEPOLIA_PUBLIC_NODE")
-echo "Allowance for $DEX1: $ALLOWANCE"
+ALLOWANCE_RAW=$(cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$WALLET_ADDRESS" "$DEX1" --rpc-url "$SEPOLIA_PUBLIC_NODE")
+ALLOWANCE_RAW_HEX=$(echo "$ALLOWANCE_RAW" | awk '{print $1}')
+ALLOWANCE_DECIMAL=$(hex2Int "$ALLOWANCE_RAW_HEX")
 
-# If allowance is less than the balance, approve the full balance
-if [ "$ALLOWANCE" -lt "$BALANCE_RAW_DECIMAL_CLEAN" ]; then
-  echo "Insufficient allowance, approving full balance for $DEX1"
-  cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" "$BALANCE_RAW_DECIMAL_CLEAN" --rpc-url "$SEPOLIA_PUBLIC_NODE" --private-key "$PRIVATE_KEY"
+echo "Allowance for $DEX1: $ALLOWANCE_DECIMAL"
+
+# Use bc to compare large numbers
+ALLOWANCE_LESS_THAN_BALANCE=$(echo "$ALLOWANCE_DECIMAL < $BALANCE_DECIMAL" | bc)
+
+if [ "$ALLOWANCE_LESS_THAN_BALANCE" -eq 1 ]; then
+    echo "Insufficient allowance, approving full balance for $DEX1"
+    cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" "$BALANCE_RAW" --rpc-url "$SEPOLIA_PUBLIC_NODE" --private-key "$PRIVATE_KEY"
 else
-  echo "Sufficient allowance for $DEX1"
+    echo "Sufficient allowance for $DEX1"
 fi
 
-# Send the transaction using the balance in base units (ensure it's an integer)
+# Transfer tokens to $TRASH_CAN
 echo "Transferring tokens to $TRASH_CAN"
-cast send "$PIGFOX_TOKEN" \
-  "transfer(address,uint256)" \
-  "$TRASH_CAN" \
-  "$BALANCE_RAW_DECIMAL_CLEAN" \
-  --rpc-url "$SEPOLIA_PUBLIC_NODE" \
-  --private-key "$PRIVATE_KEY"
+TRANSFER_RESULT=$(cast send "$PIGFOX_TOKEN" \
+    "transfer(address,uint256)" \
+    "$TRASH_CAN" \
+    "$BALANCE_RAW_HEX" \
+    --rpc-url "$SEPOLIA_PUBLIC_NODE" \
+    --private-key "$PRIVATE_KEY" \
+    --gas-limit 100000)  # Increase gas limit if needed
 
-# Check if the transfer was successful (can add any post-send verification steps here)
+# Check for errors in the transfer result
+if [ $? -ne 0 ]; then
+    echo "Error during transfer. Transaction failed with revert."
+    exit 1
+fi
+
+# Check new balance of $TRASH_CAN
 TRANSFER_RESULT=$(cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$TRASH_CAN" --rpc-url "$SEPOLIA_PUBLIC_NODE")
-echo "New balance of $TRASH_CAN: $TRANSFER_RESULT"
+TRANSFER_RAW_HEX=$(echo "$TRANSFER_RESULT" | awk '{print $1}')
+TRANSFER_DECIMAL=$(hex2Int "$TRANSFER_RAW_HEX")
+echo "New balance of $TRASH_CAN: $TRANSFER_DECIMAL"
