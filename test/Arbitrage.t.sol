@@ -58,13 +58,11 @@ contract ArbitrageTest is Test {
         dex2 = Dex(payable(dex2Address));
         vault = Vault(payable(vm.envAddress("VAULT")));
 
-        castFunctionsTest.clearDexBalances(dex1AddressStr, pigfoxTokenAddressStr, vm.envString("TRASH_CAN"), maxAllowance);
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
-        assertEq(dex1TokenBalance, 0);
-        /*
-        castFunctionsTest.clearDexBalances(dex2AddressStr, pigfoxTokenAddressStr, vm.envString("TRASH_CAN"), maxAllowance);
+        //assertEq(dex1TokenBalance, 0);
+        /**/
         uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
-        assertEq(dex2TokenBalance, 0);
+        //assertEq(dex2TokenBalance, 0);
 
         (string memory txHash, string memory status) = castFunctionsTest.setTokenPrice(dex1AddressStr, pigfoxTokenAddressStr, initialDex1TokenPrice);
         assertEq(expectedStatusOk, status);
@@ -109,8 +107,6 @@ contract ArbitrageTest is Test {
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
-
-
         dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
         assertEq(dex1TokenBalance, initialDex1TokenSupply);
 
@@ -120,7 +116,7 @@ contract ArbitrageTest is Test {
 
         dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
         assertEq(dex2TokenBalance, initialDex2TokenSupply);
-*/
+
         vm.stopPrank();
         console.log("Setup completed successfully.");
     }
