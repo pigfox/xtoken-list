@@ -15,14 +15,14 @@ echo "SEPOLIA_PUBLIC_NODE=$SEPOLIA_PUBLIC_NODE"
 echo "PIGFOX_TOKEN=$PIGFOX_TOKEN"
 
 # Check if the provided addresses are valid
-for address in "$DEX1" "$DEX2" "$TRASH_CAN" "$WALLET_ADDRESS"; do
+for address in "$DEX1" "$DEX2" "$TRASH_CAN"; do
     if ! is_valid_address "$address"; then
         echo "Invalid Ethereum address: $address"
         exit 1
     fi
 done
 
-echo "Empty DEX"
+# Empty DEX
 echo "-------------------------DEX1-------------------------"
 # Fetch the balance of $DEX1 in $PIGFOX_TOKEN (in base units)
 BALANCE_RAW=$(cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$DEX1" --rpc-url "$SEPOLIA_PUBLIC_NODE")
@@ -53,14 +53,14 @@ BALANCE_BASE_UNIT=$(echo "scale=$DECIMALS; $BALANCE_DECIMAL / (10 ^ $DECIMALS)" 
 echo "Balance in decimals: $BALANCE_DECIMAL"
 echo "Balance in base units: $BALANCE_BASE_UNIT"
 
-# Verify if $DEX1 has the correct approval
+# Check allowance for $DEX1 to ensure it has permission to transfer the tokens
 ALLOWANCE_RAW=$(cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$WALLET_ADDRESS" "$DEX1" --rpc-url "$SEPOLIA_PUBLIC_NODE")
 ALLOWANCE_RAW_HEX=$(echo "$ALLOWANCE_RAW" | awk '{print $1}')
 ALLOWANCE_DECIMAL=$(hex2Int "$ALLOWANCE_RAW_HEX")
 
 echo "Allowance for $DEX1: $ALLOWANCE_DECIMAL"
 
-# Use bc to compare large numbers
+# Ensure sufficient allowance for $DEX1
 ALLOWANCE_LESS_THAN_BALANCE=$(echo "$ALLOWANCE_DECIMAL < $BALANCE_DECIMAL" | bc)
 
 if [ "$ALLOWANCE_LESS_THAN_BALANCE" -eq 1 ]; then
