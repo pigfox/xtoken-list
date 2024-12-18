@@ -61,17 +61,13 @@ else
     echo "Sufficient allowance for $DEX1"
 fi
 
-# Re-approve if needed to ensure the contract state is fresh
-echo "Re-approving full balance for $DEX1"
-cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" "$BALANCE_RAW_CLEAN" --rpc-url "$SEPOLIA_PUBLIC_NODE" --private-key "$PRIVATE_KEY"
-
 # Check if balance is greater than zero before transferring
 if ! is_greater_than_zero "$BALANCE_DECIMAL"; then
     echo "Balance is zero or invalid. Aborting transfer."
     exit 1
 fi
 
-# Transfer tokens to $TRASH_CAN
+# Transfer tokens from DEX1 to TRASH_CAN
 echo "Transferring tokens to $TRASH_CAN"
 echo "Attempting to transfer: $BALANCE_RAW_CLEAN to $TRASH_CAN"
 TRANSFER_RESULT=$(cast send "$PIGFOX_TOKEN" \
@@ -94,3 +90,24 @@ TRANSFER_RESULT=$(cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$TRAS
 TRANSFER_RAW_HEX=$(echo "$TRANSFER_RESULT" | awk '{print $1}')
 TRANSFER_DECIMAL=$(hex2Int "$TRANSFER_RAW_HEX")
 echo "New balance of $TRASH_CAN: $TRANSFER_DECIMAL"
+
+# Optionally: Transfer from DEX2 if applicable
+if [ "$TRANSFER_DECIMAL" -lt "$BALANCE_DECIMAL" ]; then
+    echo "Transferring remaining balance from DEX2 to $TRASH_CAN"
+    # Fetch the balance from DEX2 and repeat the transfer process
+    BALANCE_RAW_DEX2=$(cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$DEX2" --rpc-url "$SEPOLIA_PUBLIC_NODE")
+    BALANCE_RAW_CLEAN_DEX2=$(echo "$BALANCE_RAW_DEX2" | sed 's/\[.*//g' | sed 's/\]//g' | tr -d '\n' | tr -d ' ')
+
+    BALANCE_DECIMAL_DEX2=$(hex2Int "$BALANCE_RAW_CLEAN_DEX2")
+
+    if ! is_greater_than_zero "$BALANCE_DECIMAL_DEX2"; then
+        echo "No tokens to transfer from DEX2."
+    else
+        echo "Transferring tokens from DEX2 to TRASH_CAN"
+        cast send "$PIGFOX_TOKEN" "transferFrom(address,address,uint256)" \
+            "$DEX2" "$TRASH_CAN" "$BALANCE_RAW_CLEAN_DEX2" \
+            --rpc-url "$SEPOLIA_PUBLIC_NODE" --private-key "$PRIVATE_KEY" --gas-limit 200000
+    fi
+fi
+
+echo "Token transfer complete."
