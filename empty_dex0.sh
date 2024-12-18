@@ -59,8 +59,7 @@ cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" "$BALANCE_RAW_CLEAN
 echo "Transferring tokens to $TRASH_CAN"
 echo "Attempting to transfer: $BALANCE_RAW_CLEAN to $TRASH_CAN"
 TRANSFER_RESULT=$(cast send "$PIGFOX_TOKEN" \
-    "transferFrom(address,address,uint256)" \
-    "$DEX1" \
+    "transfer(address,uint256)" \
     "$TRASH_CAN" \
     "$BALANCE_RAW_CLEAN" \
     --rpc-url "$SEPOLIA_PUBLIC_NODE" \
@@ -133,8 +132,7 @@ cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX2" "$BALANCE_RAW_CLEAN
 echo "Transferring tokens to $TRASH_CAN"
 echo "Attempting to transfer: $BALANCE_RAW_CLEAN to $TRASH_CAN"
 TRANSFER_RESULT=$(cast send "$PIGFOX_TOKEN" \
-    "transferFrom(address,address,uint256)" \
-    "$DEX2" \
+    "transfer(address,uint256)" \
     "$TRASH_CAN" \
     "$BALANCE_RAW_CLEAN" \
     --rpc-url "$SEPOLIA_PUBLIC_NODE" \

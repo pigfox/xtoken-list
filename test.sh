@@ -128,7 +128,16 @@ EOF
 #cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$WALLET_ADDRESS" --rpc-url "$rpc_url"
 #cast send "$PIGFOX_TOKEN" "mint(uint256)" 100000088840000000000667 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #-----------
+#cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$DEX1" --rpc-url "$SEPOLIA_PUBLIC_NODE"
+#cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$DEX2" --rpc-url "$SEPOLIA_PUBLIC_NODE"
+# Check allowance from DEX1 to TRASH_CAN
+#cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$DEX1" "$TRASH_CAN" --rpc-url "$SEPOLIA_PUBLIC_NODE"
+# Check allowance from DEX2 to TRASH_CAN
+#cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$DEX2" "$TRASH_CAN" --rpc-url "$SEPOLIA_PUBLIC_NODE"
+#cast send "$PIGFOX_TOKEN" "transfer(address,uint256)" "$TRASH_CAN" 83000000000000000000 --rpc-url "$SEPOLIA_PUBLIC_NODE" --private-key "$PRIVATE_KEY" --gas-limit 200000
+
 ./empty_dex.sh
+exit
 forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
 
 
