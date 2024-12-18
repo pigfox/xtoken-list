@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 clear
 . ./.env
 . ./hex2Int.sh  # Source the external file containing hex2Int
