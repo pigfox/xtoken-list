@@ -133,7 +133,7 @@ EOF
 # Check allowance from DEX1 to TRASH_CAN
 #cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$DEX1" "$TRASH_CAN" --rpc-url "$SEPOLIA_PUBLIC_NODE"
 # Check allowance from DEX2 to TRASH_CAN
-#. ./hex2Int.sh
+#. ./functions.sh
 #hex_value=$(cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$DEX1" --rpc-url https://ethereum-sepolia-rpc.publicnode.com)
 #balance=$(hex2Int "$hex_value")
 #cast call "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" "$balance" --rpc-url "$SEPOLIA_PUBLIC_NODE"

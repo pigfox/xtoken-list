@@ -31,6 +31,27 @@ hex2Int() {
         return 1
     fi
 
-    # Output the decimal value
-    echo "$numerical_value"
+    # Trim the result to remove any extra spaces (if any)
+    trimmed_value=$(echo "$numerical_value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+    # Output the trimmed decimal value
+    echo "$trimmed_value"
+}
+
+# Function to check if an address is a valid Ethereum address
+is_valid_address() {
+    if [[ "$1" =~ ^0x[a-fA-F0-9]{40}$ ]]; then
+        return 0  # Valid address
+    else
+        return 1  # Invalid address
+    fi
+}
+
+# Function to check if a value is greater than zero
+is_greater_than_zero() {
+  if [[ $(echo "$1 > 0" | bc) -eq 1 ]]; then
+    return 0  # Greater than zero
+  else
+    return 1  # Not greater than zero
+  fi
 }

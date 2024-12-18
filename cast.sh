@@ -4,7 +4,7 @@ set -e
 clear
 forge clean
 . ./.env
-. ./hex2Int.sh
+. functions.sh
 
 rpc_url=https://ethereum-sepolia-rpc.publicnode.com
 
