@@ -5,6 +5,15 @@ clear
 . ./.env
 . ./functions.sh  # Source the external functions
 
+# Debugging: Print the environment variables
+echo "Environment Variables:"
+echo "DEX1=$DEX1"
+echo "DEX2=$DEX2"
+echo "TRASH_CAN=$TRASH_CAN"
+echo "WALLET_ADDRESS=$WALLET_ADDRESS"
+echo "SEPOLIA_PUBLIC_NODE=$SEPOLIA_PUBLIC_NODE"
+echo "PIGFOX_TOKEN=$PIGFOX_TOKEN"
+
 # Check if the provided addresses are valid
 for address in "$DEX1" "$DEX2" "$TRASH_CAN" "$WALLET_ADDRESS"; do
     if ! is_valid_address "$address"; then
@@ -92,7 +101,7 @@ TRANSFER_DECIMAL=$(hex2Int "$TRANSFER_RAW_HEX")
 echo "New balance of $TRASH_CAN: $TRANSFER_DECIMAL"
 
 # Optionally: Transfer from DEX2 if applicable
-if [ "$TRANSFER_DECIMAL" -lt "$BALANCE_DECIMAL" ]; then
+if [[ $(echo "$BALANCE_DECIMAL > 0" | bc) -eq 1 ]]; then
     echo "Transferring remaining balance from DEX2 to $TRASH_CAN"
     # Fetch the balance from DEX2 and repeat the transfer process
     BALANCE_RAW_DEX2=$(cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$DEX2" --rpc-url "$SEPOLIA_PUBLIC_NODE")
