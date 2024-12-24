@@ -54,6 +54,10 @@ contract Dex {
         require(success, "Token transfer failed");
     }
 
+    function approveTokenTransfer(address token, address spender, uint256 amount) public onlyOwner {
+        IERC20(token).approve(spender, amount);
+    }
+
     // Allow the contract to receive ETH
     receive() external payable {}
     function getBalance() public view returns (uint256) {
