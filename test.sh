@@ -141,7 +141,6 @@ EOF
 #cast send "$PIGFOX_TOKEN" "transferFrom(address,address,uint256)" "$DEX1" "$TRASH_CAN" "$balance" --rpc-url "$SEPOLIA_PUBLIC_NODE" --private-key "$PRIVATE_KEY" --gas-limit 200000
 #exit
 ./empty_dex.sh
-exit
 forge test --rpc-url "$rpc_url" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
 
 
