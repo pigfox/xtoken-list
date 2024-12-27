@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -41,7 +41,7 @@ contract DonationManager is ReentrancyGuard, Ownable {
      * @dev Initializes the contract with the address to receive donations.
      * @param _donationReceiver The address designated to receive all donations.
      */
-    constructor(address _donationReceiver) {
+    constructor(address _donationReceiver) Ownable(msg.sender){
         require(_donationReceiver != address(0), "Invalid receiver address");
         donationReceiver = _donationReceiver;
         _transferOwnership(msg.sender); // Set the deployer as the initial owner
