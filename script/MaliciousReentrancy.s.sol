@@ -7,8 +7,16 @@ import "../src/MaliciousReentrancy.sol";
 contract MaliciousReentrancyScript is Script {
     function run() external {
         vm.startBroadcast();
-        address donationManager = vm.envAddress("DONATION_MANAGER");
 
+        // Load the target address
+        address rawAddress = vm.envAddress("WALLET_ADDRESS");
+        console.log("Raw address from environment:", rawAddress);
+
+        // Cast the address to `payable`
+        address payable donationManager = payable(rawAddress);
+        console.log("Payable address after casting:", donationManager);
+
+        // Deploy the malicious contract
         MaliciousReentrancy maliciousReentrancy = new MaliciousReentrancy(donationManager);
         console.log("MaliciousReentrancy deployed at:", address(maliciousReentrancy));
 

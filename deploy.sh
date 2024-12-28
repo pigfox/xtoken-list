@@ -6,7 +6,7 @@ clear
 forge clean
 forge build
 
-contract="DonationManager"
+contract="MaliciousReentrancy"
 echo "Deploying $contract..."
 forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify --optimize 200
 #---Multi-Chain Deployment---
