@@ -8,7 +8,7 @@ forge build
 
 contract="Vault"
 echo "Deploying $contract..."
-forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify --optimize 200
+forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify --optimize --optimizer-runs 200
 #---Multi-Chain Deployment---
 #forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$X_WALLET_PRIVATE_KEY" --broadcast --verify --optimize 200
 #forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$AVAX_HTTP_RPC_URL" --private-key "$X_WALLET_PRIVATE_KEY" --broadcast --verify --optimize 200
