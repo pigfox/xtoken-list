@@ -11,6 +11,8 @@ trace_cast_call() {
     set +x
 }
 
+trap 'echo "Error at line $LINENO"; exit 1' ERR
+
 export $(grep -v '^#' .env | xargs)
 
 # Debugging: Print the environment variables
@@ -36,7 +38,7 @@ empty_dex() {
     echo "-------------------------$dex-------------------------"
 
     # Fetch the balance of the DEX in PIGFOX_TOKEN (in base units)
-    BALANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
+    BALANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
 
     # Debugging: Print the raw balance to see the format
     echo "Raw balance of $dex: $BALANCE_RAW"
