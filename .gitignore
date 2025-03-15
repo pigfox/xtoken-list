@@ -37,5 +37,6 @@ lib/
 wip.sh
 nocommit.sh
 broadcast/
+.idea/vcs.xml
 
 

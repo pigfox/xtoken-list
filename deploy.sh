@@ -6,7 +6,7 @@ clear
 forge clean
 forge build
 
-contract="XToken"
+contract="TrashCan"
 echo "Deploying $contract..."
 forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify --optimize --optimizer-runs 200
 #---Multi-Chain Deployment---

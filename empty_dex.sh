@@ -11,13 +11,15 @@ trace_cast_call() {
     set +x
 }
 
+export $(grep -v '^#' .env | xargs)
+
 # Debugging: Print the environment variables
 echo "Environment Variables:"
 echo "DEX1=$DEX1"
 echo "DEX2=$DEX2"
 echo "TRASH_CAN=$TRASH_CAN"
 echo "WALLET_ADDRESS=$WALLET_ADDRESS"
-echo "SEPOLIA_PUBLIC_NODE=$SEPOLIA_PUBLIC_NODE"
+echo "SEPOLIA_HTTP_RPC_URL=$SEPOLIA_HTTP_RPC_URL"
 echo "PIGFOX_TOKEN=$PIGFOX_TOKEN"
 
 # Check if the provided addresses are valid
@@ -34,7 +36,7 @@ empty_dex() {
     echo "-------------------------$dex-------------------------"
 
     # Fetch the balance of the DEX in PIGFOX_TOKEN (in base units)
-    BALANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$dex" --rpc-url "$SEPOLIA_PUBLIC_NODE")
+    BALANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
 
     # Debugging: Print the raw balance to see the format
     echo "Raw balance of $dex: $BALANCE_RAW"
@@ -63,7 +65,7 @@ empty_dex() {
     echo "Balance in base units: $BALANCE_BASE_UNIT"
 
     # Check allowance for the DEX to ensure it has permission to transfer the tokens
-    ALLOWANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$WALLET_ADDRESS" "$dex" --rpc-url "$SEPOLIA_PUBLIC_NODE")
+    ALLOWANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$WALLET_ADDRESS" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
     ALLOWANCE_RAW_HEX=$(echo "$ALLOWANCE_RAW" | awk '{print $1}')
     ALLOWANCE_DECIMAL=$(hex2Int "$ALLOWANCE_RAW_HEX")
 
@@ -74,7 +76,7 @@ empty_dex() {
 
     if [ "$ALLOWANCE_LESS_THAN_BALANCE" -eq 1 ]; then
         echo "Insufficient allowance, approving full balance for $dex"
-        trace_cast_call cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$dex" "$BALANCE_RAW_CLEAN" --rpc-url "$SEPOLIA_PUBLIC_NODE" --private-key "$PRIVATE_KEY"
+        trace_cast_call cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$dex" "$BALANCE_RAW_CLEAN" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
     else
         echo "Sufficient allowance for $dex"
     fi
@@ -85,7 +87,7 @@ empty_dex() {
         return  # Skip this DEX if balance is zero
     fi
 
-    trace_cast_call cast send "$dex" "approveTokenTransfer(address,address,uint256)" "$PIGFOX_TOKEN" "$WALLET_ADDRESS" "$BALANCE_RAW_CLEAN" --rpc-url "$SEPOLIA_PUBLIC_NODE" --private-key "$PRIVATE_KEY"
+    trace_cast_call cast send "$dex" "approveTokenTransfer(address,address,uint256)" "$PIGFOX_TOKEN" "$WALLET_ADDRESS" "$BALANCE_RAW_CLEAN" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
 
     # Transfer tokens from DEX to TRASH_CAN
     echo "Transferring tokens to $TRASH_CAN"
@@ -95,7 +97,7 @@ empty_dex() {
         "$dex" \
         "$TRASH_CAN" \
         "$BALANCE_RAW_CLEAN" \
-        --rpc-url "$SEPOLIA_PUBLIC_NODE" \
+        --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
         --private-key "$PRIVATE_KEY" \
         --gas-limit 200000)  # Increased gas limit
 
@@ -106,7 +108,7 @@ empty_dex() {
     fi
 
     # Check new balance of $TRASH_CAN
-    TRANSFER_RESULT=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$TRASH_CAN" --rpc-url "$SEPOLIA_PUBLIC_NODE")
+    TRANSFER_RESULT=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$TRASH_CAN" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
     TRANSFER_RAW_HEX=$(echo "$TRANSFER_RESULT" | awk '{print $1}')
     TRANSFER_DECIMAL=$(hex2Int "$TRANSFER_RAW_HEX")
     echo "New balance of $TRASH_CAN: $TRANSFER_DECIMAL"

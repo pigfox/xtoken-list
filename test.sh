@@ -1,14 +1,26 @@
-#!/bin/sh
+#!/bin/bash
 set -x
 set -e
+
 clear
 forge clean
-. ./.env
+#. ./.env
+
+# Trap errors and display the line number
+trap 'echo "Error at line $LINENO"; exit 1' ERR
+
+export $(grep -v '^#' .env | xargs)
 
 #contract="MsgSender"
 #function="test_run"
 contract="Arbitrage"
 function="executeArbitrage"
+
+# Ensure required addresses are set
+if [ -z "$DEX1" ] || [ -z "$DEX2" ]; then
+  echo "Error: DEX1 or DEX2 is not set. Check your environment variables."
+  exit 1
+fi
 
 rpc_url=https://ethereum-sepolia-rpc.publicnode.com
 echo "Testing $contract::$function..."
