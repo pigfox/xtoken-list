@@ -46,6 +46,14 @@ contract ArbitrageTest is Test {
         dex2AddressStr = vm.envString("DEX2");
         address dex2Address = conversionsTest.stringToAddress(dex2AddressStr);
 
+        dex1 = Dex(payable(dex1Address));
+        dex2 = Dex(payable(dex2Address));
+        vault = Vault(payable(vm.envAddress("VAULT")));
+        arbitrage = Arbitrage(arbitrageAddress);
+
+        console.log("Arbitrage Owner:", arbitrage.getOwner());
+        console.log("Wallet Address:", walletAddress);
+
         vm.startPrank(walletAddress);
         arbitrage = Arbitrage(arbitrageAddress);
         assertEq(address(arbitrage), arbitrageAddress);
@@ -54,9 +62,6 @@ contract ArbitrageTest is Test {
         assertEq(arbitrage.getOwner(), walletAddress);
         require(arbitrage.accessors(walletAddress), "Accessor not added");
 
-        dex1 = Dex(payable(dex1Address));
-        dex2 = Dex(payable(dex2Address));
-        vault = Vault(payable(vm.envAddress("VAULT")));
 
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
         //assertEq(dex1TokenBalance, 0);
