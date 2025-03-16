@@ -46,6 +46,7 @@ contract ArbitrageTest is Test {
         dex2AddressStr = vm.envString("DEX2");
         address dex2Address = conversionsTest.stringToAddress(dex2AddressStr);
 
+        wallet = Wallet(payable(walletAddress));
         dex1 = Dex(payable(dex1Address));
         dex2 = Dex(payable(dex2Address));
         vault = Vault(payable(vm.envAddress("VAULT")));
@@ -144,7 +145,7 @@ contract ArbitrageTest is Test {
             revert("Prices are equal");
         }
 
-        /*
+        vm.startPrank(address(wallet));
         if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
             uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
@@ -156,7 +157,7 @@ contract ArbitrageTest is Test {
             uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
             arbitrage.run(address(pigfoxToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
         }
-*/
+        vm.stopPrank();
 
         uint256 gasEnd = gasleft();
         console.log("Gas end:");
