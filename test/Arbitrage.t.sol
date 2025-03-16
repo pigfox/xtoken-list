@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.26;
-import {Test, console} from "../lib/forge-std/src/Test.sol";
+import {Test, console, console2} from "../lib/forge-std/src/Test.sol";
 import {Dex} from "../src/Dex.sol";
 import {PigfoxToken} from "../src/PigfoxToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
@@ -61,7 +61,6 @@ contract ArbitrageTest is Test {
         arbitrage.setOwner(walletAddress);
         assertEq(arbitrage.getOwner(), walletAddress);
         require(arbitrage.accessors(walletAddress), "Accessor not added");
-
 
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
         //assertEq(dex1TokenBalance, 0);
@@ -128,16 +127,21 @@ contract ArbitrageTest is Test {
 
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
-        uint256 gasStart = gasleft();
+        //uint256 gasStart = gasleft();
 
         uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, pigfoxTokenAddressStr);
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, pigfoxTokenAddressStr);
+        console.log("dex1TokenPrice:");
+        console2.logUint(dex1TokenPrice);
 
-        console.log("dex1TokenPrice", dex1TokenPrice);
-        console.log("dex2TokenPrice", dex2TokenPrice);
+        console.log("dex2TokenPrice:");
+        console2.logUint(dex2TokenPrice);  // ✅ Use console.logUint for uint256 values
+
+        /*
 
         uint256 timeStamp = block.timestamp + 300;
-        console.log("Time Stamp:", timeStamp);
+        console.log("Time Stamp:");
+        console.logUint(timeStamp);
         if (dex1TokenPrice == dex2TokenPrice) {
             revert("Prices are equal");
         }
@@ -155,8 +159,15 @@ contract ArbitrageTest is Test {
             arbitrage.run(address(pigfoxToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
         }
 */
-        uint256 gasUsed = gasStart - gasleft();
-        console.log("Gas used:", gasUsed);
+        /*
+        uint256 gasEnd = gasleft();
+        console.log("Gas end:");
+        console.logUint(gasEnd);
+
+        console.log("Gas used:");
+        uint256 gasUsed = gasStart - gasEnd;
+        console.logUint(gasUsed);
+        */
     }
 /*
     function test_setProfitAddress()public{
