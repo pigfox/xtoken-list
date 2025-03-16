@@ -127,7 +127,7 @@ contract ArbitrageTest is Test {
 
     function test_executeArbitrage()public{
         console.log("Function Test ExecuteArbitrage");
-        //uint256 gasStart = gasleft();
+        uint256 gasStart = gasleft();
 
         uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, pigfoxTokenAddressStr);
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, pigfoxTokenAddressStr);
@@ -137,15 +137,13 @@ contract ArbitrageTest is Test {
         console.log("dex2TokenPrice:");
         console2.logUint(dex2TokenPrice);  // ✅ Use console.logUint for uint256 values
 
-        /*
-
         uint256 timeStamp = block.timestamp + 300;
-        console.log("Time Stamp:");
-        console.logUint(timeStamp);
+        console.log("timeStamp:");
+        console2.logUint(timeStamp);
         if (dex1TokenPrice == dex2TokenPrice) {
             revert("Prices are equal");
         }
-        console.log("Function Test ExecuteArbitrage 2");
+
         /*
         if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
@@ -159,15 +157,14 @@ contract ArbitrageTest is Test {
             arbitrage.run(address(pigfoxToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
         }
 */
-        /*
+
         uint256 gasEnd = gasleft();
         console.log("Gas end:");
-        console.logUint(gasEnd);
+        console2.logUint(gasEnd);
 
         console.log("Gas used:");
         uint256 gasUsed = gasStart - gasEnd;
-        console.logUint(gasUsed);
-        */
+        console2.logUint(gasUsed);
     }
 /*
     function test_setProfitAddress()public{
