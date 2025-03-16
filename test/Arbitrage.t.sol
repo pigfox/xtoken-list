@@ -39,6 +39,7 @@ contract ArbitrageTest is Test {
         address arbitrageAddress = conversionsTest.stringToAddress(arbitrageAddressStr);
 
         pigfoxTokenAddressStr = vm.envString("PIGFOX_TOKEN");
+        address pigfoxTokenAddress = conversionsTest.stringToAddress(pigfoxTokenAddressStr);
 
         dex1AddressStr = vm.envString("DEX1");
         address dex1Address = conversionsTest.stringToAddress(dex1AddressStr);
@@ -46,6 +47,7 @@ contract ArbitrageTest is Test {
         dex2AddressStr = vm.envString("DEX2");
         address dex2Address = conversionsTest.stringToAddress(dex2AddressStr);
 
+        pigfoxToken = PigfoxToken(pigfoxTokenAddress);
         wallet = Wallet(payable(walletAddress));
         dex1 = Dex(payable(dex1Address));
         dex2 = Dex(payable(dex2Address));
