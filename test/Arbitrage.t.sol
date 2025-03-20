@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.26;
-import {Test, console, console2} from "../lib/forge-std/src/Test.sol";
+
+import {Test, console, console2} from "forge-std/Test.sol"; // Ensure correct import path
 import {Dex} from "../src/Dex.sol";
 import {PigfoxToken} from "../src/PigfoxToken.sol";
 import {Arbitrage} from "../src/Arbitrage.sol";
@@ -10,7 +11,6 @@ import {ConversionsTest} from "./Conversions.sol";
 import {Wallet} from "../src/Wallet.sol";
 
 contract ArbitrageTest is Test {
-    //address public pigfoxTokenAddress;
     string public dex1AddressStr;
     string public dex2AddressStr;
     string public pigfoxTokenAddressStr;
@@ -58,7 +58,6 @@ contract ArbitrageTest is Test {
         console.log("Wallet Address:", walletAddress);
 
         vm.startPrank(walletAddress);
-        arbitrage = Arbitrage(arbitrageAddress);
         assertEq(address(arbitrage), arbitrageAddress);
         arbitrage.addAccessor(walletAddress);
         arbitrage.setOwner(walletAddress);
@@ -66,10 +65,7 @@ contract ArbitrageTest is Test {
         require(arbitrage.accessors(walletAddress), "Accessor not added");
 
         uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
-        //assertEq(dex1TokenBalance, 0);
-        /**/
         uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
-        //assertEq(dex2TokenBalance, 0);
 
         (string memory txHash, string memory status) = castFunctionsTest.setTokenPrice(dex1AddressStr, pigfoxTokenAddressStr, initialDex1TokenPrice);
         assertEq(expectedStatusOk, status);
@@ -128,7 +124,7 @@ contract ArbitrageTest is Test {
         console.log("Setup completed successfully.");
     }
 
-    function test_executeArbitrage()public{
+    function test_executeArbitrage() public {
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
 
@@ -138,7 +134,7 @@ contract ArbitrageTest is Test {
         console2.logUint(dex1TokenPrice);
 
         console.log("dex2TokenPrice:");
-        console2.logUint(dex2TokenPrice);  // ✅ Use console.logUint for uint256 values
+        console2.logUint(dex2TokenPrice);
 
         uint256 timeStamp = block.timestamp + 300;
         console.log("timeStamp:");
@@ -147,17 +143,37 @@ contract ArbitrageTest is Test {
             revert("Prices are equal");
         }
 
+        // Step 1: Impersonate DEX1 and approve arbitrage contract
+        vm.startPrank(address(dex1));
+        pigfoxToken.approve(address(arbitrage), type(uint256).max); // Max approval for simplicity
+        vm.stopPrank();
+
+        // Step 2: Impersonate DEX2 and approve arbitrage contract
+        vm.startPrank(address(dex2));
+        pigfoxToken.approve(address(arbitrage), type(uint256).max); // Max approval for simplicity
+        vm.stopPrank();
+
+        // Step 3: Execute arbitrage as wallet
         vm.startPrank(address(wallet));
         if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
             uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
-            arbitrage.run(address(pigfoxToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp);
-        }
+            try arbitrage.run(address(pigfoxToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp){
+                console.log("Arbitrage executed successfully");
+            } catch Error(string memory reason) {
+                console.log("Arbitrage failed:", reason);
+                revert(reason);
+            }
 
-        if (dex2TokenPrice < dex1TokenPrice){
+        } else if (dex2TokenPrice < dex1TokenPrice) {
             console.log("Buy from Dex2 sell to Dex1");
             uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
-            arbitrage.run(address(pigfoxToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
+            try arbitrage.run(address(pigfoxToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp){
+                console.log("Arbitrage executed successfully");
+            } catch Error(string memory reason) {
+                console.log("Arbitrage failed:", reason);
+                revert(reason);
+            }
         }
         vm.stopPrank();
 
@@ -169,21 +185,4 @@ contract ArbitrageTest is Test {
         uint256 gasUsed = gasStart - gasEnd;
         console2.logUint(gasUsed);
     }
-/*
-    function test_setProfitAddress()public{
-        vm.startPrank(ownerAddress);
-        console.log("Function Test SetProfitAddress");
-        address profitAddress = vm.envAddress("WALLET_ADDRESS");
-        arbitrage.setProfitAddress(profitAddress);
-        vm.stopPrank();
-        assertEq(arbitrage.profitAddress(), profitAddress);
-    }
-
-*/
-
-    /*
-    function tearDown() public {
-        vm.stopPrank(); // Ensure prank is stopped after each test
-    }
-    */
 }
