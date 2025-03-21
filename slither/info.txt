@@ -1,0 +1,13 @@
+version= "0.8.26"
+contract="Arbitrage"
+
+$python3 -m venv venv
+$source venv/bin/activate
+$solc-select install
+$solc-select install $version
+$solc-select use $version
+$solc --version
+$pip3 install slither-analyzer
+$slither --version
+$slither ../src/$contract.sol --solc-remaps "@openzeppelin/contracts/=../lib/openzeppelin-contracts/contracts/"
+#$deactivate
