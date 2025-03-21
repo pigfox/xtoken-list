@@ -120,6 +120,12 @@ contract ArbitrageTest is Test {
         dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
         assertEq(dex2TokenBalance, initialDex2TokenSupply);
 
+        // Add direct balance check
+        uint256 dex2DirectBalance = pigfoxToken.balanceOf(address(dex2));
+        console.log("DEX2 Balance after setup:");
+        console2.logUint(dex2DirectBalance);
+        assertEq(dex2DirectBalance, initialDex2TokenSupply, "DEX2 balance incorrect after setup");
+
         vm.stopPrank();
         console.log("Setup completed successfully.");
     }
@@ -127,6 +133,9 @@ contract ArbitrageTest is Test {
     function test_executeArbitrage() public {
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
+
+        assertEq(castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr), initialDex1TokenSupply);
+        assertEq(castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr), initialDex2TokenSupply);
 
         uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, pigfoxTokenAddressStr);
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, pigfoxTokenAddressStr);

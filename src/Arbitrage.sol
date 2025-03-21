@@ -99,3 +99,6 @@ contract Arbitrage {
         require(IERC20(token).transfer(owner, amount), "Withdrawal failed");
     }
 }
+/*
+ (e.g., reentrancy, overflow/underflow, front-running).
+*/
