@@ -54,7 +54,18 @@ contract ArbitrageTest is Test {
         vault = Vault(payable(vm.envAddress("VAULT")));
         arbitrage = Arbitrage(arbitrageAddress);
 
-        console.log("Arbitrage Owner:", arbitrage.getOwner());
+        // Verify contract deployment
+        uint256 codeSize;
+        assembly {
+            codeSize := extcodesize(arbitrageAddress)
+        }
+        console.log("Arbitrage contract code size:");
+        console2.logUint(codeSize);
+        require(codeSize > 0, "Arbitrage contract not deployed at specified address");
+
+        // Attempt to call getOwner
+        address ownerBefore = arbitrage.getOwner();
+        console.log("Arbitrage Owner before setup:", ownerBefore);
         console.log("Wallet Address:", walletAddress);
 
         vm.startPrank(walletAddress);
@@ -64,10 +75,29 @@ contract ArbitrageTest is Test {
         assertEq(arbitrage.getOwner(), walletAddress);
         require(arbitrage.accessors(walletAddress), "Accessor not added");
 
-        uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
-        uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
+        // Reset wallet balance
+        address burnAddress = 0x000000000000000000000000000000000000dEaD;
+        uint256 initialWalletBalance = pigfoxToken.balanceOf(walletAddress);
+        if (initialWalletBalance > 0) {
+            pigfoxToken.transfer(burnAddress, initialWalletBalance);
+            console.log("Transferred initial balance to burn address:");
+            console2.logUint( initialWalletBalance);
+        }
 
-        (string memory txHash, string memory status) = castFunctionsTest.setTokenPrice(dex1AddressStr, pigfoxTokenAddressStr, initialDex1TokenPrice);
+        // Mint tokens to wallet
+        (string memory txHash, string memory status) = castFunctionsTest.mint(pigfoxTokenAddressStr, maxPigfoxTokenSupply);
+        assertEq(expectedStatusOk, status);
+        assertEq(expectedTxHashLength, bytes(txHash).length);
+
+        pigfoxToken.supplyTokenTo(walletAddress, maxPigfoxTokenSupply);
+
+        uint256 walletBalance = pigfoxToken.balanceOf(walletAddress);
+        console.log("Wallet Balance after mint:");
+        console2.logUint(walletBalance);
+        assertEq(walletBalance, maxPigfoxTokenSupply, "Minting failed");
+
+        // Set token prices
+        (txHash, status) = castFunctionsTest.setTokenPrice(dex1AddressStr, pigfoxTokenAddressStr, initialDex1TokenPrice);
         assertEq(expectedStatusOk, status);
         assertEq(expectedTxHashLength, bytes(txHash).length);
 
@@ -81,50 +111,26 @@ contract ArbitrageTest is Test {
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, pigfoxTokenAddressStr);
         assertEq(dex2TokenPrice, initialDex2TokenPrice);
 
-        (txHash, status) = castFunctionsTest.mint(pigfoxTokenAddressStr, maxPigfoxTokenSupply);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
+        // Approve and transfer to DEX1
+        pigfoxToken.approve(address(dex1), initialDex1TokenSupply);
+        pigfoxToken.transfer(address(dex1), initialDex1TokenSupply);
+        uint256 dex1TokenBalance = pigfoxToken.balanceOf(address(dex1));
+        console.log("DEX1 Balance after transfer:");
+        console2.logUint(dex1TokenBalance);
+        assertEq(dex1TokenBalance, initialDex1TokenSupply, "DEX1 deposit failed");
 
-        (txHash, status) = castFunctionsTest.approve(pigfoxTokenAddressStr, dex1AddressStr, maxAllowance);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
+        // Approve and transfer to DEX2
+        pigfoxToken.approve(address(dex2), initialDex2TokenSupply);
+        pigfoxToken.transfer(address(dex2), initialDex2TokenSupply);
+        uint256 dex2TokenBalance = pigfoxToken.balanceOf(address(dex2));
+        console.log("DEX2 Balance after transfer:");
+        console2.logUint(dex2TokenBalance);
+        assertEq(dex2TokenBalance, initialDex2TokenSupply, "DEX2 deposit failed");
 
-        uint256 dex1Allowance = castFunctionsTest.getAllowance(pigfoxTokenAddressStr, walletAddressStr, dex1AddressStr);
-        assertEq(dex1Allowance, maxAllowance);
-
-        (txHash, status) = castFunctionsTest.approve(pigfoxTokenAddressStr, dex2AddressStr, maxAllowance);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        uint256 dex2Allowance = castFunctionsTest.getAllowance(pigfoxTokenAddressStr, walletAddressStr, dex2AddressStr);
-        assertEq(dex2Allowance, maxAllowance);
-
-        (txHash, status) = castFunctionsTest.approve(pigfoxTokenAddressStr, arbitrageAddressStr, maxAllowance);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        uint256 arbitrageAllowance = castFunctionsTest.getAllowance(pigfoxTokenAddressStr, walletAddressStr, arbitrageAddressStr);
-        assertEq(arbitrageAllowance, maxAllowance);
-
-        (txHash, status) = castFunctionsTest.depositTokens(dex1AddressStr, pigfoxTokenAddressStr, initialDex1TokenSupply);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
-        assertEq(dex1TokenBalance, initialDex1TokenSupply);
-
-        (txHash, status) = castFunctionsTest.depositTokens(dex2AddressStr, pigfoxTokenAddressStr, initialDex2TokenSupply);
-        assertEq(expectedStatusOk, status);
-        assertEq(expectedTxHashLength, bytes(txHash).length);
-
-        dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
-        assertEq(dex2TokenBalance, initialDex2TokenSupply);
-
-        // Add direct balance check
-        uint256 dex2DirectBalance = pigfoxToken.balanceOf(address(dex2));
-        console.log("DEX2 Balance after setup:");
-        console2.logUint(dex2DirectBalance);
-        assertEq(dex2DirectBalance, initialDex2TokenSupply, "DEX2 balance incorrect after setup");
+        // Approve arbitrage contract
+        pigfoxToken.approve(address(arbitrage), maxAllowance);
+        uint256 arbitrageAllowance = pigfoxToken.allowance(walletAddress, address(arbitrage));
+        assertEq(arbitrageAllowance, maxAllowance, "Arbitrage approval failed");
 
         vm.stopPrank();
         console.log("Setup completed successfully.");
@@ -133,9 +139,6 @@ contract ArbitrageTest is Test {
     function test_executeArbitrage() public {
         console.log("Function Test ExecuteArbitrage");
         uint256 gasStart = gasleft();
-
-        assertEq(castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr), initialDex1TokenSupply);
-        assertEq(castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr), initialDex2TokenSupply);
 
         uint256 dex1TokenPrice = castFunctionsTest.getTokenPrice(dex1AddressStr, pigfoxTokenAddressStr);
         uint256 dex2TokenPrice = castFunctionsTest.getTokenPrice(dex2AddressStr, pigfoxTokenAddressStr);
@@ -152,37 +155,36 @@ contract ArbitrageTest is Test {
             revert("Prices are equal");
         }
 
-        // Step 1: Impersonate DEX1 and approve arbitrage contract
+        // Verify balances before execution
+        uint256 dex1Balance = pigfoxToken.balanceOf(address(dex1));
+        uint256 dex2Balance = pigfoxToken.balanceOf(address(dex2));
+        console.log("DEX1 Balance before arbitrage:");
+        console2.logUint(dex1Balance);
+        console.log("DEX2 Balance before arbitrage:");
+        console2.logUint(dex2Balance);
+        assertEq(dex1Balance, initialDex1TokenSupply, "DEX1 balance incorrect");
+        assertEq(dex2Balance, initialDex2TokenSupply, "DEX2 balance incorrect");
+
+        // Impersonate DEX1 and approve arbitrage
         vm.startPrank(address(dex1));
-        pigfoxToken.approve(address(arbitrage), type(uint256).max); // Max approval for simplicity
+        pigfoxToken.approve(address(arbitrage), type(uint256).max);
         vm.stopPrank();
 
-        // Step 2: Impersonate DEX2 and approve arbitrage contract
+        // Impersonate DEX2 and approve arbitrage
         vm.startPrank(address(dex2));
-        pigfoxToken.approve(address(arbitrage), type(uint256).max); // Max approval for simplicity
+        pigfoxToken.approve(address(arbitrage), type(uint256).max);
         vm.stopPrank();
 
-        // Step 3: Execute arbitrage as wallet
+        // Execute arbitrage as wallet
         vm.startPrank(address(wallet));
         if (dex1TokenPrice < dex2TokenPrice) {
             console.log("Buy from Dex1 sell to Dex2");
-            uint256 dex1TokenBalance = castFunctionsTest.getTokenBalanceOf(dex1AddressStr, pigfoxTokenAddressStr);
-            try arbitrage.run(address(pigfoxToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp){
-                console.log("Arbitrage executed successfully");
-            } catch Error(string memory reason) {
-                console.log("Arbitrage failed:", reason);
-                revert(reason);
-            }
-
+            uint256 dex1TokenBalance = pigfoxToken.balanceOf(address(dex1));
+            arbitrage.run(address(pigfoxToken), address(dex1), address(dex2), dex1TokenBalance, timeStamp);
         } else if (dex2TokenPrice < dex1TokenPrice) {
             console.log("Buy from Dex2 sell to Dex1");
-            uint256 dex2TokenBalance = castFunctionsTest.getTokenBalanceOf(dex2AddressStr, pigfoxTokenAddressStr);
-            try arbitrage.run(address(pigfoxToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp){
-                console.log("Arbitrage executed successfully");
-            } catch Error(string memory reason) {
-                console.log("Arbitrage failed:", reason);
-                revert(reason);
-            }
+            uint256 dex2TokenBalance = pigfoxToken.balanceOf(address(dex2));
+            arbitrage.run(address(pigfoxToken), address(dex2), address(dex1), dex2TokenBalance, timeStamp);
         }
         vm.stopPrank();
 
