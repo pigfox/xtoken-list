@@ -19,13 +19,13 @@ export $(grep -v '^#' .env | xargs)
 echo "Environment Variables:"
 echo "DEX1=$DEX1"
 echo "DEX2=$DEX2"
-echo "TRASH_CAN=$TRASH_CAN"
+echo "BURN_ADDRESS=$BURN_ADDRESS"
 echo "WALLET_ADDRESS=$WALLET_ADDRESS"
 echo "SEPOLIA_HTTP_RPC_URL=$SEPOLIA_HTTP_RPC_URL"
 echo "PIGFOX_TOKEN=$PIGFOX_TOKEN"
 
 # Check if the provided addresses are valid
-for address in "$DEX1" "$DEX2" "$TRASH_CAN"; do
+for address in "$DEX1" "$DEX2" "$BURN_ADDRESS"; do
     if ! is_valid_address "$address"; then
         echo "Invalid Ethereum address: $address"
         exit 1
@@ -91,13 +91,13 @@ empty_dex() {
 
     trace_cast_call cast send "$dex" "approveTokenTransfer(address,address,uint256)" "$PIGFOX_TOKEN" "$WALLET_ADDRESS" "$BALANCE_RAW_CLEAN" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
 
-    # Transfer tokens from DEX to TRASH_CAN
-    echo "Transferring tokens to $TRASH_CAN"
-    echo "Attempting to transfer: $BALANCE_RAW_CLEAN to $TRASH_CAN"
+    # Transfer tokens from DEX to BURN_ADDRESS
+    echo "Transferring tokens to $BURN_ADDRESS"
+    echo "Attempting to transfer: $BALANCE_RAW_CLEAN to $BURN_ADDRESS"
     TRANSFER_RESULT=$(trace_cast_call cast send "$PIGFOX_TOKEN" \
         "transferFrom(address,address,uint256)" \
         "$dex" \
-        "$TRASH_CAN" \
+        "$BURN_ADDRESS" \
         "$BALANCE_RAW_CLEAN" \
         --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
         --private-key "$PRIVATE_KEY" \
@@ -109,11 +109,11 @@ empty_dex() {
         exit 1
     fi
 
-    # Check new balance of $TRASH_CAN
-    TRANSFER_RESULT=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$TRASH_CAN" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
+    # Check new balance of $BURN_ADDRESS
+    TRANSFER_RESULT=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$BURN_ADDRESS" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
     TRANSFER_RAW_HEX=$(echo "$TRANSFER_RESULT" | awk '{print $1}')
     TRANSFER_DECIMAL=$(hex2Int "$TRANSFER_RAW_HEX")
-    echo "New balance of $TRASH_CAN: $TRANSFER_DECIMAL"
+    echo "New balance of $BURN_ADDRESS: $TRANSFER_DECIMAL"
 }
 
 # Empty DEX1 if balance is greater than zero
