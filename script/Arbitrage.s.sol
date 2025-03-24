@@ -6,10 +6,12 @@ import "../src/Arbitrage.sol";
 
 contract ArbitrageScript is Script {
     function run() external {
-        vm.startBroadcast();
-        Arbitrage arbitrage = new Arbitrage();
-        console.log("Arbitrage deployed at:", address(arbitrage));
+        // Read the vault address from the .env file
+        address vaultAddress = vm.envAddress("VAULT_ADDRESS");
 
+        vm.startBroadcast();
+        Arbitrage arbitrage = new Arbitrage(vaultAddress);
+        console.log("Arbitrage deployed at:", address(arbitrage));
         vm.stopBroadcast();
     }
 }

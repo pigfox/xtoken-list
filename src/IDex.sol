@@ -2,7 +2,7 @@
 pragma solidity ^0.8.26;
 
 interface IDex {
-
+    function depositTokens(address token, uint256 amount) external;
     function buyTokens(address token, uint256 amount) external payable returns (uint256);
     function sellTokens(address token, uint256 amount) external returns (uint256);
     function setTokenPrice(address token, uint256 price) external; // Added for price setting

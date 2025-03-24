@@ -7,13 +7,15 @@ import "forge-std/console2.sol";
 import "../src/PigfoxToken.sol";
 import "../src/IDex.sol";
 import "../src/Arbitrage.sol";
+import "../src/Vault.sol"; // Include Vault interface
 
 contract ArbitrageTest is Test {
     PigfoxToken public pigfoxToken;
     IDex public dex1;
     IDex public dex2;
     Arbitrage public arbitrage;
-    address public wallet;
+    Vault public vault;
+    address public walletAddr;
 
     // Environment variables as constants
     string constant SEPOLIA_RPC_URL = "SEPOLIA_HTTP_RPC_URL";
@@ -23,6 +25,7 @@ contract ArbitrageTest is Test {
     string constant DEX2 = "DEX2";
     string constant ARBITRAGE = "ARBITRAGE";
     string constant BURN_ADDRESS = "BURN_ADDRESS";
+    string constant VAULT = "VAULT";
 
     // Constants for token and ETH amounts
     uint256 constant DECIMALS = 10**18;              // Standard ERC20 decimal places
@@ -31,6 +34,7 @@ contract ArbitrageTest is Test {
     uint256 constant TRADE_AMOUNT = 10 * DECIMALS;           // 10 PFX
     uint256 constant ETH_FUNDING = 1 * DECIMALS;             // 1 ETH
     uint256 constant WALLET_ETH_BUFFER = 2 * DECIMALS;       // 2 ETH
+    uint256 constant VAULT_ETH_FUNDING = 10 * DECIMALS;      // 10 ETH for flash loans
 
     // Constants for DEX prices
     uint256 constant DEX1_PRICE = 120;               // 120 wei/PFX
@@ -45,30 +49,33 @@ contract ArbitrageTest is Test {
         vm.createSelectFork(rpcUrl);
 
         // Fetch addresses from environment variables
-        wallet = vm.envAddress(WALLET_ADDRESS);
+        walletAddr = vm.envAddress(WALLET_ADDRESS);
         address pigfoxTokenAddr = vm.envAddress(PIGFOX_TOKEN);
         address dex1Addr = vm.envAddress(DEX1);
         address dex2Addr = vm.envAddress(DEX2);
         address arbitrageAddr = vm.envAddress(ARBITRAGE);
+        address vaultAddr = vm.envAddress(VAULT);
 
         // Cast deployed contract addresses to their respective types
         pigfoxToken = PigfoxToken(pigfoxTokenAddr);
         dex1 = IDex(dex1Addr);
         dex2 = IDex(dex2Addr);
         arbitrage = Arbitrage(payable(arbitrageAddr));
+        vault = Vault(payable(vaultAddr));
 
         // Log initial state
-        console.log("Wallet Address:", wallet);
+        console.log("Wallet Address:", walletAddr);
         console.log("PigfoxToken Address:", address(pigfoxToken));
         console.log("DEX1 Address:", address(dex1));
         console.log("DEX2 Address:", address(dex2));
         console.log("Arbitrage Address:", address(arbitrage));
+        console.log("Vault Address:", address(vault));
 
         // Start prank as wallet
-        vm.startPrank(wallet);
+        vm.startPrank(walletAddr);
 
         // Check and ensure wallet has PFX tokens
-        uint256 walletBalance = pigfoxToken.balanceOf(wallet);
+        uint256 walletBalance = pigfoxToken.balanceOf(walletAddr);
         console.log("Wallet PFX Balance:");
         console2.log(walletBalance);
         if (walletBalance < MIN_WALLET_PFX_BALANCE) {
@@ -82,39 +89,35 @@ contract ArbitrageTest is Test {
             }
         }
 
-        // Check DEX balances and fund if empty
+        // Check DEX1 balance and fund if empty (for selling PFX back)
         uint256 dex1Balance = pigfoxToken.balanceOf(dex1Addr);
-        uint256 dex2Balance = pigfoxToken.balanceOf(dex2Addr);
         console.log("DEX1 PFX Balance:");
         console2.logUint(dex1Balance);
-        console.log("DEX2 PFX Balance:");
-        console2.logUint(dex2Balance);
-
         if (dex1Balance < DEX_PFX_DEPOSIT) {
             pigfoxToken.approve(dex1Addr, DEX_PFX_DEPOSIT);
-            pigfoxToken.transfer(dex1Addr, DEX_PFX_DEPOSIT);
-            console.log("Transferred 50 PFX to DEX1");
-        }
-        if (dex2Balance < DEX_PFX_DEPOSIT) {
-            pigfoxToken.approve(dex2Addr, DEX_PFX_DEPOSIT);
-            pigfoxToken.transfer(dex2Addr, DEX_PFX_DEPOSIT);
-            console.log("Transferred 50 PFX to DEX2");
+            dex1.depositTokens(address(pigfoxToken), DEX_PFX_DEPOSIT); // Use depositTokens
+            console.log("Deposited 50 PFX to DEX1");
         }
 
-        // Fund arbitrage contract with ETH
-        uint256 arbitrageEth = address(arbitrage).balance;
-        console.log("Arbitrage ETH Balance:");
-        console2.log(arbitrageEth);
-        if (arbitrageEth < ETH_FUNDING) {
-            vm.deal(wallet, WALLET_ETH_BUFFER); // Ensure wallet has ETH for funding
-            (bool sent, ) = address(arbitrage).call{value: ETH_FUNDING}("");
-            require(sent, "Failed to fund arbitrage contract with ETH");
-            console.log("Funded arbitrage with 1 ETH");
+        // Check DEX2 balance (optional funding, flash loan will handle purchase)
+        uint256 dex2Balance = pigfoxToken.balanceOf(dex2Addr);
+        console.log("DEX2 PFX Balance:");
+        console2.logUint(dex2Balance);
+        // No need to fund DEX2, flash loan will provide ETH to buy from it
+
+        // Fund Vault with ETH for flash loans
+        uint256 vaultEthBalance = address(vault).balance;
+        console.log("Vault ETH Balance:");
+        console2.log(vaultEthBalance);
+        if (vaultEthBalance < VAULT_ETH_FUNDING) {
+            vm.deal(walletAddr, WALLET_ETH_BUFFER);
+            vault.depositETH{value: VAULT_ETH_FUNDING}();
+            console.log("Funded Vault with 10 ETH");
         }
 
         // Ensure wallet is an accessor (assuming addAccessor exists in Arbitrage)
-        if (!arbitrage.accessors(wallet)) {
-            arbitrage.addAccessor(wallet);
+        if (!arbitrage.accessors(walletAddr)) {
+            arbitrage.addAccessor(walletAddr);
             console.log("Wallet added as accessor");
         }
 
@@ -134,11 +137,11 @@ contract ArbitrageTest is Test {
     }
 
     function test_executeArbitrage() public {
-        vm.startPrank(wallet);
+        vm.startPrank(walletAddr);
 
         // Log initial state
         uint256 initialEth = address(arbitrage).balance;
-        uint256 initialProfitEth = wallet.balance;
+        uint256 initialProfitEth = walletAddr.balance;
         console.log("Initial Arbitrage ETH:");
         console2.log(initialEth);
         console.log("Initial Wallet ETH:");
@@ -155,7 +158,7 @@ contract ArbitrageTest is Test {
         // Ensure arbitrage opportunity exists
         require(dex2Price < dex1Price, "No arbitrage opportunity: DEX2 price >= DEX1 price");
 
-        // Execute arbitrage: Buy from DEX2 (cheaper), sell to DEX1 (expensive)
+        // Execute arbitrage with flash loan: Buy from DEX2, sell to DEX1
         arbitrage.run(
             address(pigfoxToken),
             address(dex2), // Buy from cheaper DEX
@@ -166,12 +169,12 @@ contract ArbitrageTest is Test {
 
         // Log final state
         uint256 finalEth = address(arbitrage).balance;
-        uint256 finalProfitEth = wallet.balance;
+        uint256 finalProfitEth = walletAddr.balance;
         console.log("Final Arbitrage ETH:", finalEth);
         console.log("Final Wallet ETH:", finalProfitEth);
 
-        // Verify profit
-        uint256 profit = finalProfitEth - initialProfitEth;
+        // Verify profit (profit stays in Arbitrage contract after flash loan)
+        uint256 profit = finalEth - initialEth;
         assertGt(profit, 0, "No profit made");
         console.log("Profit (ETH wei):", profit);
 
