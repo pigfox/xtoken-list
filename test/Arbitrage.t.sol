@@ -35,6 +35,8 @@ contract ArbitrageTest is Test {
     uint256 constant ETH_FUNDING = 1 * DECIMALS;             // 1 ETH
     uint256 constant WALLET_ETH_BUFFER = 2 * DECIMALS;       // 2 ETH
     uint256 constant VAULT_ETH_FUNDING = 10 * DECIMALS;      // 10 ETH for flash loans
+    uint256 constant ARBITRAGE_ETH_FUNDING = 1 * DECIMALS;   // 1 ETH for Arbitrage
+    uint256 constant DEX_ETH_FUNDING = 1 * DECIMALS;         // 1 ETH for each DEX
 
     // Constants for DEX prices
     uint256 constant DEX1_PRICE = 120;               // 120 wei/PFX
@@ -77,7 +79,7 @@ contract ArbitrageTest is Test {
         // Check and ensure wallet has PFX tokens
         uint256 walletBalance = pigfoxToken.balanceOf(walletAddr);
         console.log("Wallet PFX Balance:");
-        console2.log(walletBalance);
+        console2.logUint(walletBalance);
         if (walletBalance < MIN_WALLET_PFX_BALANCE) {
             console.log("Warning: Wallet has insufficient PFX. Attempting to mint...");
             try pigfoxToken.mint(MIN_WALLET_PFX_BALANCE) {
@@ -95,24 +97,57 @@ contract ArbitrageTest is Test {
         console2.logUint(dex1Balance);
         if (dex1Balance < DEX_PFX_DEPOSIT) {
             pigfoxToken.approve(dex1Addr, DEX_PFX_DEPOSIT);
-            dex1.depositTokens(address(pigfoxToken), DEX_PFX_DEPOSIT); // Use depositTokens
+            dex1.depositTokens(address(pigfoxToken), DEX_PFX_DEPOSIT);
             console.log("Deposited 50 PFX to DEX1");
         }
 
-        // Check DEX2 balance (optional funding, flash loan will handle purchase)
+        // Check DEX2 balance and fund if empty (for buying PFX)
         uint256 dex2Balance = pigfoxToken.balanceOf(dex2Addr);
         console.log("DEX2 PFX Balance:");
         console2.logUint(dex2Balance);
-        // No need to fund DEX2, flash loan will provide ETH to buy from it
+        if (dex2Balance < DEX_PFX_DEPOSIT) {
+            pigfoxToken.approve(dex2Addr, DEX_PFX_DEPOSIT);
+            dex2.depositTokens(address(pigfoxToken), DEX_PFX_DEPOSIT);
+            console.log("Deposited 50 PFX to DEX2");
+        }
 
-        // Fund Vault with ETH for flash loans
+        // Fund Vault, Arbitrage, and DEXes with ETH
         uint256 vaultEthBalance = address(vault).balance;
         console.log("Vault ETH Balance:");
-        console2.log(vaultEthBalance);
+        console2.logUint(vaultEthBalance);
         if (vaultEthBalance < VAULT_ETH_FUNDING) {
-            vm.deal(walletAddr, WALLET_ETH_BUFFER);
+            // Ensure wallet has enough ETH (10 ETH for Vault + 1 ETH for Arbitrage + 1 ETH for each DEX + buffer)
+            uint256 requiredEth = VAULT_ETH_FUNDING + ARBITRAGE_ETH_FUNDING + (2 * DEX_ETH_FUNDING) + WALLET_ETH_BUFFER;
+            vm.deal(walletAddr, requiredEth); // Fund wallet with 15 ETH (10 + 1 + 1 + 1 + 2)
+            console.log("Wallet funded with:");
+            console2.logUint(requiredEth / DECIMALS);
+            console.log("ETH");
+
+            // Verify wallet balance before deposits
+            uint256 walletEthBalance = walletAddr.balance;
+            console.log("Wallet ETH Balance before deposit:");
+            console2.logUint(walletEthBalance / DECIMALS);
+            console.log("ETH");
+            require(walletEthBalance >= VAULT_ETH_FUNDING + ARBITRAGE_ETH_FUNDING + (2 * DEX_ETH_FUNDING), "Insufficient ETH in wallet");
+
+            // Deposit ETH to Vault
             vault.depositETH{value: VAULT_ETH_FUNDING}();
             console.log("Funded Vault with 10 ETH");
+
+            // Fund Arbitrage contract with ETH
+            (bool successArb, ) = address(arbitrage).call{value: ARBITRAGE_ETH_FUNDING}("");
+            require(successArb, "Failed to fund Arbitrage contract");
+            console.log("Funded Arbitrage with 1 ETH");
+
+            // Fund DEX1 with ETH
+            (bool successDex1, ) = address(dex1).call{value: DEX_ETH_FUNDING}("");
+            require(successDex1, "Failed to fund DEX1");
+            console.log("Funded DEX1 with 1 ETH");
+
+            // Fund DEX2 with ETH (optional, for symmetry)
+            (bool successDex2, ) = address(dex2).call{value: DEX_ETH_FUNDING}("");
+            require(successDex2, "Failed to fund DEX2");
+            console.log("Funded DEX2 with 1 ETH");
         }
 
         // Ensure wallet is an accessor (assuming addAccessor exists in Arbitrage)
@@ -140,25 +175,25 @@ contract ArbitrageTest is Test {
         vm.startPrank(walletAddr);
 
         // Log initial state
-        uint256 initialEth = address(arbitrage).balance;
-        uint256 initialProfitEth = walletAddr.balance;
+        uint256 initialArbEth = address(arbitrage).balance;
+        uint256 initialWalletEth = walletAddr.balance;
         console.log("Initial Arbitrage ETH:");
-        console2.log(initialEth);
+        console2.logUint(initialArbEth);
         console.log("Initial Wallet ETH:");
-        console2.log(initialProfitEth);
+        console2.logUint(initialWalletEth);
 
         // Check prices using getTokenPrice
         uint256 dex1Price = dex1.getTokenPrice(address(pigfoxToken));
         uint256 dex2Price = dex2.getTokenPrice(address(pigfoxToken));
         console.log("DEX1 Price (wei/PFX):");
-        console2.log(dex1Price);
+        console2.logUint(dex1Price);
         console.log("DEX2 Price (wei/PFX):");
-        console2.log(dex2Price);
+        console2.logUint(dex2Price);
 
         // Ensure arbitrage opportunity exists
         require(dex2Price < dex1Price, "No arbitrage opportunity: DEX2 price >= DEX1 price");
 
-        // Execute arbitrage with flash loan: Buy from DEX2, sell to DEX1
+        // Execute arbitrage: Buy from DEX2, sell to DEX1, profit to wallet
         arbitrage.run(
             address(pigfoxToken),
             address(dex2), // Buy from cheaper DEX
@@ -168,15 +203,18 @@ contract ArbitrageTest is Test {
         );
 
         // Log final state
-        uint256 finalEth = address(arbitrage).balance;
-        uint256 finalProfitEth = walletAddr.balance;
-        console.log("Final Arbitrage ETH:", finalEth);
-        console.log("Final Wallet ETH:", finalProfitEth);
+        uint256 finalArbEth = address(arbitrage).balance;
+        uint256 finalWalletEth = walletAddr.balance;
+        console.log("Final Arbitrage ETH:");
+        console2.logUint(finalArbEth);
+        console.log("Final Wallet ETH:");
+        console2.logUint(finalWalletEth);
 
-        // Verify profit (profit stays in Arbitrage contract after flash loan)
-        uint256 profit = finalEth - initialEth;
+        // Verify profit (profit is sent to wallet)
+        uint256 profit = finalWalletEth - initialWalletEth;
         assertGt(profit, 0, "No profit made");
-        console.log("Profit (ETH wei):", profit);
+        console.log("Profit (ETH wei):");
+        console2.logUint(profit);
 
         vm.stopPrank();
     }
