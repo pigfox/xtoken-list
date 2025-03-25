@@ -174,15 +174,21 @@ contract ArbitrageTest is Test {
     function test_executeArbitrage() public {
         vm.startPrank(walletAddr);
 
-        // Log initial state
+        // Record initial state
         uint256 initialArbEth = address(arbitrage).balance;
         uint256 initialWalletEth = walletAddr.balance;
+        uint256 initialDex1Pfx = pigfoxToken.balanceOf(address(dex1));
+        uint256 initialDex2Pfx = pigfoxToken.balanceOf(address(dex2));
         console.log("Initial Arbitrage ETH:");
         console2.logUint(initialArbEth);
         console.log("Initial Wallet ETH:");
         console2.logUint(initialWalletEth);
+        console.log("Initial DEX1 PFX:");
+        console2.logUint(initialDex1Pfx);
+        console.log("Initial DEX2 PFX:");
+        console2.logUint(initialDex2Pfx);
 
-        // Check prices using getTokenPrice
+        // Check prices
         uint256 dex1Price = dex1.getTokenPrice(address(pigfoxToken));
         uint256 dex2Price = dex2.getTokenPrice(address(pigfoxToken));
         console.log("DEX1 Price (wei/PFX):");
@@ -190,19 +196,18 @@ contract ArbitrageTest is Test {
         console.log("DEX2 Price (wei/PFX):");
         console2.logUint(dex2Price);
 
-        // Ensure arbitrage opportunity exists
-        require(dex2Price < dex1Price, "No arbitrage opportunity: DEX2 price >= DEX1 price");
+        require(dex2Price < dex1Price, "No arbitrage opportunity");
 
-        // Execute arbitrage: Buy from DEX2, sell to DEX1, profit to wallet
+        // Execute arbitrage
         arbitrage.run(
             address(pigfoxToken),
-            address(dex2), // Buy from cheaper DEX
-            address(dex1), // Sell to expensive DEX
-            TRADE_AMOUNT,  // 10 PFX
+            address(dex2), // Buy from DEX2
+            address(dex1), // Sell to DEX1
+            TRADE_AMOUNT,
             block.timestamp + DEADLINE_EXTENSION
         );
 
-        // Log final state
+        // Record final state
         uint256 finalArbEth = address(arbitrage).balance;
         uint256 finalWalletEth = walletAddr.balance;
         console.log("Final Arbitrage ETH:");
@@ -210,11 +215,25 @@ contract ArbitrageTest is Test {
         console.log("Final Wallet ETH:");
         console2.logUint(finalWalletEth);
 
-        // Verify profit (profit is sent to wallet)
+        // Calculate profit (current behavior: profit goes to wallet)
         uint256 profit = finalWalletEth - initialWalletEth;
         assertGt(profit, 0, "No profit made");
         console.log("Profit (ETH wei):");
         console2.logUint(profit);
+
+        // Calculate expected DEX balances
+        uint256 expectedDex2Pfx = initialDex2Pfx - TRADE_AMOUNT; // DEX2 loses tokens
+        uint256 expectedDex1Pfx = initialDex1Pfx + TRADE_AMOUNT; // DEX1 gains tokens
+
+        // Verify DEX balances dynamically
+        uint256 finalDex2Pfx = pigfoxToken.balanceOf(address(dex2));
+        uint256 finalDex1Pfx = pigfoxToken.balanceOf(address(dex1));
+        assertEq(finalDex2Pfx, expectedDex2Pfx, "DEX2 balance incorrect");
+        assertEq(finalDex1Pfx, expectedDex1Pfx, "DEX1 balance incorrect");
+        console.log("Final DEX2 PFX:");
+        console2.logUint(finalDex2Pfx);
+        console.log("Final DEX1 PFX:");
+        console2.logUint(finalDex1Pfx);
 
         vm.stopPrank();
     }
