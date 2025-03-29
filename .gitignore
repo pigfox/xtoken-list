@@ -28,7 +28,8 @@ go.work.sum
 cache/
 out/
 .github
-lib/
+lib/*
+!lib/openzeppelin-contracts
 node_modules
 
 # Ignores development broadcast logs
