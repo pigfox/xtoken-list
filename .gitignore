@@ -29,6 +29,7 @@ cache/
 out/
 .github
 lib/
+node_modules
 
 # Ignores development broadcast logs
 !/broadcast
@@ -38,5 +39,6 @@ nocommit.sh
 broadcast/
 .idea/vcs.xml
 info.txt
+logs.txt
 
 
