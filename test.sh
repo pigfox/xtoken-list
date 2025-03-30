@@ -22,7 +22,6 @@ if [ -z "$DEX1" ] || [ -z "$DEX2" ]; then
   exit 1
 fi
 
-SEPOLIA_HTTP_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
 echo "Testing $contract::$function..."
 #cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$DEX1" 100 --rpc-url "$SEPOLIA_HTTP_RPC_URL" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
 #exit
