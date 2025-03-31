@@ -40,13 +40,11 @@ empty_dex() {
     # Fetch the balance of the DEX in PIGFOX_TOKEN (in base units)
     BALANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
 
-    # Debugging: Print the raw balance to see the format
     echo "Raw balance of $dex: $BALANCE_RAW"
 
-    # Clean up the balance raw result by removing unwanted characters
+    # Clean up the balance raw result
     BALANCE_RAW_CLEAN=$(echo "$BALANCE_RAW" | sed 's/\[.*//g' | sed 's/\]//g' | tr -d '\n' | tr -d ' ')
 
-    # Ensure the balance is in hex format and does not contain scientific notation
     if [[ "$BALANCE_RAW_CLEAN" =~ "e" ]]; then
         echo "Balance in scientific notation detected. Converting to raw format."
         BALANCE_RAW_CLEAN=$(printf "%.0f" "$BALANCE_RAW_CLEAN")
@@ -54,60 +52,58 @@ empty_dex() {
 
     echo "Cleaned balance of $dex: $BALANCE_RAW_CLEAN"
 
-    # Convert the balance from hex to decimal using hex2Int
+    # Convert the balance from hex to decimal
     BALANCE_DECIMAL=$(hex2Int "$BALANCE_RAW_CLEAN")
-
-    # Assuming the token has 18 decimals (standard ERC20 token decimals)
     DECIMALS=18
-
-    # Convert the raw balance to human-readable format
     BALANCE_BASE_UNIT=$(echo "scale=$DECIMALS; $BALANCE_DECIMAL / (10 ^ $DECIMALS)" | bc)
 
     echo "Balance in decimals: $BALANCE_DECIMAL"
     echo "Balance in base units: $BALANCE_BASE_UNIT"
 
-    # Check allowance for the DEX to ensure it has permission to transfer the tokens
-    ALLOWANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "allowance(address,address)(uint256)" "$WALLET_ADDRESS" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
-    ALLOWANCE_RAW_HEX=$(echo "$ALLOWANCE_RAW" | awk '{print $1}')
-    ALLOWANCE_DECIMAL=$(hex2Int "$ALLOWANCE_RAW_HEX")
-
-    echo "Allowance for $dex: $ALLOWANCE_DECIMAL"
-
-    # Ensure sufficient allowance for the DEX
-    ALLOWANCE_LESS_THAN_BALANCE=$(echo "$ALLOWANCE_DECIMAL < $BALANCE_DECIMAL" | bc)
-
-    if [ "$ALLOWANCE_LESS_THAN_BALANCE" -eq 1 ]; then
-        echo "Insufficient allowance, approving full balance for $dex"
-        trace_cast_call cast send "$PIGFOX_TOKEN" "approve(address,uint256)" "$dex" "$BALANCE_RAW_CLEAN" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
-    else
-        echo "Sufficient allowance for $dex"
-    fi
-
-    # Check if balance is greater than zero before transferring
+    # Check if balance is greater than zero
     if ! is_greater_than_zero "$BALANCE_DECIMAL"; then
         echo "Balance is zero or invalid. Skipping transfer."
-        return  # Skip this DEX if balance is zero
+        return
     fi
 
-    trace_cast_call cast send "$dex" "approveTokenTransfer(address,address,uint256)" "$PIGFOX_TOKEN" "$WALLET_ADDRESS" "$BALANCE_RAW_CLEAN" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY"
+    # Withdraw tokens from DEX to WALLET_ADDRESS (assuming simpler withdraw function)
+    echo "Withdrawing $BALANCE_BASE_UNIT tokens from $dex to $WALLET_ADDRESS"
+    WITHDRAW_RESULT=$(trace_cast_call cast send "$dex" \
+        "withdraw(address,uint256)" \
+        "$PIGFOX_TOKEN" \
+        "$BALANCE_RAW_CLEAN" \
+        --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
+        --private-key "$PRIVATE_KEY" \
+        --gas-limit 200000 \
+        --json)
 
-    # Transfer tokens from DEX to BURN_ADDRESS
-    echo "Transferring tokens to $BURN_ADDRESS"
-    echo "Attempting to transfer: $BALANCE_RAW_CLEAN to $BURN_ADDRESS"
+    # Extract transaction hash and check status
+    WITHDRAW_TX_HASH=$(echo "$WITHDRAW_RESULT" | jq -r '.transactionHash')
+    if [ -z "$WITHDRAW_TX_HASH" ] || [ "$WITHDRAW_TX_HASH" == "null" ]; then
+        echo "Error during withdrawal. Transaction failed or reverted."
+        echo "Withdraw result: $WITHDRAW_RESULT"
+        exit 1
+    fi
+    echo "Withdrawal Tx Hash: $WITHDRAW_TX_HASH"
+
+    # Transfer from wallet to BURN_ADDRESS
+    echo "Transferring $BALANCE_BASE_UNIT tokens from $WALLET_ADDRESS to $BURN_ADDRESS"
     TRANSFER_RESULT=$(trace_cast_call cast send "$PIGFOX_TOKEN" \
-        "transferFrom(address,address,uint256)" \
-        "$dex" \
+        "transfer(address,uint256)" \
         "$BURN_ADDRESS" \
         "$BALANCE_RAW_CLEAN" \
         --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
         --private-key "$PRIVATE_KEY" \
-        --gas-limit 200000)  # Increased gas limit
+        --gas-limit 200000 \
+        --json)
 
-    # Check for errors in the transfer result
-    if [ $? -ne 0 ]; then
-        echo "Error during transfer. Transaction failed with revert."
+    TRANSFER_TX_HASH=$(echo "$TRANSFER_RESULT" | jq -r '.transactionHash')
+    if [ -z "$TRANSFER_TX_HASH" ] || [ "$TRANSFER_TX_HASH" == "null" ]; then
+        echo "Error during transfer to burn address. Transaction failed or reverted."
+        echo "Transfer result: $TRANSFER_RESULT"
         exit 1
     fi
+    echo "Transfer Tx Hash: $TRANSFER_TX_HASH"
 
     # Check new balance of $BURN_ADDRESS
     TRANSFER_RESULT=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$BURN_ADDRESS" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
@@ -120,7 +116,7 @@ empty_dex() {
 echo "Empty DEX1 if balance is greater than zero"
 empty_dex "$DEX1"
 
-# Empty DEX2 if balance is greater than zero (This will be executed even if DEX1 has zero balance)
+# Empty DEX2 if balance is greater than zero
 echo "Empty DEX2 if balance is greater than zero"
 empty_dex "$DEX2"
 

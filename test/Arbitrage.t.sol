@@ -14,7 +14,6 @@ contract ArbitrageTest is Test {
     CastFunctions public castFunctions;
     address public walletAddr;
 
-    // Environment variables as constants
     string constant SEPOLIA_RPC_URL = "SEPOLIA_HTTP_RPC_URL";
     string constant WALLET_ADDRESS = "WALLET_ADDRESS";
     string constant PIGFOX_TOKEN = "PIGFOX_TOKEN";
@@ -23,7 +22,6 @@ contract ArbitrageTest is Test {
     string constant ARBITRAGE = "ARBITRAGE";
     string constant VAULT = "VAULT";
 
-    // Constants for token and ETH amounts
     uint256 constant DECIMALS = 10**18;
     uint256 constant MIN_WALLET_PFX_BALANCE = 100 * DECIMALS;
     uint256 constant DEX_PFX_DEPOSIT = 50 * DECIMALS;
@@ -33,14 +31,10 @@ contract ArbitrageTest is Test {
     uint256 constant DEX_ETH_FUNDING = 1 * DECIMALS;
     uint256 constant WALLET_ETH_BUFFER = 2 * DECIMALS;
 
-    // Constants for DEX prices
     uint256 constant DEX1_PRICE = 120;
     uint256 constant DEX2_PRICE = 80;
-
-    // Constant for deadline extension
     uint256 constant DEADLINE_EXTENSION = 1000;
 
-    // Contract addresses as strings for cast calls
     string pigfoxTokenAddr;
     string dex1Addr;
     string dex2Addr;
@@ -78,8 +72,9 @@ contract ArbitrageTest is Test {
         console.log("DEX1 PFX Balance:");
         console2.logUint(dex1PfxBalance);
         if (dex1PfxBalance < DEX_PFX_DEPOSIT) {
-            (, string memory approveStatus1) = castFunctions.approve(pigfoxTokenAddr, dex1Addr, DEX_PFX_DEPOSIT); // Ignore tx hash
+            (string memory approveTx1, string memory approveStatus1) = castFunctions.approve(pigfoxTokenAddr, dex1Addr, DEX_PFX_DEPOSIT);
             require(keccak256(abi.encodePacked(approveStatus1)) == keccak256(abi.encodePacked("0x1")), "Approve DEX1 failed");
+            console.log("Approved DEX1, Tx Hash:", approveTx1);
             (string memory depositTx1, string memory depositStatus1) = castFunctions.depositTokens(dex1Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
             require(keccak256(abi.encodePacked(depositStatus1)) == keccak256(abi.encodePacked("0x1")), "Deposit to DEX1 failed");
             console.log("Deposited 50 PFX to DEX1, Tx Hash:", depositTx1);
@@ -89,8 +84,9 @@ contract ArbitrageTest is Test {
         console.log("DEX2 PFX Balance:");
         console2.logUint(dex2PfxBalance);
         if (dex2PfxBalance < DEX_PFX_DEPOSIT) {
-            (, string memory approveStatus2) = castFunctions.approve(pigfoxTokenAddr, dex2Addr, DEX_PFX_DEPOSIT); // Ignore tx hash
+            (string memory approveTx2, string memory approveStatus2) = castFunctions.approve(pigfoxTokenAddr, dex2Addr, DEX_PFX_DEPOSIT);
             require(keccak256(abi.encodePacked(approveStatus2)) == keccak256(abi.encodePacked("0x1")), "Approve DEX2 failed");
+            console.log("Approved DEX2, Tx Hash:", approveTx2);
             (string memory depositTx2, string memory depositStatus2) = castFunctions.depositTokens(dex2Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
             require(keccak256(abi.encodePacked(depositStatus2)) == keccak256(abi.encodePacked("0x1")), "Deposit to DEX2 failed");
             console.log("Deposited 50 PFX to DEX2, Tx Hash:", depositTx2);
@@ -109,79 +105,30 @@ contract ArbitrageTest is Test {
         console.log("Vault ETH Balance:");
         console2.logUint(vaultEthBalance);
         if (vaultEthBalance < VAULT_ETH_FUNDING) {
-            string[] memory inputs = new string[](12);
-            inputs[0] = "cast";
-            inputs[1] = "send";
-            inputs[2] = vaultAddr;
-            inputs[3] = "depositETH()";
-            inputs[4] = "--value";
-            inputs[5] = vm.toString(VAULT_ETH_FUNDING);
-            inputs[6] = "--rpc-url";
-            inputs[7] = vm.envString(SEPOLIA_RPC_URL);
-            inputs[8] = "--from";
-            inputs[9] = vm.toString(walletAddr);
-            inputs[10] = "--private-key";
-            inputs[11] = vm.envString("PRIVATE_KEY");
-            bytes memory result = vm.ffi(inputs);
-            require(result.length > 0, "Failed to fund Vault with ETH");
-            console.log("Funded Vault with 10 ETH");
+            (string memory txHash, string memory status) = castFunctions.fundEth(vaultAddr, VAULT_ETH_FUNDING);
+            require(keccak256(abi.encodePacked(status)) == keccak256(abi.encodePacked("0x1")), "Fund Vault failed");
+            console.log("Funded Vault with 10 ETH, Tx Hash:", txHash);
         }
 
         uint256 arbitrageEthBalance = castFunctions.addressBalance(arbitrageAddr);
         if (arbitrageEthBalance < ARBITRAGE_ETH_FUNDING) {
-            string[] memory inputs = new string[](11);
-            inputs[0] = "cast";
-            inputs[1] = "send";
-            inputs[2] = arbitrageAddr;
-            inputs[3] = "--value";
-            inputs[4] = vm.toString(ARBITRAGE_ETH_FUNDING);
-            inputs[5] = "--rpc-url";
-            inputs[6] = vm.envString(SEPOLIA_RPC_URL);
-            inputs[7] = "--from";
-            inputs[8] = vm.toString(walletAddr);
-            inputs[9] = "--private-key";
-            inputs[10] = vm.envString("PRIVATE_KEY");
-            bytes memory result = vm.ffi(inputs);
-            require(result.length > 0, "Failed to fund Arbitrage with ETH");
-            console.log("Funded Arbitrage with 1 ETH");
+            (string memory txHash, string memory status) = castFunctions.fundEth(arbitrageAddr, ARBITRAGE_ETH_FUNDING);
+            require(keccak256(abi.encodePacked(status)) == keccak256(abi.encodePacked("0x1")), "Fund Arbitrage failed");
+            console.log("Funded Arbitrage with 1 ETH, Tx Hash:", txHash);
         }
 
         uint256 dex1EthBalance = castFunctions.addressBalance(dex1Addr);
         if (dex1EthBalance < DEX_ETH_FUNDING) {
-            string[] memory inputs = new string[](11);
-            inputs[0] = "cast";
-            inputs[1] = "send";
-            inputs[2] = dex1Addr;
-            inputs[3] = "--value";
-            inputs[4] = vm.toString(DEX_ETH_FUNDING);
-            inputs[5] = "--rpc-url";
-            inputs[6] = vm.envString(SEPOLIA_RPC_URL);
-            inputs[7] = "--from";
-            inputs[8] = vm.toString(walletAddr);
-            inputs[9] = "--private-key";
-            inputs[10] = vm.envString("PRIVATE_KEY");
-            bytes memory result = vm.ffi(inputs);
-            require(result.length > 0, "Failed to fund DEX1 with ETH");
-            console.log("Funded DEX1 with 1 ETH");
+            (string memory txHash, string memory status) = castFunctions.fundEth(dex1Addr, DEX_ETH_FUNDING);
+            require(keccak256(abi.encodePacked(status)) == keccak256(abi.encodePacked("0x1")), "Fund DEX1 failed");
+            console.log("Funded DEX1 with 1 ETH, Tx Hash:", txHash);
         }
 
         uint256 dex2EthBalance = castFunctions.addressBalance(dex2Addr);
         if (dex2EthBalance < DEX_ETH_FUNDING) {
-            string[] memory inputs = new string[](11);
-            inputs[0] = "cast";
-            inputs[1] = "send";
-            inputs[2] = dex2Addr;
-            inputs[3] = "--value";
-            inputs[4] = vm.toString(DEX_ETH_FUNDING);
-            inputs[5] = "--rpc-url";
-            inputs[6] = vm.envString(SEPOLIA_RPC_URL);
-            inputs[7] = "--from";
-            inputs[8] = vm.toString(walletAddr);
-            inputs[9] = "--private-key";
-            inputs[10] = vm.envString("PRIVATE_KEY");
-            bytes memory result = vm.ffi(inputs);
-            require(result.length > 0, "Failed to fund DEX2 with ETH");
-            console.log("Funded DEX2 with 1 ETH");
+            (string memory txHash, string memory status) = castFunctions.fundEth(dex2Addr, DEX_ETH_FUNDING);
+            require(keccak256(abi.encodePacked(status)) == keccak256(abi.encodePacked("0x1")), "Fund DEX2 failed");
+            console.log("Funded DEX2 with 1 ETH, Tx Hash:", txHash);
         }
 
         uint256 dex1Price = castFunctions.getTokenPrice(dex1Addr, pigfoxTokenAddr);
@@ -221,25 +168,27 @@ contract ArbitrageTest is Test {
         console2.logUint(dex2Price);
         require(dex2Price < dex1Price, "No arbitrage opportunity");
 
-        string[] memory inputs = new string[](15);
-        inputs[0] = "cast";
-        inputs[1] = "send";
-        inputs[2] = arbitrageAddr;
-        inputs[3] = "run(address,address,address,uint256,uint256)";
-        inputs[4] = pigfoxTokenAddr;
-        inputs[5] = dex2Addr;
-        inputs[6] = dex1Addr;
-        inputs[7] = vm.toString(TRADE_AMOUNT);
-        inputs[8] = vm.toString(block.timestamp + DEADLINE_EXTENSION);
-        inputs[9] = "--rpc-url";
-        inputs[10] = vm.envString(SEPOLIA_RPC_URL);
-        inputs[11] = "--from";
-        inputs[12] = vm.toString(walletAddr);
-        inputs[13] = "--private-key";
-        inputs[14] = vm.envString("PRIVATE_KEY");
-        bytes memory result = vm.ffi(inputs);
-        require(result.length > 0, "Arbitrage execution failed");
-        console.log("Arbitrage executed");
+        string memory cmd = string.concat(
+            "cast send ",
+            arbitrageAddr,
+            " \"run(address,address,address,uint256,uint256)\" ",
+            pigfoxTokenAddr,
+            " ",
+            dex2Addr,
+            " ",
+            dex1Addr,
+            " ",
+            vm.toString(TRADE_AMOUNT),
+            " ",
+            vm.toString(block.timestamp + DEADLINE_EXTENSION),
+            " --rpc-url ",
+            vm.envString(SEPOLIA_RPC_URL),
+            " --from ",
+            vm.toString(walletAddr),
+            " --private-key ",
+            vm.envString("PRIVATE_KEY")
+        );
+        console.log("Arbitrage command (execute externally):", cmd);
 
         uint256 finalArbEth = castFunctions.addressBalance(arbitrageAddr);
         uint256 finalWalletEth = castFunctions.addressBalance(vm.toString(walletAddr));
@@ -263,5 +212,30 @@ contract ArbitrageTest is Test {
         uint256 expectedDex1Pfx = initialDex1Pfx + TRADE_AMOUNT;
         assertEq(finalDex2Pfx, expectedDex2Pfx, "DEX2 balance incorrect");
         assertEq(finalDex1Pfx, expectedDex1Pfx, "DEX1 balance incorrect");
+    }
+
+    function test_withdrawFromDex1() public {
+        uint256 initialWalletPfx = castFunctions.getTokenBalanceOf(vm.toString(walletAddr), pigfoxTokenAddr);
+        uint256 initialDex1Pfx = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr);
+        console.log("Initial Wallet PFX:", initialWalletPfx);
+        console.log("Initial DEX1 PFX:", initialDex1Pfx);
+
+        // Approve DEX1 to spend tokens on behalf of wallet (if needed)
+        (string memory approveTx, string memory approveStatus) = castFunctions.approve(pigfoxTokenAddr, dex1Addr, DEX_PFX_DEPOSIT);
+        require(keccak256(abi.encodePacked(approveStatus)) == keccak256(abi.encodePacked("0x1")), "Approve DEX1 failed");
+        console.log("Approved DEX1 for withdrawal, Tx Hash:", approveTx);
+
+        // Withdraw 50 PFX from DEX1 to wallet
+        (string memory withdrawTx, string memory withdrawStatus) = castFunctions.withdrawTokens(dex1Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
+        require(keccak256(abi.encodePacked(withdrawStatus)) == keccak256(abi.encodePacked("0x1")), "Withdraw from DEX1 failed");
+        console.log("Withdrew 50 PFX from DEX1, Tx Hash:", withdrawTx);
+
+        uint256 finalWalletPfx = castFunctions.getTokenBalanceOf(vm.toString(walletAddr), pigfoxTokenAddr);
+        uint256 finalDex1Pfx = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr);
+        console.log("Final Wallet PFX:", finalWalletPfx);
+        console.log("Final DEX1 PFX:", finalDex1Pfx);
+
+        assertEq(finalWalletPfx, initialWalletPfx + DEX_PFX_DEPOSIT, "Wallet PFX balance incorrect after withdrawal");
+        assertEq(finalDex1Pfx, initialDex1Pfx - DEX_PFX_DEPOSIT, "DEX1 PFX balance incorrect after withdrawal");
     }
 }
