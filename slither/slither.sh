@@ -35,6 +35,8 @@ slither --version
 # Run Slither with absolute paths
 slither "src/$CONTRACT.sol" --solc-remaps "@openzeppelin/contracts=/home/peter/Documents/crypto-projects/arbitrage-bot-v2-snippets/lib/openzeppelin-contracts/contracts"
 
+#Deactive venv
+deactivate
 # Clear previous installations
 rm -rf venv
 

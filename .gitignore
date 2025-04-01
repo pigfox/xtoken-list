@@ -42,5 +42,6 @@ broadcast/*
 info.txt
 logs.txt
 scratchpad.txt
+slither/venv
 
 
