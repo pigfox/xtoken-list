@@ -157,13 +157,13 @@ contract CastFunctions is Test {
         return (txHash, status);
     }
 
-    function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public returns (uint256) {
+    function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public view returns (uint256) {
         IDex dex = IDex(conversionsTest.stringToAddress(_dex));
         uint256 price = dex.getTokenPrice(conversionsTest.stringToAddress(_tokenAddress));
         return price;
     }
 
-    function fundEth(string calldata _to, uint256 _amount) public returns (string memory, string memory) {
+    function fundEth(string calldata _to, uint256 _amount) public view returns (string memory, string memory) {
         string memory cmd = string.concat(
             "cast send ",
             _to,

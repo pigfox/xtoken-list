@@ -1,26 +1,70 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
+import "./IDex.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./IDex.sol"; // Implements the generic interface
 
 contract Dex is IDex {
-    address public owner;
-    mapping(address => uint256) public tokenPrices; // Price in wei per token
-    mapping(address => uint256) public tokenBalances; // DEX's token reserves
+    mapping(address => uint256) public tokenPrices; // Token address => price in wei per token
+    mapping(address => uint256) public tokenBalances; // Token address => balance held by DEX
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
-        _;
+    // Events for tracking actions
+    event Deposited(address indexed token, address indexed sender, uint256 amount);
+    event Withdrawn(address indexed token, address indexed receiver, uint256 amount);
+    event Bought(address indexed token, address indexed buyer, uint256 amount, uint256 ethSpent);
+    event Sold(address indexed token, address indexed seller, uint256 amount, uint256 ethReceived);
+    event PriceSet(address indexed token, uint256 price);
+
+    // Deposit ERC-20 tokens into the DEX
+    function depositTokens(address token, uint256 amount) external override {
+        require(amount > 0, "Amount must be greater than zero");
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        tokenBalances[token] += amount;
+        emit Deposited(token, msg.sender, amount);
     }
 
-    constructor() {
-        owner = msg.sender;
+    // Buy tokens with ETH
+    function buyTokens(address token, uint256 amount) external payable override returns (uint256) {
+        uint256 price = tokenPrices[token];
+        require(price > 0, "Token price not set");
+        require(amount > 0, "Amount must be greater than zero");
+        uint256 ethCost = (amount * price) / 1e18; // Assuming 18 decimals for simplicity
+        require(msg.value >= ethCost, "Insufficient ETH sent");
+        require(tokenBalances[token] >= amount, "Insufficient token balance in DEX");
+
+        tokenBalances[token] -= amount;
+        IERC20(token).transfer(msg.sender, amount);
+
+        // Refund excess ETH if any
+        if (msg.value > ethCost) {
+            payable(msg.sender).transfer(msg.value - ethCost);
+        }
+
+        emit Bought(token, msg.sender, amount, ethCost);
+        return amount;
     }
 
-    // Set the price of a token in wei (e.g., 80 wei per PFX)
-    function setTokenPrice(address token, uint256 price) external onlyOwner {
+    // Sell tokens for ETH
+    function sellTokens(address token, uint256 amount) external override returns (uint256) {
+        uint256 price = tokenPrices[token];
+        require(price > 0, "Token price not set");
+        require(amount > 0, "Amount must be greater than zero");
+        uint256 ethAmount = (amount * price) / 1e18; // Assuming 18 decimals for simplicity
+        require(address(this).balance >= ethAmount, "Insufficient ETH in DEX");
+
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        tokenBalances[token] += amount;
+        payable(msg.sender).transfer(ethAmount);
+
+        emit Sold(token, msg.sender, amount, ethAmount);
+        return ethAmount;
+    }
+
+    // Set the price of a token in wei
+    function setTokenPrice(address token, uint256 price) external override {
+        require(price > 0, "Price must be greater than zero");
         tokenPrices[token] = price;
+        emit PriceSet(token, price);
     }
 
     // Get the price of a token in wei
@@ -28,63 +72,15 @@ contract Dex is IDex {
         return tokenPrices[token];
     }
 
-    // Buy tokens from the DEX by sending ETH
-    function buyTokens(address token, uint256 amount) external payable override returns (uint256) {
-        uint256 price = tokenPrices[token];
-        require(price > 0, "Token price not set");
-        uint256 ethRequired = (amount * price) / 10**18; // Adjust for token decimals
-        require(msg.value >= ethRequired, "Insufficient ETH sent");
-        require(tokenBalances[token] >= amount, "Insufficient token balance in DEX");
-
+    // Withdraw tokens from the DEX
+    function withdraw(address token, uint256 amount) external override {
+        require(amount > 0, "Amount must be greater than zero");
+        require(tokenBalances[token] >= amount, "Insufficient balance");
         tokenBalances[token] -= amount;
-        require(IERC20(token).transfer(msg.sender, amount), "Token transfer failed");
-
-        // Refund excess ETH
-        if (msg.value > ethRequired) {
-            (bool sent, ) = msg.sender.call{value: msg.value - ethRequired}("");
-            require(sent, "ETH refund failed");
-        }
-
-        return amount;
+        IERC20(token).transfer(msg.sender, amount);
+        emit Withdrawn(token, msg.sender, amount);
     }
 
-    // Sell tokens to the DEX for ETH
-    function sellTokens(address token, uint256 amount) external override returns (uint256) {
-        uint256 price = tokenPrices[token];
-        require(price > 0, "Token price not set");
-        uint256 ethToSend = (amount * price) / 10**18; // Adjust for token decimals
-        require(address(this).balance >= ethToSend, "Insufficient ETH in DEX");
-
-        require(IERC20(token).transferFrom(msg.sender, address(this), amount), "Token transfer failed");
-        tokenBalances[token] += amount;
-
-        (bool sent, ) = msg.sender.call{value: ethToSend}("");
-        require(sent, "ETH transfer failed");
-
-        return ethToSend;
-    }
-
-    // Deposit tokens into the DEX (for setup)
-    function depositTokens(address token, uint256 amount) external onlyOwner {
-        require(IERC20(token).transferFrom(msg.sender, address(this), amount), "Deposit failed");
-        tokenBalances[token] += amount;
-    }
-
-    // Deposit ETH into the DEX (for setup)
-    function depositETH() external payable onlyOwner {
-        // ETH is added to the contract balance automatically
-    }
-
-    // Withdraw tokens or ETH (for owner cleanup)
-    function withdrawTokens(address token, uint256 amount) external onlyOwner {
-        tokenBalances[token] -= amount;
-        require(IERC20(token).transfer(owner, amount), "Withdrawal failed");
-    }
-
-    function withdrawETH(uint256 amount) external onlyOwner {
-        (bool sent, ) = owner.call{value: amount}("");
-        require(sent, "ETH withdrawal failed");
-    }
-
+    // Allow the contract to receive ETH
     receive() external payable {}
 }
