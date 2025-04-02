@@ -38,6 +38,6 @@ slither "src/$CONTRACT.sol" --solc-remaps "@openzeppelin/contracts=/home/peter/D
 #Deactive venv
 deactivate
 # Clear previous installations
-rm -rf venv
+#rm -rf venv
 
 echo "Script completed successfully!"

@@ -11,11 +11,15 @@ interface IFlashLoanProvider {
 contract Arbitrage {
     address public owner;
     address public profitAddress;
-    IFlashLoanProvider public flashLoanProvider;
+    IFlashLoanProvider public immutable flashLoanProvider;
     mapping(address => bool) public accessors;
 
     // Constants
     uint256 public constant DECIMALS = 10**18; // Standard ERC20 decimal places
+
+    // Events
+    event OwnerChanged(address indexed oldOwner, address indexed newOwner);
+    event ProfitAddressChanged(address indexed oldProfitAddress, address indexed newProfitAddress);
 
     constructor(address _flashLoanProvider) {
         owner = msg.sender;
@@ -35,6 +39,8 @@ contract Arbitrage {
     }
 
     function setOwner(address _owner) external onlyOwner {
+        require(_owner != address(0), "Invalid owner address");
+        emit OwnerChanged(owner, _owner);
         owner = _owner;
     }
 
@@ -43,6 +49,8 @@ contract Arbitrage {
     }
 
     function setProfitAddress(address _profitAddress) external onlyOwner {
+        require(_profitAddress != address(0), "Invalid profit address");
+        emit ProfitAddressChanged(profitAddress, _profitAddress);
         profitAddress = _profitAddress;
     }
 
@@ -65,9 +73,9 @@ contract Arbitrage {
         address dexCheap, // DEX with lower price (buy here)
         address dexExpensive, // DEX with higher price (sell here)
         uint256 amount, // Amount of tokens to trade
-        uint256 deadline
+        uint256 deadlineBlock // Block number deadline
     ) external onlyAccessor {
-        require(block.timestamp <= deadline, "Transaction deadline exceeded");
+        require(block.number <= deadlineBlock, "Transaction deadline exceeded");
 
         // Get prices from both DEXes
         uint256 priceCheap = IDex(dexCheap).getTokenPrice(token);
