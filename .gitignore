@@ -38,8 +38,7 @@ node_modules
 /broadcast/**/dry-run/
 nocommit.sh
 broadcast/*
-.idea/vcs.xml
-.idea/golinter.xml
+.idea/
 info.txt
 logs.txt
 scratchpad.txt
