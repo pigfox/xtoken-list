@@ -39,6 +39,7 @@ node_modules
 nocommit.sh
 broadcast/*
 .idea/vcs.xml
+.idea/golinter.xml
 info.txt
 logs.txt
 scratchpad.txt

@@ -37,4 +37,4 @@ cast call "$STAKE" \
 # Check the total staked tokens in the contract
 cast call "$STAKE" \
     "totalStaked()(uint256)" \
-    --rpc-url <"$SEPOLIA_HTTP_RPC_URL"
+    --rpc-url "$SEPOLIA_HTTP_RPC_URL"
