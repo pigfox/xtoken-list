@@ -19,6 +19,9 @@ contract Arbitrage {
     // Events
     event OwnerChanged(address indexed oldOwner, address indexed newOwner);
     event ProfitAddressChanged(address indexed oldProfitAddress, address indexed newProfitAddress);
+    event ApproveToken(address indexed token, address indexed dex, uint256 amount);
+    event WithdrawTokens(address indexed token, uint256 amount);
+    event WithdrawETH(address indexed to, uint256 amount);
 
     constructor(address _flashLoanProvider) {
         owner = msg.sender;
@@ -50,6 +53,7 @@ contract Arbitrage {
     // Approve tokens for spending by a DEX
     function _approveToken(address token, address dex, uint256 amount) internal {
         require(IERC20(token).approve(dex, amount), "Token approval failed");
+        emit ApproveToken(token, dex, amount);
     }
 
     // Execute arbitrage with flash loan: Buy from cheaper DEX, sell to expensive DEX
@@ -122,11 +126,13 @@ contract Arbitrage {
     // Withdraw tokens or ETH (for owner cleanup)
     function withdrawTokens(address token, uint256 amount) external onlyOwner {
         require(IERC20(token).transfer(owner, amount), "Withdrawal failed");
+        emit WithdrawTokens(token, amount);
     }
 
     function withdrawETH(uint256 amount) external onlyOwner {
         (bool sent, ) = owner.call{value: amount}("");
         require(sent, "ETH withdrawal failed");
+        emit WithdrawETH(owner, amount);
     }
 
     // Allow contract to receive ETH
