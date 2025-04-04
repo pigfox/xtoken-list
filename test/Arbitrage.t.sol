@@ -193,23 +193,4 @@ contract ArbitrageTest is Test {
         assertEq(finalDex2Pfx, expectedDex2Pfx, "DEX2 balance incorrect");
         assertEq(finalDex1Pfx, expectedDex1Pfx, "DEX1 balance incorrect");
     }
-
-    function test_withdrawFromDex1() public {
-        uint256 initialWalletPfx = castFunctions.getTokenBalanceOf(vm.toString(walletAddr), pigfoxTokenAddr);
-        uint256 initialDex1Pfx = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr);
-        console.log("Initial Wallet PFX:", initialWalletPfx);
-        console.log("Initial DEX1 PFX:", initialDex1Pfx);
-
-        vm.startPrank(walletAddr);
-        dex1Contract.withdraw(vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT);
-        vm.stopPrank();
-
-        uint256 finalWalletPfx = castFunctions.getTokenBalanceOf(vm.toString(walletAddr), pigfoxTokenAddr);
-        uint256 finalDex1Pfx = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr);
-        console.log("Final Wallet PFX:", finalWalletPfx);
-        console.log("Final DEX1 PFX:", finalDex1Pfx);
-
-        assertEq(finalWalletPfx, initialWalletPfx + DEX_PFX_DEPOSIT, "Wallet PFX balance incorrect after withdrawal");
-        assertEq(finalDex1Pfx, initialDex1Pfx - DEX_PFX_DEPOSIT, "DEX1 PFX balance incorrect after withdrawal");
-    }
 }

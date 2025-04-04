@@ -12,7 +12,6 @@ contract Arbitrage {
     address public owner;
     address public profitAddress;
     IFlashLoanProvider public immutable flashLoanProvider;
-    mapping(address => bool) public accessors;
 
     // Constants
     uint256 public constant DECIMALS = 10**18; // Standard ERC20 decimal places
@@ -25,16 +24,10 @@ contract Arbitrage {
         owner = msg.sender;
         profitAddress = msg.sender;
         flashLoanProvider = IFlashLoanProvider(_flashLoanProvider);
-        accessors[msg.sender] = true; // Owner has access by default
     }
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the owner");
-        _;
-    }
-
-    modifier onlyAccessor() {
-        require(accessors[msg.sender], "Not an authorized accessor");
         _;
     }
 
@@ -54,14 +47,6 @@ contract Arbitrage {
         profitAddress = _profitAddress;
     }
 
-    function addAccessor(address _accessor) external onlyOwner {
-        accessors[_accessor] = true;
-    }
-
-    function removeAccessor(address _accessor) external onlyOwner {
-        accessors[_accessor] = false;
-    }
-
     // Approve tokens for spending by a DEX
     function _approveToken(address token, address dex, uint256 amount) internal {
         require(IERC20(token).approve(dex, amount), "Token approval failed");
@@ -74,7 +59,7 @@ contract Arbitrage {
         address dexExpensive, // DEX with higher price (sell here)
         uint256 amount, // Amount of tokens to trade
         uint256 deadlineBlock // Block number deadline
-    ) external onlyAccessor {
+    ) external onlyOwner {
         require(block.number <= deadlineBlock, "Transaction deadline exceeded");
 
         // Get prices from both DEXes
