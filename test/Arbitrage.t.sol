@@ -26,10 +26,10 @@ contract ArbitrageTest is Test {
     uint256 constant MIN_WALLET_PFX_BALANCE = 100 * DECIMALS;
     uint256 constant DEX_PFX_DEPOSIT = 50 * DECIMALS;
     uint256 constant TRADE_AMOUNT = 10 * DECIMALS;
-    uint256 constant VAULT_ETH_FUNDING = 10 * DECIMALS;
-    uint256 constant ARBITRAGE_ETH_FUNDING = 1 * DECIMALS;
-    uint256 constant DEX_ETH_FUNDING = 1 * DECIMALS;
-    uint256 constant WALLET_ETH_BUFFER = 2 * DECIMALS;
+    uint256 constant VAULT_ETH_FUNDING = 10**16; // 0.01 ETH for vault
+    uint256 constant ARBITRAGE_ETH_FUNDING = 10**15; // 0.001 ETH for arbitrage
+    uint256 constant DEX_ETH_FUNDING = 10**15; // 0.001 ETH per DEX
+    uint256 constant WALLET_ETH_BUFFER = 10**17; // 0.1 ETH buffer
 
     uint256 constant DEX1_PRICE = 120; // wei/PFX
     uint256 constant DEX2_PRICE = 80;  // wei/PFX
@@ -111,7 +111,7 @@ contract ArbitrageTest is Test {
         uint256 requiredEth = VAULT_ETH_FUNDING + ARBITRAGE_ETH_FUNDING + (2 * DEX_ETH_FUNDING) + WALLET_ETH_BUFFER;
         console.log("Wallet ETH Balance:");
         console2.logUint(walletEthBalance);
-        require(walletEthBalance >= requiredEth, "Wallet needs at least 15 ETH on Sepolia");
+        require(walletEthBalance >= requiredEth, "Wallet needs at least 0.113 ETH on Sepolia");
 
         // Fund contracts with ETH from wallet
         vm.startPrank(walletAddr);
@@ -119,7 +119,7 @@ contract ArbitrageTest is Test {
         if (!vaultSuccess) {
             console.log("Failed to fund Vault with ETH - proceeding without Vault funding");
         } else {
-            console.log("Funded Vault with 10 ETH (on Sepolia)");
+            console.log("Funded Vault with 0.01 ETH (on Sepolia)");
         }
         payable(vm.envAddress(ARBITRAGE)).transfer(ARBITRAGE_ETH_FUNDING);
         payable(vm.envAddress(DEX1)).transfer(DEX_ETH_FUNDING);
