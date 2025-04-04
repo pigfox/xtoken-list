@@ -2,21 +2,20 @@
 pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./IDex.sol"; // Use generic interface
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; // Added import
+import "./IDex.sol";
 
 interface IFlashLoanProvider {
     function flashLoan(address receiver, address token, uint256 amount, bytes calldata data) external;
 }
 
-contract Arbitrage {
+contract Arbitrage is ReentrancyGuard { // Inherit ReentrancyGuard
     address public owner;
     address public profitAddress;
     IFlashLoanProvider public immutable flashLoanProvider;
 
-    // Constants
-    uint256 public constant DECIMALS = 10**18; // Standard ERC20 decimal places
+    uint256 public constant DECIMALS = 10**18;
 
-    // Events
     event OwnerChanged(address indexed oldOwner, address indexed newOwner);
     event ProfitAddressChanged(address indexed oldProfitAddress, address indexed newProfitAddress);
     event ApproveToken(address indexed token, address indexed dex, uint256 amount);
@@ -50,43 +49,37 @@ contract Arbitrage {
         profitAddress = _profitAddress;
     }
 
-    // Approve tokens for spending by a DEX
     function _approveToken(address token, address dex, uint256 amount) internal {
         require(IERC20(token).approve(dex, amount), "Token approval failed");
         emit ApproveToken(token, dex, amount);
     }
 
-    // Execute arbitrage with flash loan: Buy from cheaper DEX, sell to expensive DEX
     function run(
         address token,
-        address dexCheap, // DEX with lower price (buy here)
-        address dexExpensive, // DEX with higher price (sell here)
-        uint256 amount, // Amount of tokens to trade
-        uint256 deadlineBlock // Block number deadline
-    ) external onlyOwner {
+        address dexCheap,
+        address dexExpensive,
+        uint256 amount,
+        uint256 deadlineBlock
+    ) external onlyOwner nonReentrant { // Added nonReentrant
         require(block.number <= deadlineBlock, "Transaction deadline exceeded");
 
-        // Get prices from both DEXes
         uint256 priceCheap = IDex(dexCheap).getTokenPrice(token);
         uint256 priceExpensive = IDex(dexExpensive).getTokenPrice(token);
         require(priceCheap < priceExpensive, "No arbitrage opportunity");
 
-        // Calculate ETH needed to buy tokens from cheap DEX
         uint256 ethToSpend = (amount * priceCheap) / DECIMALS;
 
-        // Request flash loan for ETH
         bytes memory data = abi.encode(token, dexCheap, dexExpensive, amount);
         flashLoanProvider.flashLoan(address(this), address(0), ethToSpend, data);
     }
 
-    // Flash loan callback
     function onFlashLoan(
         address initiator,
-        address token, // ETH is address(0)
+        address token,
         uint256 amount,
         uint256 fee,
         bytes calldata data
-    ) external returns (bytes32) {
+    ) external nonReentrant returns (bytes32) { // Added nonReentrant
         require(msg.sender == address(flashLoanProvider), "Untrusted caller");
         require(initiator == address(this), "Invalid initiator");
         require(token == address(0), "Only ETH flash loans supported");
@@ -94,47 +87,46 @@ contract Arbitrage {
         (address tokenToTrade, address dexCheap, address dexExpensive, uint256 amountToTrade) =
                             abi.decode(data, (address, address, address, uint256));
 
-        // Buy tokens from cheaper DEX with borrowed ETH
         uint256 tokensBought = IDex(dexCheap).buyTokens{value: amount}(tokenToTrade, amountToTrade);
         require(tokensBought >= amountToTrade, "Failed to buy enough tokens");
 
-        // Approve expensive DEX to spend tokens
         _approveToken(tokenToTrade, dexExpensive, tokensBought);
 
-        // Sell tokens to expensive DEX
         uint256 ethReceived = IDex(dexExpensive).sellTokens(tokenToTrade, tokensBought);
 
-        // Calculate profit
         uint256 totalRepayment = amount + fee;
         require(ethReceived >= totalRepayment, "Arbitrage not profitable");
         uint256 profit = ethReceived - totalRepayment;
 
-        // Repay flash loan
         (bool sentRepayment, ) = address(flashLoanProvider).call{value: totalRepayment}("");
         require(sentRepayment, "Loan repayment failed");
 
-        // Transfer profit to profitAddress
         if (profit > 0) {
             (bool sentProfit, ) = profitAddress.call{value: profit}("");
             require(sentProfit, "Profit transfer failed");
         }
 
-        // Return success identifier (matches Vault's expectation)
         return keccak256("FlashLoanBorrower.onFlashLoan");
     }
 
-    // Withdraw tokens or ETH (for owner cleanup)
-    function withdrawTokens(address token, uint256 amount) external onlyOwner {
+    function withdrawTokens(address token, uint256 amount)
+    external
+    onlyOwner
+    nonReentrant // Added nonReentrant
+    {
         require(IERC20(token).transfer(owner, amount), "Withdrawal failed");
         emit WithdrawTokens(token, amount);
     }
 
-    function withdrawETH(uint256 amount) external onlyOwner {
+    function withdrawETH(uint256 amount)
+    external
+    onlyOwner
+    nonReentrant // Added nonReentrant
+    {
         (bool sent, ) = owner.call{value: amount}("");
         require(sent, "ETH withdrawal failed");
         emit WithdrawETH(owner, amount);
     }
 
-    // Allow contract to receive ETH
     receive() external payable {}
 }
