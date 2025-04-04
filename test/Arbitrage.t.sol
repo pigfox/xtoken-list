@@ -165,14 +165,12 @@ contract ArbitrageTest is Test {
         // Calculate ETH needed for the trade
         uint256 ethToSpend = (TRADE_AMOUNT * DEX2_PRICE) / DECIMALS;
 
-        // Simulate flash loan and arbitrage manually
-        vm.startPrank(address(vaultContract)); // Pretend to be the vault
-        vm.deal(address(arbitrageContract), initialArbEth + ethToSpend); // Provide flash loan funds
-
+        // Simulate flash loan by funding the arbitrage contract
+        vm.deal(address(arbitrageContract), initialArbEth + ethToSpend); // Fund with initial balance + loan amount
         bytes memory data = abi.encode(vm.envAddress(PIGFOX_TOKEN), vm.envAddress(DEX2), vm.envAddress(DEX1), TRADE_AMOUNT);
 
-        // Execute the arbitrage logic directly via onFlashLoan
-        hoax(address(vaultContract), ethToSpend); // Send ETH with the call
+        // Call onFlashLoan as the vault without sending value
+        vm.prank(address(vaultContract));
         bytes32 result = arbitrageContract.onFlashLoan(
             address(arbitrageContract),
             address(0),
@@ -181,8 +179,6 @@ contract ArbitrageTest is Test {
             data
         );
         assertEq(result, keccak256("FlashLoanBorrower.onFlashLoan"), "Flash loan callback failed");
-
-        vm.stopPrank();
 
         uint256 finalArbEth = castFunctions.addressBalance(arbitrageAddr);
         uint256 finalWalletEth = castFunctions.addressBalance(vm.toString(walletAddr));
