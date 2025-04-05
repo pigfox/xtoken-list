@@ -15,6 +15,9 @@ contract Vault is ReentrancyGuard {
     mapping(address => uint256) public tokenBalances;
 
     event FlashLoan(address indexed borrower, address indexed token, uint256 amount, uint256 fee);
+    event TransactionExecuted(bytes32 indexed txId, string action);
+    event Deposited(address indexed token, uint256 amount);
+    event Withdrawn(address indexed token, uint256 amount);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this function");
@@ -44,6 +47,9 @@ contract Vault is ReentrancyGuard {
 
         emit FlashLoan(receiver, token, amount, feeAmount);
 
+        bytes32 txId = keccak256(abi.encodePacked(block.timestamp, msg.sender, receiver, token, amount, data));
+        emit TransactionExecuted(txId, "FlashLoan");
+
         bytes32 result = IFlashBorrower(receiver).onFlashLoan(msg.sender, token, amount, feeAmount, data);
         require(result == keccak256("FlashLoanBorrower.onFlashLoan"), "Invalid callback return");
 
@@ -53,25 +59,40 @@ contract Vault is ReentrancyGuard {
 
     function depositETH() external payable onlyOwner {
         tokenBalances[address(0)] += msg.value;
+        bytes32 txId = keccak256(abi.encodePacked(block.timestamp, msg.sender, msg.value));
+        emit Deposited(address(0), msg.value);
+        emit TransactionExecuted(txId, "DepositETH");
     }
 
     function depositTokens(address token, uint256 amount) external onlyOwner {
         require(IERC20(token).transferFrom(msg.sender, address(this), amount), "Deposit failed");
         tokenBalances[token] += amount;
+        bytes32 txId = keccak256(abi.encodePacked(block.timestamp, msg.sender, token, amount));
+        emit Deposited(token, amount);
+        emit TransactionExecuted(txId, "DepositTokens");
     }
 
     function withdrawETH(uint256 amount) external onlyOwner {
         tokenBalances[address(0)] -= amount;
         (bool sent, ) = owner.call{value: amount}("");
         require(sent, "ETH withdrawal failed");
+        bytes32 txId = keccak256(abi.encodePacked(block.timestamp, msg.sender, amount));
+        emit Withdrawn(address(0), amount);
+        emit TransactionExecuted(txId, "WithdrawETH");
     }
 
     function withdrawTokens(address token, uint256 amount) external onlyOwner {
         tokenBalances[token] -= amount;
         require(IERC20(token).transfer(owner, amount), "Withdrawal failed");
+        bytes32 txId = keccak256(abi.encodePacked(block.timestamp, msg.sender, token, amount));
+        emit Withdrawn(token, amount);
+        emit TransactionExecuted(txId, "WithdrawTokens");
     }
 
     receive() external payable {
         tokenBalances[address(0)] += msg.value;
+        bytes32 txId = keccak256(abi.encodePacked(block.timestamp, msg.sender, msg.value));
+        emit Deposited(address(0), msg.value);
+        emit TransactionExecuted(txId, "ReceiveETH");
     }
 }
