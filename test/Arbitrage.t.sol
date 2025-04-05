@@ -197,11 +197,15 @@ contract ArbitrageTest is Test {
         uint256 ethToSpend = (TRADE_AMOUNT * DEX2_PRICE) / DECIMALS;
 
         vm.startPrank(address(vaultContract));
+        bytes32 flashLoanTxId = keccak256(abi.encodePacked(block.timestamp, address(vaultContract), ethToSpend));
         (bool fundSuccess, ) = address(arbitrageContract).call{value: ethToSpend}("");
         require(fundSuccess, "Failed to fund arbitrage contract with flash loan");
-        logTxHash(keccak256(abi.encodePacked(block.timestamp, address(vaultContract), ethToSpend)), "Fund Arbitrage with flash loan");
+        logTxHash(flashLoanTxId, "Fund Arbitrage with flash loan");
+        console.log("Flash Loan Tx Hash:"); // Added explicit label
+        console.log(vm.toString(flashLoanTxId)); // Explicitly show the flash loan tx hash
 
         bytes memory data = abi.encode(vm.envAddress("PIGFOX_TOKEN"), vm.envAddress("DEX2"), vm.envAddress("DEX1"), TRADE_AMOUNT);
+        bytes32 arbitrageTxId = keccak256(abi.encodePacked(block.timestamp, address(vaultContract), ethToSpend, data));
         (bool flashSuccess, bytes memory flashData) = address(arbitrageContract).call{gas: 500000}(
             abi.encodeWithSelector(
                 arbitrageContract.onFlashLoan.selector,
@@ -214,7 +218,9 @@ contract ArbitrageTest is Test {
         );
         require(flashSuccess, "Flash loan call failed");
         bytes32 result = abi.decode(flashData, (bytes32));
-        logTxHash(keccak256(abi.encodePacked(block.timestamp, address(vaultContract), ethToSpend, data)), "Execute Flash Loan");
+        logTxHash(arbitrageTxId, "Execute Flash Loan");
+        console.log("Arbitrage Tx Hash:"); // Added explicit label
+        console.log(vm.toString(arbitrageTxId)); // Explicitly show the arbitrage tx hash
         vm.stopPrank();
         assertEq(result, keccak256("FlashLoanBorrower.onFlashLoan"), "Flash loan callback failed");
 
@@ -240,7 +246,5 @@ contract ArbitrageTest is Test {
         uint256 expectedDex1Pfx = initialDex1Pfx + TRADE_AMOUNT;
         assertEq(finalDex2Pfx, expectedDex2Pfx, "DEX2 balance incorrect");
         assertEq(finalDex1Pfx, expectedDex1Pfx, "DEX1 balance incorrect");
-        //show me the tx hash of the flashloan
-        //show me the tx hash of the arbitrage
     }
 }
