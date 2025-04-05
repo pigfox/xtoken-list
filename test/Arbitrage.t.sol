@@ -240,5 +240,7 @@ contract ArbitrageTest is Test {
         uint256 expectedDex1Pfx = initialDex1Pfx + TRADE_AMOUNT;
         assertEq(finalDex2Pfx, expectedDex2Pfx, "DEX2 balance incorrect");
         assertEq(finalDex1Pfx, expectedDex1Pfx, "DEX1 balance incorrect");
+        //show me the tx hash of the flashloan
+        //show me the tx hash of the arbitrage
     }
 }
