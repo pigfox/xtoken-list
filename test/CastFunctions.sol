@@ -21,6 +21,7 @@ contract CastFunctions is Test {
     event BalanceEvent(address indexed contractAddress, uint256 balance);
     event SetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress, uint256 price, string txHash);
     event WithdrawTokensEvent(address indexed dexAddress, address indexed tokenAddress, uint256 amount, string txHash);
+    event UpdatedProfitAddressEvent(address indexed profitAddress);
 
     constructor() {
         conversionsTest = new ConversionsTest();
@@ -44,117 +45,199 @@ contract CastFunctions is Test {
         return balance;
     }
 
-    function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory) {
-        string memory cmd = string.concat(
-            "cast send ",
-            _tokenAddress,
-            " \"mint(uint256)\" ",
-            vm.toString(_amount),
-            " --rpc-url ",
-            rpcUrl,
-            " --from ",
-            walletAddr,
-            " --private-key ",
-            privateKey,
-            " --json"
+    function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+        // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string[] memory inputs = new string[](12);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _tokenAddress;
+        inputs[3] = "mint(uint256)";
+        inputs[4] = vm.toString(_amount);
+        inputs[5] = "--json";
+        inputs[6] = "--rpc-url";
+        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[8] = "--from";
+        inputs[9] = vm.envString("WALLET_ADDRESS");
+        inputs[10] = "--private-key";
+        inputs[11] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(
+            abi.encodePacked(string(castResult))
         );
-        console.log("Mint command (execute externally):", cmd);
-        string memory txHash = "0x_simulated_mint_tx";
-        string memory status = "0x1";
-        emit MintEvent(conversionsTest.stringToAddress(_tokenAddress), _amount, txHash);
-        return (txHash, status);
+
+        bytes memory status = result.parseRaw(".status");
+        uint256[] memory values = abi.decode(status, (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory statusStr = conversionsTest.toHexString(statusInt);
+        bytes memory transactionHash = result.parseRaw(".transactionHash");
+        string memory transactionHashStr = vm.toString(transactionHash);
+        emit MintEvent(conversionsTest.stringToAddress(_tokenAddress), _amount, transactionHashStr);
+        return(transactionHashStr,statusStr);
     }
 
-    function approve(string calldata _tokenAddress, string calldata _spenderAddress, uint256 _amount) public returns (string memory, string memory) {
-        string memory cmd = string.concat(
-            "cast send ",
-            _tokenAddress,
-            " \"approve(address,uint256)\" ",
-            _spenderAddress,
-            " ",
-            vm.toString(_amount),
-            " --rpc-url ",
-            rpcUrl,
-            " --from ",
-            walletAddr,
-            " --private-key ",
-            privateKey,
-            " --json"
+    function approve(string calldata _tokenAddress, string calldata _ownerAddress, uint256 _amount) public returns (string memory, string memory){
+        //cast send "$XToken" "approve(address,uint256)" "$Dex1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string[] memory inputs = new string[](13);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _tokenAddress;
+        inputs[3] = "approve(address,uint256)";
+        inputs[4] = _ownerAddress;
+        inputs[5] = conversionsTest.uintToString(_amount);
+        inputs[6] = "--json";
+        inputs[7] = "--rpc-url";
+        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[9] = "--from";
+        inputs[10] = vm.envString("WALLET_ADDRESS");
+        inputs[11] = "--private-key";
+        inputs[12] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+
+        if (castResult.length == 0) {
+            revert("Error: approve cast call returned empty result");
+        }
+
+        string memory result = string(castResult);
+
+        // Parse the status and transaction hash
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
+
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+
+        emit ApproveEvent(
+            conversionsTest.stringToAddress(_tokenAddress),
+            conversionsTest.stringToAddress(_ownerAddress),
+            _amount,
+            txHash
         );
-        console.log("Approve command (execute externally):", cmd);
-        string memory txHash = "0x_simulated_approve_tx";
-        string memory status = "0x1";
-        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_spenderAddress), _amount, txHash);
-        return (txHash, status);
+
+        return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function depositTokens(string calldata _dex, string calldata _token, uint256 _amount) public returns (string memory, string memory) {
-        string memory cmd = string.concat(
-            "cast send ",
-            _token,
-            " \"transfer(address,uint256)\" ",
-            _dex,
-            " ",
-            vm.toString(_amount),
-            " --rpc-url ",
-            rpcUrl,
-            " --from ",
-            walletAddr,
-            " --private-key ",
-            privateKey,
-            " --json"
+    function depositTokens(string calldata _dex, string calldata _token, uint256 _amount) public returns (string memory, string memory){
+        //cast send "$PIGFOX_TOKEN" "supplyTokenTo(address,uint256)" "$DEX1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY" --json
+        string[] memory inputs = new string[](13);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _token;
+        inputs[3] = "supplyTokenTo(address,uint256)";
+        inputs[4] = _dex;
+        inputs[5] = vm.toString(_amount);
+        inputs[6] = "--rpc-url";
+        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[8] = "--from";
+        inputs[9] = vm.envString("WALLET_ADDRESS");
+        inputs[10] = "--private-key";
+        inputs[11] = vm.envString("PRIVATE_KEY");
+        inputs[12] = "--json";
+
+        bytes memory castResult = vm.ffi(inputs);
+
+        if (castResult.length == 0) {
+            revert("Error: deposit cast call returned empty result");
+        }
+
+        string memory result = string(castResult);
+
+        // Parse the status and transaction hash
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+
+        emit DepositTokensEvent(
+            conversionsTest.stringToAddress(_dex),
+            conversionsTest.stringToAddress(_token),
+            _amount,txHash
         );
-        console.log("Deposit command (execute externally):", cmd);
-        string memory txHash = "0x_simulated_deposit_tx";
-        string memory status = "0x1";
-        emit DepositTokensEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_token), _amount, txHash);
-        return (txHash, status);
+
+        return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function withdrawTokens(string calldata _dex, string calldata _token, uint256 _amount) public returns (string memory, string memory) {
-        string memory cmd = string.concat(
-            "cast send ",
-            _dex,
-            " \"withdraw(address,uint256)\" ",
-            _token,
-            " ",
-            vm.toString(_amount),
-            " --rpc-url ",
-            rpcUrl,
-            " --from ",
-            walletAddr,
-            " --private-key ",
-            privateKey,
-            " --json"
+    function withdrawTokens(string calldata _token, string calldata _owner, string memory _destination, uint256 _amount) public returns (string memory, string memory){
+        //cast send "$Dex1" "withdrawTokens(address,address,uint256)" "$XToken" "$TrashCan" 28000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string[] memory inputs = new string[](14);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _owner;
+        inputs[3] = "withdrawTokens(address,address,uint256)";
+        inputs[4] = _token;
+        inputs[5] = _destination;
+        inputs[6] = vm.toString(_amount);
+        inputs[7] = "--json";
+        inputs[8] = "--rpc-url";
+        inputs[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[10] = "--from";
+        inputs[11] = vm.envString("WALLET_ADDRESS");
+        inputs[12] = "--private-key";
+        inputs[13] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(
+            abi.encodePacked(string(castResult))
         );
-        console.log("Withdraw command (execute externally):", cmd);
-        string memory txHash = "0x_simulated_withdraw_tx";
-        string memory status = "0x1";
-        emit WithdrawTokensEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_token), _amount, txHash);
-        return (txHash, status);
+
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+        emit WithdrawTokensEvent(
+            conversionsTest.stringToAddress(_token),
+            conversionsTest.stringToAddress(_owner),
+            _amount,
+            txHash);
+        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _price) public returns (string memory, string memory) {
-        string memory cmd = string.concat(
-            "cast send ",
-            _dex,
-            " \"setTokenPrice(address,uint256)\" ",
-            _tokenAddress,
-            " ",
-            vm.toString(_price),
-            " --rpc-url ",
-            rpcUrl,
-            " --from ",
-            walletAddr,
-            " --private-key ",
-            privateKey,
-            " --json"
+    function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+        // cast send "$dex1" "setTokenPrice(address,uint256)" "$XToken" 9876 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string[] memory inputs = new string[](13);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _dex;
+        inputs[3] = "setTokenPrice(address,uint256)";
+        inputs[4] = _tokenAddress;
+        inputs[5] = conversionsTest.uintToString(_amount);
+        inputs[6] = "--json";
+        inputs[7] = "--rpc-url";
+        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[9] = "--from";
+        inputs[10] = vm.envString("WALLET_ADDRESS");
+        inputs[11] = "--private-key";
+        inputs[12] = vm.envString("PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(
+            abi.encodePacked(string(castResult))
         );
-        console.log("Set price command (execute externally):", cmd);
-        string memory txHash = "0x_simulated_setprice_tx";
-        string memory status = "0x1";
-        emit SetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress), _price, txHash);
-        return (txHash, status);
+
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+        emit SetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress), _amount, txHash);
+        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
     function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public view returns (uint256) {
@@ -182,4 +265,10 @@ contract CastFunctions is Test {
         string memory status = "0x1";
         return (txHash, status);
     }
+
+    function setProfitAddress(address _profitAddress) external {
+        require(_profitAddress != address(0), "Invalid profit address");
+        emit UpdatedProfitAddressEvent(_profitAddress);
+    }
 }
+
