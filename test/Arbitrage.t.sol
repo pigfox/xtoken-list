@@ -37,10 +37,10 @@ contract ArbitrageTest is Test {
     uint256 constant DEX2_PRICE = 80;  // wei/PFX
 
     address pigfoxTokenAddr;
-    address dex1Addr;
-    address dex2Addr;
-    address arbitrageAddr;
-    address vaultAddr;
+    address payable dex1Addr;
+    address payable dex2Addr;
+    address payable arbitrageAddr;
+    address payable vaultAddr;
     address walletAddr;
     address chromeWalletAddr;
 
@@ -64,17 +64,17 @@ contract ArbitrageTest is Test {
         walletAddr = vm.envAddress(WALLET_ADDRESS);
         walletPrivateKey = vm.envUint(WALLET_PRIVATE_KEY);
         chromeWalletAddr = vm.envAddress(CHROME_WALLET);
-        pigfoxTokenAddr = vm.toString(vm.envAddress(PIGFOX_TOKEN));
-        dex1Addr = vm.toString(vm.envAddress(DEX1));
-        dex2Addr = vm.toString(vm.envAddress(DEX2));
-        arbitrageAddr = vm.toString(vm.envAddress(ARBITRAGE));
-        vaultAddr = vm.toString(vm.envAddress(VAULT));
+        pigfoxTokenAddr = vm.envAddress(PIGFOX_TOKEN);
+        dex1Addr = payable(vm.envAddress(DEX1));
+        dex2Addr = payable(vm.envAddress(DEX2));
+        arbitrageAddr = payable(vm.envAddress(ARBITRAGE));
+        vaultAddr = payable(vm.envAddress(VAULT));
 
         pigfoxToken = PigfoxToken(vm.envAddress(PIGFOX_TOKEN));
-        dex1Contract = IDex(vm.envAddress(DEX1));
-        dex2Contract = IDex(vm.envAddress(DEX2));
-        arbitrageContract = Arbitrage(payable(vm.envAddress(ARBITRAGE)));
-        vaultContract = Vault(payable(vm.envAddress(VAULT)));
+        dex1Contract = Dex(dex1Addr);
+        dex2Contract = Dex(dex2Addr);
+        arbitrageContract = Arbitrage(arbitrageAddr);
+        vaultContract = Vault(vaultAddr);
 
         console.log("Wallet Address:", walletAddr);
         console.log("Chrome Profit Address:", chromeWalletAddr);
@@ -88,7 +88,7 @@ contract ArbitrageTest is Test {
         // Start broadcasting with wallet's private key
         vm.startBroadcast(walletPrivateKey);
 
-        uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(vm.toString(walletAddr), pigfoxTokenAddr);
+        uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(vm.toString(walletAddr), vm.toString(pigfoxTokenAddr));
         console.log("Wallet PFX Balance:");
         console2.logUint(walletPfxBalance);
         if (walletPfxBalance < MIN_WALLET_PFX_BALANCE) {
@@ -97,7 +97,7 @@ contract ArbitrageTest is Test {
             logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, MIN_WALLET_PFX_BALANCE)), "Mint 100 PFX");
         }
 
-        uint256 dex1PfxBalance = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr);
+        uint256 dex1PfxBalance = castFunctions.getTokenBalanceOf(vm.toString(dex1Addr), vm.toString(pigfoxTokenAddr));
         console.log("DEX1 PFX Balance:");
         console2.logUint(dex1PfxBalance);
         if (dex1PfxBalance < DEX_PFX_DEPOSIT) {
@@ -109,7 +109,7 @@ contract ArbitrageTest is Test {
             logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT)), "Deposit 50 PFX to DEX1");
         }
 
-        uint256 dex2PfxBalance = castFunctions.getTokenBalanceOf(dex2Addr, pigfoxTokenAddr);
+        uint256 dex2PfxBalance = castFunctions.getTokenBalanceOf(vm.toString(dex2Addr), vm.toString(pigfoxTokenAddr));
         console.log("DEX2 PFX Balance:");
         console2.logUint(dex2PfxBalance);
         if (dex2PfxBalance < DEX_PFX_DEPOSIT) {
