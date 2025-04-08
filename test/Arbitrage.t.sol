@@ -77,7 +77,7 @@ contract ArbitrageTest is Test {
         vaultContract = Vault(vaultAddr);
 
         console.log("Wallet Address:", walletAddr);
-        console.log("Chrome Profit Address:", chromeWalletAddr);
+        console.log("Chrome Wallet Address:", chromeWalletAddr);
         console.log("PigfoxToken Address:", pigfoxTokenAddr);
         console.log("DEX1 Address:", dex1Addr);
         console.log("DEX2 Address:", dex2Addr);
@@ -158,16 +158,14 @@ contract ArbitrageTest is Test {
 
         vm.stopBroadcast();
     }
-/*
+
     function test_setProfitAddress()public{
         vm.startBroadcast(walletPrivateKey);
-        address testProfitAddress = vm.envAddress("TEST_PROFIT_ADDRESS");
         address initialProfitAddress = arbitrageContract.getProfitAddress();
         assertEq(initialProfitAddress, walletAddr, "Initial profit address should be wallet address");
-        vm.stopBroadcast(walletPrivateKey);
-
+        vm.stopBroadcast();
     }
-
+/*
     function test_executeArbitrage() public {
         vm.startBroadcast(walletPrivateKey);
 
