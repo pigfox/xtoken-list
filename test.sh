@@ -28,4 +28,5 @@ echo "Testing $contract::$function..."
 
 #exit;
 ./empty_dex.sh
-forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
+forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" -vvvv
+#forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv

@@ -27,7 +27,7 @@ contract CastFunctions is Test {
         conversionsTest = new ConversionsTest();
         rpcUrl = vm.envString("SEPOLIA_HTTP_RPC_URL");
         walletAddr = vm.toString(vm.envAddress("WALLET_ADDRESS"));
-        privateKey = vm.envString("PRIVATE_KEY");
+        privateKey = vm.envString("WALLET_PRIVATE_KEY");
     }
 
     function addressBalance(string calldata _contractAddress) public returns (uint256) {
@@ -59,7 +59,7 @@ contract CastFunctions is Test {
         inputs[8] = "--from";
         inputs[9] = vm.envString("WALLET_ADDRESS");
         inputs[10] = "--private-key";
-        inputs[11] = vm.envString("PRIVATE_KEY");
+        inputs[11] = vm.envString("WALLET_PRIVATE_KEY");
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
@@ -97,7 +97,7 @@ contract CastFunctions is Test {
         inputs[9] = "--from";
         inputs[10] = vm.envString("WALLET_ADDRESS");
         inputs[11] = "--private-key";
-        inputs[12] = vm.envString("PRIVATE_KEY");
+        inputs[12] = vm.envString("WALLET_PRIVATE_KEY");
 
         bytes memory castResult = vm.ffi(inputs);
 
@@ -138,7 +138,7 @@ contract CastFunctions is Test {
         inputs[8] = "--from";
         inputs[9] = vm.envString("WALLET_ADDRESS");
         inputs[10] = "--private-key";
-        inputs[11] = vm.envString("PRIVATE_KEY");
+        inputs[11] = vm.envString("WALLET_PRIVATE_KEY");
         inputs[12] = "--json";
 
         bytes memory castResult = vm.ffi(inputs);
@@ -180,7 +180,7 @@ contract CastFunctions is Test {
         inputs[10] = "--from";
         inputs[11] = vm.envString("WALLET_ADDRESS");
         inputs[12] = "--private-key";
-        inputs[13] = vm.envString("PRIVATE_KEY");
+        inputs[13] = vm.envString("WALLET_PRIVATE_KEY");
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
@@ -220,7 +220,7 @@ contract CastFunctions is Test {
         inputs[9] = "--from";
         inputs[10] = vm.envString("WALLET_ADDRESS");
         inputs[11] = "--private-key";
-        inputs[12] = vm.envString("PRIVATE_KEY");
+        inputs[12] = vm.envString("WALLET_PRIVATE_KEY");
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
