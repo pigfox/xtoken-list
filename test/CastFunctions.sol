@@ -14,15 +14,6 @@ contract CastFunctions is Test {
     string public walletAddr;
     string public privateKey;
 
-    event GetTokenBalanceOfEvent(address indexed tokenAddress, address indexed holderAddress, uint256 balance);
-    event MintEvent(address indexed tokenAddress, uint256 amount, string txHash);
-    event DepositTokensEvent(address indexed dexAddress, address indexed tokenAddress, uint256 amount, string txHash);
-    event ApproveEvent(address indexed tokenAddress, address indexed spenderAddress, uint256 amount, string txHash);
-    event BalanceEvent(address indexed contractAddress, uint256 balance);
-    event SetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress, uint256 price, string txHash);
-    event WithdrawTokensEvent(address indexed dexAddress, address indexed tokenAddress, uint256 amount, string txHash);
-    event UpdatedProfitAddressEvent(address indexed profitAddress);
-
     constructor() {
         conversionsTest = new ConversionsTest();
         rpcUrl = vm.envString("SEPOLIA_HTTP_RPC_URL");
@@ -33,7 +24,6 @@ contract CastFunctions is Test {
     function addressBalance(string calldata _contractAddress) public returns (uint256) {
         address addr = conversionsTest.stringToAddress(_contractAddress);
         uint256 balance = addr.balance;
-        emit BalanceEvent(addr, balance);
         return balance;
     }
 
@@ -41,7 +31,6 @@ contract CastFunctions is Test {
         PigfoxToken token = PigfoxToken(conversionsTest.stringToAddress(_tokenAddress));
         address holder = conversionsTest.stringToAddress(_holderAddress);
         uint256 balance = token.balanceOf(holder);
-        emit GetTokenBalanceOfEvent(address(token), holder, balance); // Fixed: Convert PigfoxToken to address
         return balance;
     }
 
@@ -78,7 +67,6 @@ contract CastFunctions is Test {
         string memory statusStr = conversionsTest.toHexString(statusInt);
         bytes memory transactionHash = result.parseRaw(".transactionHash");
         string memory transactionHashStr = vm.toString(transactionHash);
-        emit MintEvent(conversionsTest.stringToAddress(_tokenAddress), _amount, transactionHashStr);
         return(transactionHashStr,statusStr);
     }
 
@@ -113,15 +101,7 @@ contract CastFunctions is Test {
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
 
         string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
-
-        emit ApproveEvent(
-            conversionsTest.stringToAddress(_tokenAddress),
-            conversionsTest.stringToAddress(_ownerAddress),
-            _amount,
-            txHash
-        );
-
-        return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
+        return (txHash, conversionsTest.toHexString(statusInt));
     }
 
     function depositTokens(string calldata _dex, string calldata _token, uint256 _amount) public returns (string memory, string memory){
@@ -154,14 +134,7 @@ contract CastFunctions is Test {
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
         string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
-
-        emit DepositTokensEvent(
-            conversionsTest.stringToAddress(_dex),
-            conversionsTest.stringToAddress(_token),
-            _amount,txHash
-        );
-
-        return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
+        return (txHash, conversionsTest.toHexString(statusInt));
     }
 
     function withdrawTokens(string calldata _token, string calldata _owner, string memory _destination, uint256 _amount) public returns (string memory, string memory){
@@ -197,12 +170,7 @@ contract CastFunctions is Test {
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
 
         string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
-        emit WithdrawTokensEvent(
-            conversionsTest.stringToAddress(_token),
-            conversionsTest.stringToAddress(_owner),
-            _amount,
-            txHash);
-        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
+        return(txHash, conversionsTest.toHexString(statusInt));
     }
 
     function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
@@ -236,8 +204,7 @@ contract CastFunctions is Test {
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
         string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
-        emit SetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress), _amount, txHash);
-        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
+        return(txHash, conversionsTest.toHexString(statusInt));
     }
 
     function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public view returns (uint256) {
@@ -246,29 +213,42 @@ contract CastFunctions is Test {
         return price;
     }
 
-    function fundEth(string calldata _to, uint256 _amount) public view returns (string memory, string memory) {
-        string memory cmd = string.concat(
-            "cast send ",
-            _to,
-            " --value ",
-            vm.toString(_amount),
-            " --rpc-url ",
-            rpcUrl,
-            " --from ",
-            walletAddr,
-            " --private-key ",
-            privateKey,
-            " --json"
+    function fundEth(string calldata _to, uint256 _amount) public returns (string memory, string memory) {
+        string[] memory inputs = new string[](12);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = _to;
+        inputs[3] = "--value";
+        inputs[4] = vm.toString(_amount);
+        inputs[5] = "--rpc-url";
+        inputs[6] = rpcUrl;
+        inputs[7] = "--from";
+        inputs[8] = walletAddr;
+        inputs[9] = "--private-key";
+        inputs[10] = privateKey;
+        inputs[11] = "--json";
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(
+            abi.encodePacked(string(castResult))
         );
-        console.log("ETH funding command (execute externally):", cmd);
-        string memory txHash = "0x_simulated_fund_tx";
-        string memory status = "0x1";
-        return (txHash, status);
+
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+        return(txHash, conversionsTest.toHexString(statusInt));
     }
 
-    function setProfitAddress(address _profitAddress) external {
+    function setProfitAddress(address _profitAddress, address _contractAddress, uint256 _privateKey) external {
         require(_profitAddress != address(0), "Invalid profit address");
-        emit UpdatedProfitAddressEvent(_profitAddress);
+        require(_contractAddress != address(0), "Invalid contract address");
+        require(_privateKey != 0, "Invalid contract private key");
     }
 }
 

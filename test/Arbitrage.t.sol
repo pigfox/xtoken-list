@@ -163,6 +163,7 @@ contract ArbitrageTest is Test {
         vm.startBroadcast(walletPrivateKey);
         address initialProfitAddress = arbitrageContract.getProfitAddress();
         assertEq(initialProfitAddress, walletAddr, "Initial profit address should be wallet address");
+
         vm.stopBroadcast();
     }
 /*
