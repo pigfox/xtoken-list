@@ -65,7 +65,7 @@ contract ArbitrageTest is Test {
         walletAddr = vm.envAddress(WALLET_ADDRESS);
         walletPrivateKey = vm.envUint(WALLET_PRIVATE_KEY);
         chromeWalletAddr = vm.envAddress(CHROME_WALLET);
-        chromeWalletPrivateKey = vm.envAddress(CHROME_WALLET_PRIVATE_KEY);
+        chromeWalletPrivateKey = vm.envUint(CHROME_WALLET_PRIVATE_KEY);
         pigfoxTokenAddr = vm.envAddress(PIGFOX_TOKEN);
         dex1Addr = payable(vm.envAddress(DEX1));
         dex2Addr = payable(vm.envAddress(DEX2));
@@ -85,10 +85,6 @@ contract ArbitrageTest is Test {
         console.log("DEX2 Address:", dex2Addr);
         console.log("Arbitrage Address:", arbitrageAddr);
         console.log("Vault Address:", vaultAddr);
-
-
-        // Start broadcasting with wallet's private key
-        vm.startBroadcast(walletPrivateKey);
 
         uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(vm.toString(walletAddr), vm.toString(pigfoxTokenAddr));
         console.log("Wallet PFX Balance:");
@@ -166,12 +162,11 @@ contract ArbitrageTest is Test {
         address initialProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddr));
         assertEq(initialProfitAddress, walletAddr, "Initial profit address should be wallet address");
 
-        address newProfitAddress = chromeWalletAddr;
-        (string memory txHash, string memory result) = castFunctions.setProfitAddress(newProfitAddress, arbitrageAddr, walletAddr, walletPrivateKey);
+        (string memory txHash, string memory result) = castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKey);
         console.log("Transaction Hash:", txHash);
         console.log("Result:", result);
         address updatedProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddr));
-        assertEq(updatedProfitAddress, newProfitAddress, "Profit address should be updated to chrome wallet address");
+        assertEq(updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address");
 
         vm.stopBroadcast();
     }
