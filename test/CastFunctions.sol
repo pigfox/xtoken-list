@@ -245,10 +245,40 @@ contract CastFunctions is Test {
         return(txHash, conversionsTest.toHexString(statusInt));
     }
 
-    function setProfitAddress(address _profitAddress, address _contractAddress, uint256 _privateKey) external {
+    function setProfitAddress(address _profitAddress, address _contractAddress, uint256 _privateKey) external returns (string memory, string memory) {
         require(_profitAddress != address(0), "Invalid profit address");
         require(_contractAddress != address(0), "Invalid contract address");
         require(_privateKey != 0, "Invalid contract private key");
+
+        string[] memory inputs = new string[](13);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = vm.toString(_contractAddress); // target contract address
+        inputs[3] = "setProfitAddress(address)"; // function signature
+        inputs[4] = vm.toString(_profitAddress); // function argument
+        inputs[5] = "--json";
+        inputs[6] = "--rpc-url";
+        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // or use _rpc if passed in
+        inputs[8] = "--from";
+        inputs[9] = vm.envString("WALLET_ADDRESS");
+        inputs[10] = "--private-key";
+        inputs[11] = vm.toString(_privateKey);
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(castResult);
+
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+        return (txHash, conversionsTest.toHexString(statusInt));
     }
+
 }
 
