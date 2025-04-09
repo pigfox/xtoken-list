@@ -245,7 +245,7 @@ contract CastFunctions is Test {
         return(txHash, conversionsTest.toHexString(statusInt));
     }
 
-    function setProfitAddress(address _profitAddress, address _contractAddress, uint256 _privateKey) external returns (string memory, string memory) {
+    function setProfitAddress(address _profitAddress, address _contractAddress, address _walletAddress, uint256 _privateKey) external returns (string memory, string memory) {
         require(_profitAddress != address(0), "Invalid profit address");
         require(_contractAddress != address(0), "Invalid contract address");
         require(_privateKey != 0, "Invalid contract private key");
@@ -260,7 +260,7 @@ contract CastFunctions is Test {
         inputs[6] = "--rpc-url";
         inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // or use _rpc if passed in
         inputs[8] = "--from";
-        inputs[9] = vm.envString("WALLET_ADDRESS");
+        inputs[9] = vm.toString(_walletAddress);
         inputs[10] = "--private-key";
         inputs[11] = vm.toString(_privateKey);
 
