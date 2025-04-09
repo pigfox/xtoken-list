@@ -41,10 +41,11 @@ contract ArbitrageTest is Test {
     address payable dex2Addr;
     address payable arbitrageAddr;
     address payable vaultAddr;
-    address walletAddr;
-    address chromeWalletAddr;
 
+    address walletAddr;
     uint256 walletPrivateKey;
+
+    address chromeWalletAddr;
     uint256 chromeWalletPrivateKey;
 
     Dex dex1Contract;
@@ -64,6 +65,7 @@ contract ArbitrageTest is Test {
         walletAddr = vm.envAddress(WALLET_ADDRESS);
         walletPrivateKey = vm.envUint(WALLET_PRIVATE_KEY);
         chromeWalletAddr = vm.envAddress(CHROME_WALLET);
+        chromeWalletPrivateKey = vm.envAddress(CHROME_WALLET_PRIVATE_KEY);
         pigfoxTokenAddr = vm.envAddress(PIGFOX_TOKEN);
         dex1Addr = payable(vm.envAddress(DEX1));
         dex2Addr = payable(vm.envAddress(DEX2));
@@ -161,9 +163,15 @@ contract ArbitrageTest is Test {
 
     function test_setProfitAddress()public{
         vm.startBroadcast(walletPrivateKey);
-        //address initialProfitAddress = arbitrageContract.getProfitAddress();
         address initialProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddr));
         assertEq(initialProfitAddress, walletAddr, "Initial profit address should be wallet address");
+
+        address newProfitAddress = chromeWalletAddr;
+        (string memory txHash, string memory result) = castFunctions.setProfitAddress(newProfitAddress, arbitrageAddr, walletAddr, walletPrivateKey);
+        console.log("Transaction Hash:", txHash);
+        console.log("Result:", result);
+        address updatedProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddr));
+        assertEq(updatedProfitAddress, newProfitAddress, "Profit address should be updated to chrome wallet address");
 
         vm.stopBroadcast();
     }

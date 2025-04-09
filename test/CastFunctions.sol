@@ -263,6 +263,7 @@ contract CastFunctions is Test {
         inputs[9] = vm.toString(_walletAddress);
         inputs[10] = "--private-key";
         inputs[11] = vm.toString(_privateKey);
+        inputs[12] = "--legacy";
 
         bytes memory castResult = vm.ffi(inputs);
         if (castResult.length == 0) {
