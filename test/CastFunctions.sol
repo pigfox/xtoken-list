@@ -21,13 +21,13 @@ contract CastFunctions is Test {
         privateKey = vm.envString("WALLET_PRIVATE_KEY");
     }
 
-    function addressBalance(string calldata _contractAddress) public returns (uint256) {
+    function addressBalance(string calldata _contractAddress) public view returns (uint256) {
         address addr = conversionsTest.stringToAddress(_contractAddress);
         uint256 balance = addr.balance;
         return balance;
     }
 
-    function getTokenBalanceOf(string calldata _holderAddress, string calldata _tokenAddress) public returns (uint256) {
+    function getTokenBalanceOf(string calldata _holderAddress, string calldata _tokenAddress) public view returns (uint256) {
         PigfoxToken token = PigfoxToken(conversionsTest.stringToAddress(_tokenAddress));
         address holder = conversionsTest.stringToAddress(_holderAddress);
         uint256 balance = token.balanceOf(holder);
@@ -278,6 +278,29 @@ contract CastFunctions is Test {
 
         string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
         return (txHash, conversionsTest.toHexString(statusInt));
+    }
+
+    function getProfitAddress(string calldata _contractAddress) public returns (address) {
+        address addr = conversionsTest.stringToAddress(_contractAddress);
+
+        string[] memory inputs = new string[](7);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = vm.toString(addr); // target contract
+        inputs[3] = "getProfitAddress()"; // function signature
+        inputs[4] = "--rpc-url";
+        inputs[5] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        //inputs[6] = "--json";
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            console.log("Error: cast call returned empty result");
+            revert("Error: cast call returned empty result");
+        }
+
+        // Decode directly from ABI-encoded return value
+        address returnedAddr = abi.decode(castResult, (address));
+        return returnedAddr;
     }
 
 }
