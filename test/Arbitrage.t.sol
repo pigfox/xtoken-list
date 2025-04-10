@@ -4,25 +4,10 @@ pragma solidity ^0.8.26;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "forge-std/console2.sol";
-import "../src/PigfoxToken.sol";
-import "../src/Dex.sol";
-import "../src/Arbitrage.sol";
-import "../src/Vault.sol";
 import "./CastFunctions.sol";
 
 contract ArbitrageTest is Test {
     CastFunctions public castFunctions;
-
-    string constant SEPOLIA_HTTP_RPC_URL = "SEPOLIA_HTTP_RPC_URL";
-    string constant WALLET_ADDRESS = "WALLET_ADDRESS";
-    string constant WALLET_PRIVATE_KEY = "WALLET_PRIVATE_KEY";
-    string constant CHROME_WALLET = "CHROME_WALLET";
-    string constant CHROME_WALLET_PRIVATE_KEY = "CHROME_WALLET_PRIVATE_KEY";
-    string constant PIGFOX_TOKEN = "PIGFOX_TOKEN";
-    string constant DEX1 = "DEX1";
-    string constant DEX2 = "DEX2";
-    string constant ARBITRAGE = "ARBITRAGE";
-    string constant VAULT = "VAULT";
 
     uint256 constant DECIMALS = 10**18;
     uint256 constant MIN_WALLET_PFX_BALANCE = 100 * DECIMALS;
@@ -36,23 +21,15 @@ contract ArbitrageTest is Test {
     uint256 constant DEX1_PRICE = 120; // wei/PFX
     uint256 constant DEX2_PRICE = 80;  // wei/PFX
 
-    address pigfoxTokenAddr;
-    address payable dex1Addr;
-    address payable dex2Addr;
-    address payable arbitrageAddr;
-    address payable vaultAddr;
-
-    address walletAddr;
-    uint256 walletPrivateKey;
-
-    address chromeWalletAddr;
-    uint256 chromeWalletPrivateKey;
-
-    Dex dex1Contract;
-    Dex dex2Contract;
-    Arbitrage arbitrageContract;
-    Vault vaultContract;
-    PigfoxToken pigfoxToken;
+    string private pigfoxTokenAddrStr;
+    string private dex1AddrStr;
+    string private dex2AddrStr;
+    string private arbitrageAddrStr;
+    string private vaultAddrStr;
+    string private walletAddrStr;
+    string private walletPrivateKeyStr;
+    string private chromeWalletAddrStr;
+    string private chromeWalletPrivateKeyStr;
 
     function logTxHash(bytes32 txId, string memory action) internal view {
         string memory url = string(abi.encodePacked("https://sepolia.etherscan.io/tx/", vm.toString(txId)));
@@ -62,31 +39,25 @@ contract ArbitrageTest is Test {
     function setUp() public {
         castFunctions = new CastFunctions();
 
-        walletAddr = vm.envAddress(WALLET_ADDRESS);
-        walletPrivateKey = vm.envUint(WALLET_PRIVATE_KEY);
-        chromeWalletAddr = vm.envAddress(CHROME_WALLET);
-        chromeWalletPrivateKey = vm.envUint(CHROME_WALLET_PRIVATE_KEY);
-        pigfoxTokenAddr = vm.envAddress(PIGFOX_TOKEN);
-        dex1Addr = payable(vm.envAddress(DEX1));
-        dex2Addr = payable(vm.envAddress(DEX2));
-        arbitrageAddr = payable(vm.envAddress(ARBITRAGE));
-        vaultAddr = payable(vm.envAddress(VAULT));
+        walletAddrStr = vm.envString("WALLET_ADDRESS");
+        walletPrivateKeyStr  = vm.envString("WALLET_PRIVATE_KEY");
+        chromeWalletAddrStr  = vm.envString("CHROME_WALLET");
+        chromeWalletPrivateKeyStr  = vm.envString("CHROME_WALLET_PRIVATE_KEY");
+        pigfoxTokenAddrStr  = vm.envAddress("PIGFOX_TOKEN");
+        dex1AddrStr = vm.envString("DEX1");
+        dex2AddrStr = vm.envString("DEX2");
+        arbitrageAddrStr = vm.envString("ARBITRAGE");
+        vaultAddrStr = vm.envString("VAULT");
 
-        pigfoxToken = PigfoxToken(vm.envAddress(PIGFOX_TOKEN));
-        dex1Contract = Dex(dex1Addr);
-        dex2Contract = Dex(dex2Addr);
-        arbitrageContract = Arbitrage(arbitrageAddr);
-        vaultContract = Vault(vaultAddr);
+        console.log("Wallet Address:", walletAddrStr);
+        console.log("Chrome Wallet Address:", chromeWalletAddrStr);
+        console.log("PigfoxToken Address:", pigfoxTokenAddrStr);
+        console.log("DEX1 Address:", dex1AddrStr);
+        console.log("DEX2 Address:", dex2AddrStr);
+        console.log("Arbitrage Address:", arbitrageAddrStr);
+        console.log("Vault Address:", vaultAddrStr);
 
-        console.log("Wallet Address:", walletAddr);
-        console.log("Chrome Wallet Address:", chromeWalletAddr);
-        console.log("PigfoxToken Address:", pigfoxTokenAddr);
-        console.log("DEX1 Address:", dex1Addr);
-        console.log("DEX2 Address:", dex2Addr);
-        console.log("Arbitrage Address:", arbitrageAddr);
-        console.log("Vault Address:", vaultAddr);
-
-        uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(vm.toString(walletAddr), vm.toString(pigfoxTokenAddr));
+        uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(walletAddrStr, pigfoxTokenAddrStr);
         console.log("Wallet PFX Balance:");
         console2.logUint(walletPfxBalance);
         if (walletPfxBalance < MIN_WALLET_PFX_BALANCE) {
@@ -139,14 +110,14 @@ contract ArbitrageTest is Test {
     }
 
     function test_setProfitAddress()public{
-        address initialProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddr));
-        assertEq(initialProfitAddress, walletAddr, "Initial profit address should be wallet address");
+        address initialProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddrStr));
+        assertEq(initialProfitAddress, walletAddrStr, "Initial profit address should be wallet address");
 
-        (string memory txHash, string memory result) = castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKey);
+        (string memory txHash, string memory result) = castFunctions.setProfitAddress(chromeWalletAddrStr, arbitrageAddrStr, walletAddrStr, walletPrivateKeyStr);
         console.log("Transaction Hash:", txHash);
         console.log("Result:", result);
-        address updatedProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddr));
-        assertEq(updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address");
+        address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddrStr);
+        assertEq(updatedProfitAddress, chromeWalletAddrStr, "Profit address should be updated to chrome wallet address");
     }
 /*
     function test_executeArbitrage() public {
