@@ -92,19 +92,15 @@ contract ArbitrageTest is Test {
         if (walletPfxBalance < MIN_WALLET_PFX_BALANCE) {
             pigfoxToken.mint(MIN_WALLET_PFX_BALANCE);
             console.log("Minted 100 PFX to wallet (on Sepolia)");
-            logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, MIN_WALLET_PFX_BALANCE)), "Mint 100 PFX");
         }
 
         uint256 dex1PfxBalance = castFunctions.getTokenBalanceOf(vm.toString(dex1Addr), vm.toString(pigfoxTokenAddr));
         console.log("DEX1 PFX Balance:");
         console2.logUint(dex1PfxBalance);
         if (dex1PfxBalance < DEX_PFX_DEPOSIT) {
-            pigfoxToken.approve(vm.envAddress(DEX1), DEX_PFX_DEPOSIT);
-            logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, vm.envAddress(DEX1), DEX_PFX_DEPOSIT)), "Approve DEX1 for 50 PFX");
-
+            castFunctions.approve(vm.toString(pigfoxTokenAddr), vm.toString(walletAddr), ARBITRAGE_ETH_FUNDING);
             dex1Contract.depositTokens(vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT);
             console.log("Deposited 50 PFX to DEX1 (on Sepolia)");
-            logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT)), "Deposit 50 PFX to DEX1");
         }
 
         uint256 dex2PfxBalance = castFunctions.getTokenBalanceOf(vm.toString(dex2Addr), vm.toString(pigfoxTokenAddr));
@@ -112,11 +108,8 @@ contract ArbitrageTest is Test {
         console2.logUint(dex2PfxBalance);
         if (dex2PfxBalance < DEX_PFX_DEPOSIT) {
             pigfoxToken.approve(vm.envAddress(DEX2), DEX_PFX_DEPOSIT);
-            logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, vm.envAddress(DEX2), DEX_PFX_DEPOSIT)), "Approve DEX2 for 50 PFX");
-
             dex2Contract.depositTokens(vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT);
             console.log("Deposited 50 PFX to DEX2 (on Sepolia)");
-            logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT)), "Deposit 50 PFX to DEX2");
         }
 
         uint256 walletEthBalance = castFunctions.addressBalance(vm.toString(walletAddr));
@@ -130,35 +123,22 @@ contract ArbitrageTest is Test {
             console.log("Failed to fund Vault with ETH - proceeding without Vault funding");
         } else {
             console.log("Funded Vault with 0.01 ETH (on Sepolia)");
-            logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, VAULT_ETH_FUNDING)), "Fund Vault with 0.01 ETH");
         }
 
         (bool arbSuccess, ) = payable(vm.envAddress(ARBITRAGE)).call{value: ARBITRAGE_ETH_FUNDING}("");
         require(arbSuccess, "Funding arbitrage failed");
-        logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, ARBITRAGE_ETH_FUNDING)), "Fund Arbitrage with 0.001 ETH");
 
         (bool dex1Success, ) = payable(vm.envAddress(DEX1)).call{value: DEX_ETH_FUNDING}("");
         require(dex1Success, "Funding DEX1 failed");
-        logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, DEX_ETH_FUNDING)), "Fund DEX1 with 0.001 ETH");
 
         (bool dex2Success, ) = payable(vm.envAddress(DEX2)).call{value: DEX_ETH_FUNDING}("");
         require(dex2Success, "Funding DEX2 failed");
-        logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, DEX_ETH_FUNDING)), "Fund DEX2 with 0.001 ETH");
 
         dex1Contract.setTokenPrice(vm.envAddress(PIGFOX_TOKEN), DEX1_PRICE);
-        logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, vm.envAddress(PIGFOX_TOKEN), DEX1_PRICE)), "Set DEX1 price to 120 wei/PFX");
-
         dex2Contract.setTokenPrice(vm.envAddress(PIGFOX_TOKEN), DEX2_PRICE);
-        logTxHash(keccak256(abi.encodePacked(block.timestamp, walletAddr, vm.envAddress(PIGFOX_TOKEN), DEX2_PRICE)), "Set DEX2 price to 80 wei/PFX");
-
-        console.log("Set DEX1 price to 120 wei/PFX (on Sepolia)");
-        console.log("Set DEX2 price to 80 wei/PFX (on Sepolia)");
-
-        vm.stopBroadcast();
     }
 
     function test_setProfitAddress()public{
-        vm.startBroadcast(walletPrivateKey);
         address initialProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddr));
         assertEq(initialProfitAddress, walletAddr, "Initial profit address should be wallet address");
 
@@ -167,8 +147,6 @@ contract ArbitrageTest is Test {
         console.log("Result:", result);
         address updatedProfitAddress = castFunctions.getProfitAddress(vm.toString(arbitrageAddr));
         assertEq(updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address");
-
-        vm.stopBroadcast();
     }
 /*
     function test_executeArbitrage() public {
