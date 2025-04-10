@@ -61,7 +61,8 @@ contract ArbitrageTest is Test {
         console.log("Wallet PFX Balance:");
         console2.logUint(walletPfxBalance);
         if (walletPfxBalance < MIN_WALLET_PFX_BALANCE) {
-            pigfoxToken.mint(MIN_WALLET_PFX_BALANCE);
+            //pigfoxToken.mint(MIN_WALLET_PFX_BALANCE);
+            castFunctions.mint(pigfoxTokenAddrStr, MIN_WALLET_PFX_BALANCE);
             console.log("Minted 100 PFX to wallet (on Sepolia)");
         }
 
@@ -69,8 +70,9 @@ contract ArbitrageTest is Test {
         console.log("DEX1 PFX Balance:");
         console2.logUint(dex1PfxBalance);
         if (dex1PfxBalance < DEX_PFX_DEPOSIT) {
-            castFunctions.approve(vm.toString(pigfoxTokenAddr), vm.toString(walletAddr), ARBITRAGE_ETH_FUNDING);
-            dex1Contract.depositTokens(vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT);
+            castFunctions.approve(pigfoxTokenAddrStr, walletAddrStr, ARBITRAGE_ETH_FUNDING);
+            //dex1Contract.depositTokens(vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT);
+            castFunctions.depositTokens(dex1AddrStr, pigfoxTokenAddrStr, DEX_PFX_DEPOSIT);
             console.log("Deposited 50 PFX to DEX1 (on Sepolia)");
         }
 
