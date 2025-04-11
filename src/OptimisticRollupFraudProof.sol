@@ -2,25 +2,22 @@
 pragma solidity ^0.8.26;
 
 interface IVerifier {
-    function verifyProof(
-        uint[2] memory a,
-        uint[2][2] memory b,
-        uint[2] memory c,
-        uint[3] memory input
-    ) external view returns (bool);
+    function verifyProof(uint256[2] memory a, uint256[2][2] memory b, uint256[2] memory c, uint256[3] memory input)
+        external
+        view
+        returns (bool);
 }
 
 contract OptimisticRollupFraudProof {
-
     struct FraudProof {
         uint256 blockNumber;
         bytes32 stateRootBefore;
         bytes32 stateRootAfter;
         address challenger;
-        uint[2] a; // zk-SNARK proof part a
-        uint[2][2] b; // zk-SNARK proof part b
-        uint[2] c; // zk-SNARK proof part c
-        uint[3] input; // zk-SNARK input
+        uint256[2] a; // zk-SNARK proof part a
+        uint256[2][2] b; // zk-SNARK proof part b
+        uint256[2] c; // zk-SNARK proof part c
+        uint256[3] input; // zk-SNARK input
     }
 
     mapping(address => FraudProof) public fraudProofs;
@@ -53,10 +50,10 @@ contract OptimisticRollupFraudProof {
         uint256 blockNumber,
         bytes32 stateRootBefore,
         bytes32 stateRootAfter,
-        uint[2] memory a,
-        uint[2][2] memory b,
-        uint[2] memory c,
-        uint[3] memory input
+        uint256[2] memory a,
+        uint256[2][2] memory b,
+        uint256[2] memory c,
+        uint256[3] memory input
     ) external {
         require(!disputedBlocks[blockNumber], "Block already disputed");
 
@@ -77,18 +74,11 @@ contract OptimisticRollupFraudProof {
     }
 
     // Function to verify the zk-SNARK proof for fraud proof
-    function verifyZKProof(
-        address challenger
-    ) public view returns (bool) {
+    function verifyZKProof(address challenger) public view returns (bool) {
         FraudProof memory proof = fraudProofs[challenger];
 
         // Verify the zk-SNARK proof using the verifier contract
-        bool validProof = verifier.verifyProof(
-            proof.a,
-            proof.b,
-            proof.c,
-            proof.input
-        );
+        bool validProof = verifier.verifyProof(proof.a, proof.b, proof.c, proof.input);
 
         return validProof;
     }

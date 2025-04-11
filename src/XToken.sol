@@ -5,8 +5,9 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract XToken is ERC20 {
-    event Minted(uint amount, address sender);
-    event MintedTo(uint amount, address receiver);
+    event Minted(uint256 amount, address sender);
+    event MintedTo(uint256 amount, address receiver);
+
     address public owner;
 
     modifier onlyOwner() {
@@ -42,7 +43,7 @@ contract XToken is ERC20 {
         return this.balanceOf(_account);
     }
 
-    function getBalance() public view returns (uint) {
+    function getBalance() public view returns (uint256) {
         return address(this).balance;
     }
 }

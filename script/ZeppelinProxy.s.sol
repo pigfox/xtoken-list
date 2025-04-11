@@ -13,11 +13,7 @@ contract ZeppelinProxyScript is Script {
         vm.startBroadcast();
 
         // Deploy the ZeppelinProxy contract
-        ZeppelinProxy zeppelinProxy = new ZeppelinProxy(
-            zeppelinImplV1,
-            adminWallet,
-            initData
-        );
+        ZeppelinProxy zeppelinProxy = new ZeppelinProxy(zeppelinImplV1, adminWallet, initData);
 
         console.log("ZeppelinProxy deployed at:", address(zeppelinProxy));
 

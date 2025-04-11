@@ -5,7 +5,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IFlashBorrower {
-    function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data) external returns (bytes32);
+    function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data)
+        external
+        returns (bytes32);
 }
 
 contract Vault is ReentrancyGuard {
@@ -28,18 +30,13 @@ contract Vault is ReentrancyGuard {
         owner = msg.sender;
     }
 
-    function flashLoan(
-        address receiver,
-        address token,
-        uint256 amount,
-        bytes calldata data
-    ) external nonReentrant {
+    function flashLoan(address receiver, address token, uint256 amount, bytes calldata data) external nonReentrant {
         uint256 balanceBefore = token == address(0) ? address(this).balance : IERC20(token).balanceOf(address(this));
         require(balanceBefore >= amount, "Insufficient vault balance");
 
         uint256 feeAmount = (amount * FEE_BASIS_POINTS) / FEE_DENOMINATOR;
         if (token == address(0)) {
-            (bool sent, ) = receiver.call{value: amount}("");
+            (bool sent,) = receiver.call{ value: amount }("");
             require(sent, "ETH transfer failed");
         } else {
             require(IERC20(token).transfer(receiver, amount), "Token transfer failed");
@@ -74,7 +71,7 @@ contract Vault is ReentrancyGuard {
 
     function withdrawETH(uint256 amount) external onlyOwner {
         tokenBalances[address(0)] -= amount;
-        (bool sent, ) = owner.call{value: amount}("");
+        (bool sent,) = owner.call{ value: amount }("");
         require(sent, "ETH withdrawal failed");
         bytes32 txId = keccak256(abi.encodePacked(block.timestamp, msg.sender, amount));
         emit Withdrawn(address(0), amount);

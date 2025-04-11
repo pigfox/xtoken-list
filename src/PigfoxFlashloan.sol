@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
+
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 //import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 //import "equalizer/contracts/interfaces/IEqualizerLender.sol";
-import {console} from "../lib/forge-std/src/console.sol";
+import { console } from "../lib/forge-std/src/console.sol";
 
 interface IERC3156FlashLender {
     /**
@@ -33,13 +34,9 @@ interface IERC3156FlashBorrower {
      * @param data Arbitrary data structure, intended to contain user-defined parameters.
      * @return The keccak256 hash of "ERC3156FlashBorrower.onFlashLoan"
      */
-    function onFlashLoan(
-        address initiator,
-        address token,
-        uint256 amount,
-        uint256 fee,
-        bytes calldata data
-    ) external returns (bytes32);
+    function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data)
+        external
+        returns (bytes32);
 }
 
 /*
@@ -67,15 +64,15 @@ contract PigfoxFlashloan is IERC3156FlashBorrower {
     }
 
     // @dev ERC-3156 Flash loan callback
-    function onFlashLoan(
-        address initiator,
-        address token,
-        uint256 amount,
-        uint256 fee,
-        bytes calldata data
-    ) external override onlyOwner returns (bytes32)  {
+    function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data)
+        external
+        override
+        onlyOwner
+        returns (bytes32)
+    {
         //require(msg.sender == address(lender), "Unauthorized lender");
-        (address buyDexAddress, address sellDexAddress, address tokenAddress) = abi.decode(data, (address, address, address));
+        (address buyDexAddress, address sellDexAddress, address tokenAddress) =
+            abi.decode(data, (address, address, address));
         //lender.flashLoan(address(this), tokenAddress, amount, data);
         console.log("Flash loan initiated by: ", initiator);
         console.log("Token: ", token);
@@ -97,7 +94,7 @@ contract PigfoxFlashloan is IERC3156FlashBorrower {
         //send profit to initiator??? as variable for dynamic setting of profit detination
         return keccak256("IERC3156FlashBorrower.onFlashLoan");
     }
-/*
+    /*
     function initiateFlashLoan(uint256 amount) external onlyOwner {
         bytes memory data = ""; // Additional data if needed
         lender.flashLoan(address(this), token, amount, data);

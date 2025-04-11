@@ -19,7 +19,8 @@ contract Airdrop {
         _;
     }
 
-    function airdropTokens(address _tokenAddress, address[] memory _addresses, uint256 _amount) public {//onlyOwner
+    function airdropTokens(address _tokenAddress, address[] memory _addresses, uint256 _amount) public {
+        //onlyOwner
         emit AttemptedAirdrop("Attempting to airdrop tokens 1");
         require(_addresses.length > 0, "No addresses provided");
         emit AttemptedAirdrop("Attempting to airdrop tokens 2");

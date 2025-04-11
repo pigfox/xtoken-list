@@ -11,15 +11,11 @@ contract CrossChainSwap is ILayerZeroReceiver {
 
     constructor(address _endpoint, address _tokenAddress) {
         endpoint = ILayerZeroEndpoint(_endpoint); // LayerZero Endpoint
-        tokenAddress = _tokenAddress;            // Token to bridge
+        tokenAddress = _tokenAddress; // Token to bridge
     }
 
     // Function to swap tokens to another chain
-    function swap(
-        uint16 _dstChainId,
-        bytes calldata _dstAddress,
-        uint256 _amount
-    ) external payable {
+    function swap(uint16 _dstChainId, bytes calldata _dstAddress, uint256 _amount) external payable {
         require(_amount > 0, "Amount must be greater than zero");
 
         // Transfer tokens from user to the contract
@@ -29,13 +25,13 @@ contract CrossChainSwap is ILayerZeroReceiver {
         bytes memory payload = abi.encode(msg.sender, _amount);
 
         // Send LayerZero message
-        endpoint.send{value: msg.value}(
-            _dstChainId,     // Destination chain ID
-            _dstAddress,     // Destination contract address
-            payload,         // Encoded payload
+        endpoint.send{ value: msg.value }(
+            _dstChainId, // Destination chain ID
+            _dstAddress, // Destination contract address
+            payload, // Encoded payload
             payable(msg.sender), // Refund address
-            address(0),      // ZRO payment address
-            bytes("")        // Adapter parameters
+            address(0), // ZRO payment address
+            bytes("") // Adapter parameters
         );
     }
 
@@ -56,5 +52,5 @@ contract CrossChainSwap is ILayerZeroReceiver {
     }
 
     // Allow the contract to receive Ether for LayerZero fees
-    receive() external payable {}
+    receive() external payable { }
 }

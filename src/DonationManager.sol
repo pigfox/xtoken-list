@@ -41,7 +41,7 @@ contract DonationManager is ReentrancyGuard, Ownable {
      * @dev Initializes the contract with the address to receive donations.
      * @param _donationReceiver The address designated to receive all donations.
      */
-    constructor(address _donationReceiver) Ownable(msg.sender){
+    constructor(address _donationReceiver) Ownable(msg.sender) {
         require(_donationReceiver != address(0), "Invalid receiver address");
         donationReceiver = _donationReceiver;
         _transferOwnership(msg.sender); // Set the deployer as the initial owner
@@ -61,11 +61,7 @@ contract DonationManager is ReentrancyGuard, Ownable {
         require(msg.value > 0, "Donation must be greater than 0");
 
         // Record the donation
-        donations.push(Donation({
-            donor: msg.sender,
-            amount: msg.value,
-            timestamp: block.timestamp
-        }));
+        donations.push(Donation({ donor: msg.sender, amount: msg.value, timestamp: block.timestamp }));
 
         // Update total donated value
         totalDonated += msg.value;
@@ -93,7 +89,7 @@ contract DonationManager is ReentrancyGuard, Ownable {
         require(recipient != address(0), "Invalid recipient address");
         require(amount <= address(this).balance, "Insufficient balance");
 
-        (bool success, ) = recipient.call{value: amount}("");
+        (bool success,) = recipient.call{ value: amount }("");
         require(success, "Failed to send funds");
 
         emit FundsSent(recipient, amount);
@@ -124,15 +120,7 @@ contract DonationManager is ReentrancyGuard, Ownable {
      * @return amount The amount of ETH donated.
      * @return timestamp The timestamp of the donation.
      */
-    function getDonation(uint256 index)
-    external
-    view
-    returns (
-        address donor,
-        uint256 amount,
-        uint256 timestamp
-    )
-    {
+    function getDonation(uint256 index) external view returns (address donor, uint256 amount, uint256 timestamp) {
         require(index < donations.length, "Index out of bounds");
         Donation memory donation = donations[index];
         return (donation.donor, donation.amount, donation.timestamp);

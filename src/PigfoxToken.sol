@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract PigfoxToken is ERC20 {
     event Minted(uint256 amount, address sender);
     event MintedTo(uint256 amount, address receiver);
+
     address public owner;
 
     modifier onlyOwner() {
@@ -15,7 +16,7 @@ contract PigfoxToken is ERC20 {
 
     constructor() ERC20("PigfoxToken", "PFX") {
         owner = msg.sender;
-        _mint(msg.sender, 1000 * 10**18); // Initial supply: 1000 PFX
+        _mint(msg.sender, 1000 * 10 ** 18); // Initial supply: 1000 PFX
     }
 
     function updateOwner(address _newOwner) public onlyOwner {

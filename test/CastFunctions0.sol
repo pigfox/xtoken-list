@@ -1,28 +1,31 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {ConversionsTest} from "./Conversions.sol";
-import {Dex} from "../src/Dex.sol";
-import {Test, console} from "../lib/forge-std/src/Test.sol";
-import {PigfoxToken} from "../src/PigfoxToken.sol";
-import {stdJson} from "../lib/forge-std/src/StdJson.sol";
+import { ConversionsTest } from "./Conversions.sol";
+import { Dex } from "../src/Dex.sol";
+import { Test, console } from "../lib/forge-std/src/Test.sol";
+import { PigfoxToken } from "../src/PigfoxToken.sol";
+import { stdJson } from "../lib/forge-std/src/StdJson.sol";
 
-contract CastFunctionsTest is Test{
+contract CastFunctionsTest is Test {
     using stdJson for string;
+
     ConversionsTest public conversionsTest;
     string public expectedStatusOk = "0x1";
-    uint public expectedTxHashLength = 66;
+    uint256 public expectedTxHashLength = 66;
 
     event GetTokenBalanceOfEvent(address indexed tokenAddress, address indexed holderAddress);
     event MintEvent(address indexed tokenAddress, uint256 amount);
     event SupplyTokensEvent(address indexed supplierAddress, address indexed receiverAddress, uint256 amount);
     event DepositTokensEvent(address indexed dexAddress, address indexed tokenAddress, uint256 amount);
-    event ApproveEvent(address indexed tokenAddress, address indexed ownerAddress,  uint256 amount);
+    event ApproveEvent(address indexed tokenAddress, address indexed ownerAddress, uint256 amount);
     event BalanceEvent(address indexed contractAddress);
     event SetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress, uint256 price);
     event GetTokenPriceEvent(address indexed dexAddress, address indexed tokenAddress);
     event GetAllowanceEvent(address indexed tokenAddress, address indexed ownerAddress, address indexed spenderAddress);
-    event WithdrawTokensEvent(address indexed tokenAddress, address indexed sourceAddress, address indexed destinationAddress, uint256 amount);
+    event WithdrawTokensEvent(
+        address indexed tokenAddress, address indexed sourceAddress, address indexed destinationAddress, uint256 amount
+    );
 
     constructor() {
         conversionsTest = new ConversionsTest();
@@ -72,14 +75,13 @@ contract CastFunctionsTest is Test{
 
         // Emit an event with the decoded balance and addresses
         emit GetTokenBalanceOfEvent(
-            conversionsTest.stringToAddress(_tokenAddress),
-            conversionsTest.stringToAddress(_dexAddress)
+            conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_dexAddress)
         );
 
         return balance;
     }
 
-    function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+    function mint(string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory) {
         // cast send "$XToken" "mint(uint256)" 100000088840000000000667 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
@@ -101,9 +103,7 @@ contract CastFunctionsTest is Test{
             revert("Error: cast call returned empty result");
         }
 
-        string memory result = string(
-            abi.encodePacked(string(castResult))
-        );
+        string memory result = string(abi.encodePacked(string(castResult)));
 
         bytes memory status = result.parseRaw(".status");
         uint256[] memory values = abi.decode(status, (uint256[]));
@@ -113,10 +113,13 @@ contract CastFunctionsTest is Test{
         bytes memory transactionHash = result.parseRaw(".transactionHash");
         string memory transactionHashStr = vm.toString(transactionHash);
         emit MintEvent(conversionsTest.stringToAddress(_tokenAddress), _amount);
-        return(transactionHashStr,statusStr);
+        return (transactionHashStr, statusStr);
     }
 
-    function approve(string calldata _tokenAddress, string calldata _ownerAddress, uint256 _amount) public returns (string memory, string memory){
+    function approve(string calldata _tokenAddress, string calldata _ownerAddress, uint256 _amount)
+        public
+        returns (string memory, string memory)
+    {
         //cast send "$XToken" "approve(address,uint256)" "$Dex1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
@@ -147,15 +150,16 @@ contract CastFunctionsTest is Test{
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
 
         emit ApproveEvent(
-            conversionsTest.stringToAddress(_tokenAddress),
-            conversionsTest.stringToAddress(_ownerAddress),
-            _amount
+            conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_ownerAddress), _amount
         );
 
         return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function depositTokens(string calldata _dex, string calldata _token, uint256 _amount) public returns (string memory, string memory){
+    function depositTokens(string calldata _dex, string calldata _token, uint256 _amount)
+        public
+        returns (string memory, string memory)
+    {
         //cast send "$PIGFOX_TOKEN" "supplyTokenTo(address,uint256)" "$DEX1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY" --json
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
@@ -185,16 +189,15 @@ contract CastFunctionsTest is Test{
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
 
-        emit DepositTokensEvent(
-            conversionsTest.stringToAddress(_dex),
-            conversionsTest.stringToAddress(_token),
-            _amount
-        );
+        emit DepositTokensEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_token), _amount);
 
         return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _amount) public returns (string memory, string memory){
+    function setTokenPrice(string calldata _dex, string calldata _tokenAddress, uint256 _amount)
+        public
+        returns (string memory, string memory)
+    {
         // cast send "$dex1" "setTokenPrice(address,uint256)" "$XToken" 9876 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
@@ -217,15 +220,15 @@ contract CastFunctionsTest is Test{
             revert("Error: cast call returned empty result");
         }
 
-        string memory result = string(
-            abi.encodePacked(string(castResult))
-        );
+        string memory result = string(abi.encodePacked(string(castResult)));
 
         uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        emit SetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress), _amount);
-        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
+        emit SetTokenPriceEvent(
+            conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress), _amount
+        );
+        return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
     function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public returns (uint256) {
@@ -249,7 +252,10 @@ contract CastFunctionsTest is Test{
         return abi.decode(result, (uint256));
     }
 
-    function getAllowance(string calldata _token, string calldata _owner, string calldata _spender) public returns (uint256) {
+    function getAllowance(string calldata _token, string calldata _owner, string calldata _spender)
+        public
+        returns (uint256)
+    {
         // cast call "$XToken" "allowance(address,address)" "$owner" "$spender" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](9);
         inputs[0] = "cast";
@@ -266,11 +272,18 @@ contract CastFunctionsTest is Test{
         if (0 == result.length) {
             revert("Error: cast call returned empty result");
         }
-        emit GetAllowanceEvent(conversionsTest.stringToAddress(_token), conversionsTest.stringToAddress(_owner), conversionsTest.stringToAddress(_spender));
+        emit GetAllowanceEvent(
+            conversionsTest.stringToAddress(_token),
+            conversionsTest.stringToAddress(_owner),
+            conversionsTest.stringToAddress(_spender)
+        );
         return abi.decode(result, (uint256));
     }
 
-    function withdrawTokens(string calldata _token, string calldata _owner, string memory _destination, uint256 _amount) public returns (string memory, string memory){
+    function withdrawTokens(string calldata _token, string calldata _owner, string memory _destination, uint256 _amount)
+        public
+        returns (string memory, string memory)
+    {
         //cast send "$Dex1" "withdrawTokens(address,address,uint256)" "$XToken" "$TrashCan" 28000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](14);
         inputs[0] = "cast";
@@ -294,9 +307,7 @@ contract CastFunctionsTest is Test{
             revert("Error: cast call returned empty result");
         }
 
-        string memory result = string(
-            abi.encodePacked(string(castResult))
-        );
+        string memory result = string(abi.encodePacked(string(castResult)));
 
         uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
         uint256 statusInt = values[0];
@@ -305,7 +316,8 @@ contract CastFunctionsTest is Test{
             conversionsTest.stringToAddress(_token),
             conversionsTest.stringToAddress(_owner),
             conversionsTest.stringToAddress(_destination),
-            _amount);
-        return(vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
+            _amount
+        );
+        return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 }

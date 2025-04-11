@@ -8,12 +8,9 @@ contract StakeScript is Script {
     function run() external {
         vm.startBroadcast();
         address tokenAddress = vm.envAddress("PIGFOX_TOKEN");
-        uint256 rewardRate = 1;//vm.envUint256("STAKE_REWARD_RATE");
+        uint256 rewardRate = 1; //vm.envUint256("STAKE_REWARD_RATE");
 
-        Stake stake = new Stake(
-            tokenAddress,
-            rewardRate
-        );
+        Stake stake = new Stake(tokenAddress, rewardRate);
         console.log("Stake deployed at:", address(stake));
 
         vm.stopBroadcast();

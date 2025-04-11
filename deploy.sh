@@ -5,9 +5,9 @@ clear
 . ./.env
 forge clean
 forge build
-contract="Arbitrage"
+contract="Dex"
 echo "Deploying $contract..."
-forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify --optimize --optimizer-runs 200
+forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$WALLET_PRIVATE_KEY" --broadcast --verify --optimize --optimizer-runs 200
 #forge script script/"$contract".s.sol:"$contract"Script --constructor-args "$VAULT" --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$PRIVATE_KEY" --broadcast --verify --optimize --optimizer-runs 200
 #---Multi-Chain Deployment---
 #forge script script/"$contract".s.sol:"$contract"Script --rpc-url "$SEPOLIA_HTTP_RPC_URL" --private-key "$X_WALLET_PRIVATE_KEY" --broadcast --verify --optimize 200

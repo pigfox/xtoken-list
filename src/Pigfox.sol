@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
+
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 //import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 //import "equalizer/contracts/interfaces/IEqualizerLender.sol";
-import {console} from "../lib/forge-std/src/console.sol";
+import { console } from "../lib/forge-std/src/console.sol";
 
 contract Pigfox {
     address public owner;

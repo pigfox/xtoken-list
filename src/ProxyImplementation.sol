@@ -24,8 +24,8 @@ contract ProxyImplementation {
     }
 
     /// @notice Allows the contract to receive Ether
-    receive() external payable {}
+    receive() external payable { }
 
     /// @notice Fallback function for handling calls with data
-    fallback() external payable {}
+    fallback() external payable { }
 }

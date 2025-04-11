@@ -24,6 +24,10 @@ fs_permissions = [
     { access = "read", path = "./broadcast" },
     { access = "read", path = "./reports" },
 ]
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = true
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
 

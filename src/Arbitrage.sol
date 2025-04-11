@@ -32,8 +32,8 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
         _;
     }
 
-    function setOwner(address _owner) onlyOwner external {
-        require(owner == msg.sender, "Owner already set");
+    function setOwner(address _owner) external onlyOwner {
+        require(_owner != address(0), "Invalid new owner");
         owner = _owner;
         emit UpdatedOwner(_owner);
     }
@@ -42,7 +42,7 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
         return owner;
     }
 
-    function setProfitAddress(address _profitAddress) onlyOwner external {
+    function setProfitAddress(address _profitAddress) external onlyOwner {
         require(_profitAddress != address(0), "Invalid profit address");
         profitAddress = _profitAddress;
         emit UpdatedProfitAddress(_profitAddress);
@@ -52,34 +52,37 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
         return profitAddress;
     }
 
-    function onFlashLoan(
-        address initiator,
-        address token,
-        uint256 amount,
-        uint256 fee,
-        bytes calldata data
-    ) external override nonReentrant onlyOwner returns (bytes32) {
-        // Ensure the caller is the Vault
-        //require(msg.sender == flashLoanProviderAddress, "Invalid initiator");
+    function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data)
+        external
+        override
+        nonReentrant
+        returns (bytes32)
+    {
+        require(msg.sender == flashLoanProviderAddress, "Invalid initiator");
         require(token == address(0), "Only ETH flash loans supported");
 
-        // Emit event for flash loan receipt
         emit FlashLoanReceived(msg.sender, initiator, amount, fee);
 
-        // Decode arbitrage data
-        (address tokenToTrade, address dex2, address dex1, uint256 tradeAmount) = abi.decode(data, (address, address, address, uint256));
+        // Decode arbitrage parameters from flash loan `data`
+        (address tokenToTrade, address dex2, address dex1, uint256 tradeAmount, uint256 minProfit) =
+            abi.decode(data, (address, address, address, uint256, uint256));
 
-        // Perform arbitrage: Buy on DEX2 (cheaper), sell on DEX1 (expensive)
+        // Step 1: Buy tokens on dex2 (cheap)
         IERC20(tokenToTrade).approve(dex2, tradeAmount);
-        uint256 tokensBought = IDex(dex2).buyTokens{value: amount}(tokenToTrade, tradeAmount);
+        uint256 tokensBought = IDex(dex2).buyTokens{ value: amount }(tokenToTrade, tradeAmount);
         emit ArbitrageStep(dex2, tokenToTrade, amount, tokensBought);
 
+        // Step 2: Sell tokens on dex1 (expensive)
         IERC20(tokenToTrade).approve(dex1, tokensBought);
         uint256 ethReceived = IDex(dex1).sellTokens(tokenToTrade, tokensBought);
+        IERC20(tokenToTrade).approve(dex1, 0); // Reset allowance for safety
         emit ArbitrageStep(dex1, tokenToTrade, tokensBought, ethReceived);
 
-        // Repay flash loan
+        // Check profitability
         uint256 totalRepayment = amount + fee;
+        require(ethReceived >= totalRepayment + minProfit, "Not profitable");
+
+        // Repay flash loan
         require(address(this).balance >= totalRepayment, "Insufficient ETH to repay");
         payable(flashLoanProviderAddress).transfer(totalRepayment);
         emit LoanRepaid(flashLoanProviderAddress, totalRepayment);
@@ -95,5 +98,5 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
     }
 
     // Allow contract to receive ETH
-    receive() external payable {}
+    receive() external payable { }
 }

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {Test, console, Vm} from "forge-std/Test.sol";
+import { Test, console, Vm } from "forge-std/Test.sol";
 import {
-ITransparentUpgradeableProxy,
-TransparentUpgradeableProxy
+    ITransparentUpgradeableProxy,
+    TransparentUpgradeableProxy
 } from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
-import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
+import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 
-import {ZeppelinImplV1} from "../src/ZeppelinImplV1.sol";
-import {ZeppelinImplV2} from "../src/ZeppelinImplV2.sol";
+import { ZeppelinImplV1 } from "../src/ZeppelinImplV1.sol";
+import { ZeppelinImplV2 } from "../src/ZeppelinImplV2.sol";
 
 contract ZeppelinTest is Test {
     address admin = vm.envAddress("WALLET_ADDRESS");
@@ -22,9 +22,7 @@ contract ZeppelinTest is Test {
     function setUp() public {
         implementationV1 = new ZeppelinImplV1();
         vm.recordLogs();
-        proxy = new TransparentUpgradeableProxy(
-            address(implementationV1), admin, ""
-        );
+        proxy = new TransparentUpgradeableProxy(address(implementationV1), admin, "");
 
         Vm.Log[] memory entries = vm.getRecordedLogs();
         (, proxyAdmin) = abi.decode(entries[entries.length - 1].data, (address, address));
@@ -36,7 +34,7 @@ contract ZeppelinTest is Test {
         testUpgrade();
     }
 
-    function testAdminWallet() public view{
+    function testAdminWallet() public view {
         assertEq(admin, admin);
     }
 

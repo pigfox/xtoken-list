@@ -69,7 +69,6 @@ contract Stake {
         // Transfer the reward to the staker
         require(token.transfer(msg.sender, reward), "Reward transfer failed");
     }
-
 }
 
 /*

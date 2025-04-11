@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {Test} from "../lib/forge-std/src/Test.sol";
+import { Test } from "../lib/forge-std/src/Test.sol";
 
 /*
 string memory json = string(result);
@@ -10,19 +10,23 @@ uint statusFieldLength = bytes(statusField).length;
 string memory status = parseField(json, '"status":"', statusFieldLength);
 */
 
-contract Parser is Test{
-    function parseField(string memory json, string memory field, uint fieldLength) internal pure returns (string memory value) {
+contract Parser is Test {
+    function parseField(string memory json, string memory field, uint256 fieldLength)
+        internal
+        pure
+        returns (string memory value)
+    {
         bytes memory jsonBytes = bytes(json);
         uint256 statusStart = findIndexOfSubstring(jsonBytes, field, 0) + fieldLength;
         uint256 statusEnd = findIndexOfSubstring(jsonBytes, '"', statusStart);
         value = extractSubstring(json, statusStart, statusEnd);
     }
 
-// Helper function to find the position of a substring starting from a specified index
+    // Helper function to find the position of a substring starting from a specified index
     function findIndexOfSubstring(bytes memory data, string memory substring, uint256 startIndex)
-    internal
-    pure
-    returns (uint256)
+        internal
+        pure
+        returns (uint256)
     {
         bytes memory subBytes = bytes(substring);
         uint256 dataLength = data.length;
@@ -48,11 +52,7 @@ contract Parser is Test{
     }
 
     // Helper function to extract a substring from a string given start and end indices
-    function extractSubstring(string memory str, uint256 start, uint256 end)
-    internal
-    pure
-    returns (string memory)
-    {
+    function extractSubstring(string memory str, uint256 start, uint256 end) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         require(end <= strBytes.length, "Invalid end position");
         bytes memory result = new bytes(end - start);

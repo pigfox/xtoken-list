@@ -4,7 +4,7 @@ pragma solidity ^0.8.26;
 import "forge-std/Script.sol";
 import "../src/ZeppelinImplV2.sol";
 
-contract  ZeppelinImplV2Script is Script {
+contract ZeppelinImplV2Script is Script {
     function run() external {
         vm.startBroadcast();
 
