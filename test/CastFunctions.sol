@@ -49,7 +49,6 @@ contract CastFunctions is Test {
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
-            console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
 
@@ -158,7 +157,6 @@ contract CastFunctions is Test {
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
-            console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
 
@@ -194,7 +192,6 @@ contract CastFunctions is Test {
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
-            console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
 
@@ -230,7 +227,6 @@ contract CastFunctions is Test {
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
-            console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
 
@@ -247,11 +243,11 @@ contract CastFunctions is Test {
         address _profitAddress,
         address _contractAddress,
         address _walletAddress,
-        uint256 _privateKey
+        string memory _privateKey
     ) external returns (string memory, uint256) {
         require(_profitAddress != address(0), "Invalid profit address");
         require(_contractAddress != address(0), "Invalid contract address");
-        require(_privateKey != 0, "Invalid contract private key");
+        require(keccak256(bytes(_privateKey)) != keccak256(bytes("")), "Invalid contract private key");
 
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
@@ -265,12 +261,10 @@ contract CastFunctions is Test {
         inputs[8] = "--from";
         inputs[9] = vm.toString(_walletAddress);
         inputs[10] = "--private-key";
-        inputs[11] = vm.toString(_privateKey);
-        //inputs[12] = "--legacy";
+        inputs[11] = _privateKey;
 
         bytes memory castResult = vm.ffi(inputs);
         if (castResult.length == 0) {
-            console.log("Error: cast call returned empty result");
             revert("Error: cast call returned empty result");
         }
 
@@ -292,7 +286,7 @@ contract CastFunctions is Test {
         inputs[3] = "getProfitAddress()"; // function signature
         inputs[4] = "--rpc-url";
         inputs[5] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        //inputs[6] = "--json";
+        inputs[6] = "--json";
 
         bytes memory castResult = vm.ffi(inputs);
         if (castResult.length == 0) {

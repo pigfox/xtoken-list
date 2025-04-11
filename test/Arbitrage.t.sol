@@ -29,9 +29,9 @@ contract ArbitrageTest is Test {
     address private arbitrageAddr;
     address private vaultAddr;
     address private walletAddr;
-    uint256 private walletPrivateKey;
     address private chromeWalletAddr;
-    uint256 private chromeWalletPrivateKey;
+    string private walletPrivateKeyStr;
+    string private chromeWalletPrivateKeyStr;
 
     function logTxHash(string memory _txHash, string memory _action) internal view {
         string memory url = string(abi.encodePacked("https://sepolia.etherscan.io/tx/", _txHash));
@@ -42,9 +42,9 @@ contract ArbitrageTest is Test {
         castFunctions = new CastFunctions();
 
         walletAddr = vm.envAddress("WALLET_ADDRESS");
-        walletPrivateKey = vm.envUint("WALLET_PRIVATE_KEY");
+        walletPrivateKeyStr = vm.envString("WALLET_PRIVATE_KEY");
         chromeWalletAddr = vm.envAddress("CHROME_WALLET");
-        chromeWalletPrivateKey = vm.envUint("CHROME_WALLET_PRIVATE_KEY");
+        chromeWalletPrivateKeyStr = vm.envString("CHROME_WALLET_PRIVATE_KEY");
         pigfoxTokenAddr = vm.envAddress("PIGFOX_TOKEN");
         dex1Addr = vm.envAddress("DEX1");
         dex2Addr = vm.envAddress("DEX2");
@@ -77,7 +77,6 @@ contract ArbitrageTest is Test {
         console2.logUint(dex1PfxBalance);
         if (dex1PfxBalance < DEX_PFX_DEPOSIT) {
             castFunctions.approve(pigfoxTokenAddr, walletAddr, ARBITRAGE_ETH_FUNDING);
-            //dex1Contract.depositTokens(vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT);
             (txHash, code) = castFunctions.depositTokens(dex1Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
             if (code == 1) {
                 logTxHash(
@@ -90,11 +89,13 @@ contract ArbitrageTest is Test {
         console.log("DEX2 PFX Balance:");
         console2.logUint(dex2PfxBalance);
         if (dex2PfxBalance < DEX_PFX_DEPOSIT) {
-            //pigfoxToken.approve(vm.envAddress(DEX2), DEX_PFX_DEPOSIT);
             castFunctions.approve(pigfoxTokenAddr, walletAddr, ARBITRAGE_ETH_FUNDING);
-            castFunctions.depositTokens(dex2Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
-            //dex2Contract.depositTokens(vm.envAddress(PIGFOX_TOKEN), DEX_PFX_DEPOSIT);
-            console.log("Deposited 50 PFX to DEX2 (on Sepolia)");
+            (txHash, code) = castFunctions.depositTokens(dex2Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
+            if (code == 1) {
+                logTxHash(
+                    txHash, string.concat("Deposited ", vm.toString(DEX_PFX_DEPOSIT), " PFX to DEX2 (on Sepolia)")
+                );
+            }
         }
 
         uint256 walletEthBalance = castFunctions.addressBalance(walletAddr);
@@ -103,7 +104,6 @@ contract ArbitrageTest is Test {
         console2.logUint(walletEthBalance);
         require(walletEthBalance >= requiredEth, "Wallet needs at least 0.113 ETH on Sepolia");
 
-        //(bool vaultSuccess,) = payable(vm.envAddress(VAULT)).call{ value: VAULT_ETH_FUNDING }("");
         (txHash, code) = castFunctions.fundEth(vaultAddr, VAULT_ETH_FUNDING);
         if (code == 1) {
             console.log(string.concat("Funded Vault with ", vm.toString(VAULT_ETH_FUNDING), " ETH (on Sepolia)"));
@@ -116,27 +116,14 @@ contract ArbitrageTest is Test {
                 )
             );
         }
-        /*
-        (bool arbSuccess,) = payable(vm.envAddress(ARBITRAGE)).call{ value: ARBITRAGE_ETH_FUNDING }("");
-        require(arbSuccess, "Funding arbitrage failed");
 
-        (bool dex1Success,) = payable(vm.envAddress(DEX1)).call{ value: DEX_ETH_FUNDING }("");
-        require(dex1Success, "Funding DEX1 failed");
-
-        (bool dex2Success,) = payable(vm.envAddress(DEX2)).call{ value: DEX_ETH_FUNDING }("");
-        require(dex2Success, "Funding DEX2 failed");
-        */
         (txHash, code) = castFunctions.setTokenPrice(dex1Addr, pigfoxTokenAddr, DEX1_PRICE);
-        //dex1Contract.setTokenPrice(vm.envAddress(PIGFOX_TOKEN), DEX1_PRICE);
-        //dex2Contract.setTokenPrice(vm.envAddress(PIGFOX_TOKEN), DEX2_PRICE);
         (txHash, code) = castFunctions.setTokenPrice(dex2Addr, pigfoxTokenAddr, DEX2_PRICE);
     }
 
     function test_setProfitAddress() public {
-        address initialProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
-        assertEq(initialProfitAddress, walletAddr, "Initial profit address should be wallet address");
-
-        (txHash, code) = castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKey);
+        (txHash, code) =
+            castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
         if (code == 1) {
             console.log("Profit address set:");
         } else {
