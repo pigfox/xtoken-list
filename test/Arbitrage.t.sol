@@ -50,7 +50,7 @@ contract ArbitrageTest is Test {
         dex2Addr = vm.envAddress("DEX2");
         arbitrageAddr = vm.envAddress("ARBITRAGE");
         vaultAddr = vm.envAddress("VAULT");
-
+        /*
         console.log("Wallet Address:", walletAddr);
         console.log("Chrome Wallet Address:", chromeWalletAddr);
         console.log("PigfoxToken Address:", pigfoxTokenAddr);
@@ -58,7 +58,7 @@ contract ArbitrageTest is Test {
         console.log("DEX2 Address:", dex2Addr);
         console.log("Arbitrage Address:", arbitrageAddr);
         console.log("Vault Address:", vaultAddr);
-
+        */
         uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(walletAddr, pigfoxTokenAddr);
         console.log("Wallet PFX Balance:");
         console2.logUint(walletPfxBalance);

@@ -3,6 +3,7 @@ set -e
 clear
 . ./.env
 
+echo "---------------BEGIN RESET-------------------"
 # Function to enable tracing only for `cast` commands
 trace_cast_call() {
     set -x
@@ -26,6 +27,7 @@ is_greater_than_zero() {
     if [[ -n "$num" && "$num" =~ ^[0-9]+$ && $(echo "$num > 0" | bc) -eq 1 ]]; then
         return 0 # True
     else
+        echo "failed number: $num"
         return 1 # False
     fi
 }
@@ -56,8 +58,21 @@ empty_dex() {
     BALANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
     echo "Raw balance of $dex: $BALANCE_RAW"
 
+    # Validate BALANCE_RAW
+    if [[ -z "$BALANCE_RAW" || ! "$BALANCE_RAW" =~ ^0x[0-9a-fA-F]+$ ]]; then
+        echo "Error: Invalid or empty balance returned for $dex"
+        echo "Balance is zero or invalid. Skipping transfer."
+        return
+    fi
+
     BALANCE_HEX=$(echo "$BALANCE_RAW" | tr -d '[:space:]')
     BALANCE_DECIMAL=$(cast to-dec "$BALANCE_HEX") # Use cast to convert hex to decimal
+    if [[ -z "$BALANCE_DECIMAL" || ! "$BALANCE_DECIMAL" =~ ^[0-9]+$ ]]; then
+        echo "Error: Failed to convert balance to decimal for $dex: $BALANCE_HEX"
+        echo "Balance is zero or invalid. Skipping transfer."
+        return
+    fi
+
     DECIMALS=18
     BALANCE_BASE_UNIT=$(echo "scale=$DECIMALS; $BALANCE_DECIMAL / (10 ^ $DECIMALS)" | bc)
 
@@ -75,7 +90,7 @@ empty_dex() {
         "$PIGFOX_TOKEN" \
         "$BALANCE_DECIMAL" \
         --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
-        --private-key "$PRIVATE_KEY" \
+        --private-key "$WALLET_PRIVATE_KEY" \
         --gas-limit 200000 \
         --json)
     WITHDRAW_TX_HASH=$(echo "$WITHDRAW_RESULT" | jq -r '.transactionHash')
@@ -91,7 +106,7 @@ empty_dex() {
         "$BURN_ADDRESS" \
         "$BALANCE_DECIMAL" \
         --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
-        --private-key "$PRIVATE_KEY" \
+        --private-key "$WALLET_PRIVATE_KEY" \
         --gas-limit 200000 \
         --json)
     TRANSFER_TX_HASH=$(echo "$TRANSFER_RESULT" | jq -r '.transactionHash')
@@ -102,7 +117,18 @@ empty_dex() {
     echo "Transfer Tx Hash: $TRANSFER_TX_HASH"
 
     NEW_BALANCE=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)(uint256)" "$BURN_ADDRESS" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
+    if [[ -z "$NEW_BALANCE" || ! "$NEW_BALANCE" =~ ^0x[0-9a-fA-F]+$ ]]; then
+        echo "Warning: Invalid or empty new balance for $BURN_ADDRESS: $NEW_BALANCE"
+        echo "Skipping new balance display."
+        return
+    fi
+
     NEW_BALANCE_DEC=$(cast to-dec "$NEW_BALANCE")
+    if [[ -z "$NEW_BALANCE_DEC" || ! "$NEW_BALANCE_DEC" =~ ^[0-9]+$ ]]; then
+        echo "Warning: Failed to convert new balance to decimal for $BURN_ADDRESS: $NEW_BALANCE"
+        echo "Skipping new balance display."
+        return
+    fi
     echo "New balance of $BURN_ADDRESS: $NEW_BALANCE_DEC"
 }
 
@@ -113,3 +139,4 @@ echo "Empty DEX2 if balance is greater than zero"
 empty_dex "$DEX2"
 
 echo "Token transfer complete."
+echo "---------------END RESET-------------------"

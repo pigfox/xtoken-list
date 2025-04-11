@@ -253,7 +253,7 @@ contract CastFunctions is Test {
         require(_contractAddress != address(0), "Invalid contract address");
         require(_privateKey != 0, "Invalid contract private key");
 
-        string[] memory inputs = new string[](13);
+        string[] memory inputs = new string[](12);
         inputs[0] = "cast";
         inputs[1] = "send";
         inputs[2] = vm.toString(_contractAddress); // target contract address
@@ -266,7 +266,7 @@ contract CastFunctions is Test {
         inputs[9] = vm.toString(_walletAddress);
         inputs[10] = "--private-key";
         inputs[11] = vm.toString(_privateKey);
-        inputs[12] = "--legacy";
+        //inputs[12] = "--legacy";
 
         bytes memory castResult = vm.ffi(inputs);
         if (castResult.length == 0) {
