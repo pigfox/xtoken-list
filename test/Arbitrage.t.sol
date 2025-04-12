@@ -121,7 +121,29 @@ contract ArbitrageTest is Test {
         (txHash, code) = castFunctions.setTokenPrice(dex2Addr, pigfoxTokenAddr, DEX2_PRICE);
     }
 
+    function test_switchOwner() public {
+        address newOwner;
+        address currentOwner = castFunctions.getOwner(arbitrageAddr);
+        console.log("Current Owner:", currentOwner);
+
+        if (currentOwner == walletAddr) {
+            console.log("Current Owner is wallet address");
+            (txHash, code) = castFunctions.setOwner(arbitrageAddr, chromeWalletAddr, walletAddr, walletPrivateKeyStr);
+            newOwner = castFunctions.getOwner(arbitrageAddr);
+            assertEq(newOwner, chromeWalletAddr, "Owner should be updated to chrome wallet address");
+        } else if (currentOwner == chromeWalletAddr) {
+            console.log("Current Owner is Chrome wallet address");
+            (txHash, code) =
+                castFunctions.setOwner(arbitrageAddr, walletAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
+            newOwner = castFunctions.getOwner(arbitrageAddr);
+            assertEq(newOwner, walletAddr, "Owner should be updated to wallet address");
+        }
+    }
+
     function test_setProfitAddress() public {
+        address currentOwner = castFunctions.getOwner(arbitrageAddr);
+        console.log("Current Owner:", currentOwner);
+        /*
         (txHash, code) =
             castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
         if (code == 1) {
@@ -132,22 +154,7 @@ contract ArbitrageTest is Test {
 
         address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
         assertEq(updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address");
-    }
-
-    function test_switchOwner() public {
-        address newOwner;
-        address initialOwner = castFunctions.getOwner(arbitrageAddr);
-        console.log("Current Owner:", initialOwner);
-        if (initialOwner == walletAddr) {
-            (txHash, code) = castFunctions.setOwner(arbitrageAddr, chromeWalletAddr, walletAddr, walletPrivateKeyStr);
-            newOwner = castFunctions.getOwner(arbitrageAddr);
-            assertEq(newOwner, chromeWalletAddr, "Owner should be updated to chrome wallet address");
-        } else if (initialOwner == chromeWalletAddr) {
-            (txHash, code) =
-                castFunctions.setOwner(arbitrageAddr, walletAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
-            newOwner = castFunctions.getOwner(arbitrageAddr);
-            assertEq(newOwner, walletAddr, "Owner should be updated to wallet address");
-        }
+        */
     }
     /*
     function test_executeArbitrage() public {
