@@ -144,7 +144,7 @@ contract ArbitrageTest is Test {
             assertEq(newOwner, chromeWalletAddr, "Owner should be updated to chrome wallet address");
         } else if (initialOwner == chromeWalletAddr) {
             (txHash, code) =
-                castFunctions.setOwner(walletAddr, arbitrageAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
+                castFunctions.setOwner(arbitrageAddr, walletAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
             newOwner = castFunctions.getOwner(arbitrageAddr);
             assertEq(newOwner, walletAddr, "Owner should be updated to wallet address");
         }
