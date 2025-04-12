@@ -26,19 +26,19 @@ contract CastFunctions is Test {
         public
         returns (string memory, uint256)
     {
-        string[] memory inputs = new string[](14);
+        string[] memory inputs = new string[](12);
         inputs[0] = "cast";
         inputs[1] = "send";
         inputs[2] = vm.toString(_contractAddress);
         inputs[3] = "setOwner(address)";
         inputs[4] = vm.toString(_newOwner);
-        inputs[7] = "--json";
-        inputs[8] = "--rpc-url";
-        inputs[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
-        inputs[10] = "--from";
-        inputs[11] = vm.toString(_currentOwner);
-        inputs[12] = "--private-key";
-        inputs[13] = _privateKey;
+        inputs[5] = "--json";
+        inputs[6] = "--rpc-url";
+        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[8] = "--from";
+        inputs[9] = vm.toString(_currentOwner);
+        inputs[10] = "--private-key";
+        inputs[11] = _privateKey;
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {
@@ -60,7 +60,7 @@ contract CastFunctions is Test {
         inputs[0] = "cast";
         inputs[1] = "call";
         inputs[2] = vm.toString(_contractAddress);
-        inputs[3] = "getOwner(address)";
+        inputs[3] = "getOwner()";
         inputs[4] = "--rpc-url";
         inputs[5] = vm.envString("SEPOLIA_HTTP_RPC_URL");
 
