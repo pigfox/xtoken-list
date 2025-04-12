@@ -133,6 +133,18 @@ contract ArbitrageTest is Test {
         address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
         assertEq(updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address");
     }
+
+    function test_switchOwner() public {
+        (txHash, code) = castFunctions.setOwner(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
+        if (code == 1) {
+            console.log("Owner switched:");
+        } else {
+            console.log("Owner switch failed:");
+        }
+
+        address updatedOwner = castFunctions.getOwner(arbitrageAddr);
+        assertEq(updatedOwner, chromeWalletAddr, "Owner should be updated to chrome wallet address");
+    }
     /*
     function test_executeArbitrage() public {
         vm.startBroadcast(walletPrivateKey);

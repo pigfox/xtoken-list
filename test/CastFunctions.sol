@@ -22,6 +22,25 @@ contract CastFunctions is Test {
         privateKey = vm.envString("WALLET_PRIVATE_KEY");
     }
 
+    function setOwner() { }
+
+    function getOwner(address _contractAddress) public view returns (address) {
+        string[] memory inputs = new string[](6);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = vm.toString(_contractAddress);
+        inputs[3] = "getOwner(address)";
+        inputs[4] = "--rpc-url";
+        inputs[5] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            revert("Error: cast call returned empty result");
+        }
+
+        return abi.decode(castResult, (address));
+    }
+
     function addressBalance(address _contractAddress) public view returns (uint256) {
         return _contractAddress.balance;
     }
