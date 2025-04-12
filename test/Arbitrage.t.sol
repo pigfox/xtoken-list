@@ -135,7 +135,10 @@ contract ArbitrageTest is Test {
     }
 
     function test_switchOwner() public {
-        (txHash, code) = castFunctions.setOwner(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
+        address owner = castFunctions.getOwner(arbitrageAddr);
+        console.log("Current Owner:");
+
+        address(txHash, code) = castFunctions.setOwner(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
         if (code == 1) {
             console.log("Owner switched:");
         } else {
