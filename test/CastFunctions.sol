@@ -22,9 +22,40 @@ contract CastFunctions is Test {
         privateKey = vm.envString("WALLET_PRIVATE_KEY");
     }
 
-    function setOwner() { }
+    function setOwner(address _contractAddress, address _newOwner, address _currentOwner, string memory _privateKey)
+        public
+        returns (string memory, uint256)
+    {
+        string[] memory inputs = new string[](14);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = vm.toString(_contractAddress);
+        inputs[3] = "setOwner(address)";
+        inputs[4] = vm.toString(_newOwner);
+        inputs[7] = "--json";
+        inputs[8] = "--rpc-url";
+        inputs[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[10] = "--from";
+        inputs[11] = vm.toString(_currentOwner);
+        inputs[12] = "--private-key";
+        inputs[13] = _privateKey;
 
-    function getOwner(address _contractAddress) public view returns (address) {
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(abi.encodePacked(string(castResult)));
+
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+        return (txHash, statusInt);
+    }
+
+    function getOwner(address _contractAddress) public returns (address) {
         string[] memory inputs = new string[](6);
         inputs[0] = "cast";
         inputs[1] = "call";
