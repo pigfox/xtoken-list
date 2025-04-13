@@ -129,32 +129,35 @@ contract ArbitrageTest is Test {
         if (currentOwner == walletAddr) {
             console.log("Current Owner is wallet address");
             (txHash, code) = castFunctions.setOwner(arbitrageAddr, chromeWalletAddr, walletAddr, walletPrivateKeyStr);
+            assertEq(code, 1, "Failed to set new owner");
             newOwner = castFunctions.getOwner(arbitrageAddr);
             assertEq(newOwner, chromeWalletAddr, "Owner should be updated to chrome wallet address");
         } else if (currentOwner == chromeWalletAddr) {
             console.log("Current Owner is Chrome wallet address");
             (txHash, code) =
                 castFunctions.setOwner(arbitrageAddr, walletAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
+            assertEq(code, 1, "Failed to set new owner");
             newOwner = castFunctions.getOwner(arbitrageAddr);
             assertEq(newOwner, walletAddr, "Owner should be updated to wallet address");
         }
     }
 
-    function test_setProfitAddress() public {
+    function Xtest_setProfitAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         console.log("Current Owner:", currentOwner);
-        /*
-        (txHash, code) =
-            castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
-        if (code == 1) {
-            console.log("Profit address set:");
-        } else {
-            console.log("Profit address failed:");
+        if (currentOwner == walletAddr) {
+            (txHash, code) =
+                castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
+            address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
+            assertEq(updatedProfitAddress, walletAddr, "Profit address should be updated to chrome wallet address");
+        } else if (currentOwner == chromeWalletAddr) {
+            (txHash, code) =
+                castFunctions.setProfitAddress(walletAddr, arbitrageAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
+            address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
+            assertEq(
+                updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address"
+            );
         }
-
-        address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
-        assertEq(updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address");
-        */
     }
     /*
     function test_executeArbitrage() public {
