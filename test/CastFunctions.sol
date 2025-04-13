@@ -54,6 +54,7 @@ contract CastFunctions is Test {
         try vm.parseJson(result, ".status") returns (bytes memory statusData) {
             values = abi.decode(statusData, (uint256[]));
         } catch {
+            console.log("Error: failed to parse status json");
             return ("0x0", 0);
         }
 
@@ -63,11 +64,13 @@ contract CastFunctions is Test {
         try vm.parseJson(result, ".transactionHash") returns (bytes memory hashData) {
             txHash = vm.toString(hashData);
         } catch {
+            console.log("Error: failed to parse transactionHash json");
             return ("0x0", 0);
         }
 
         // Check if txHash is empty or not 66 characters (including "0x")
         if (bytes(txHash).length == 0 || bytes(txHash).length != 66) {
+            console.log("Error: txHash length is invalid");
             return ("0x0", 0);
         }
 
@@ -333,17 +336,36 @@ contract CastFunctions is Test {
         inputs[11] = _privateKey;
 
         bytes memory castResult = vm.ffi(inputs);
-        if (castResult.length == 0) {
-            revert("Error: cast call returned empty result");
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            return ("0x0", 0); // Fixed: Return 0 as uint256
         }
 
-        string memory result = string(castResult);
+        string memory result = string(abi.encodePacked(string(castResult)));
 
-        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
-        uint256 statusInt = values[0];
+        uint256[] memory values;
+        string memory txHash;
+
+        try vm.parseJson(result, ".status") returns (bytes memory statusData) {
+            values = abi.decode(statusData, (uint256[]));
+        } catch {
+            return ("0x0", 0); // Fixed: Return 0 as uint256
+        }
+
+        uint256 statusInt = values.length > 0 ? values[0] : 0;
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
 
-        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+        try vm.parseJson(result, ".transactionHash") returns (bytes memory hashData) {
+            txHash = vm.toString(hashData);
+        } catch {
+            return ("0x0", 0); // Fixed: Return 0 as uint256
+        }
+
+        // Check if txHash is empty or not 66 characters (including "0x")
+        if (bytes(txHash).length == 0 || bytes(txHash).length != 66) {
+            return ("0x0", 0); // Fixed: Return 0 as uint256
+        }
+
         return (txHash, statusInt);
     }
 
