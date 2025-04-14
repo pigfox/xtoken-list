@@ -160,12 +160,22 @@ contract ArbitrageTest is Test {
         if (currentOwner == walletAddr) {
             (txHash, code) =
                 castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
+            console.log("Code:");
+            console.log(code);
+            if (code == 1) {
+                console.log("Code is int 1");
+            }
             assertEq(code, 1, "Failed to set profit address");
             address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
             assertEq(updatedProfitAddress, walletAddr, "Profit address should be updated to chrome wallet address");
         } else if (currentOwner == chromeWalletAddr) {
             (txHash, code) =
                 castFunctions.setProfitAddress(walletAddr, arbitrageAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
+            console.log("Code:");
+            console.log(code);
+            if (code == 1) {
+                console.log("Code is int 1");
+            }
             assertEq(code, 1, "Failed to set profit address");
             address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
             assertEq(
