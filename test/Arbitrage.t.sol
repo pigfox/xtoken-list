@@ -137,6 +137,7 @@ contract ArbitrageTest is Test {
             assertEq(code, 1, "Failed to set new owner");
 
             newOwner = castFunctions.getOwner(arbitrageAddr);
+            console.log("New Owner is wallet address", newOwner);
             assertEq(newOwner, chromeWalletAddr, "Owner should be updated to chrome wallet address");
         } else if (currentOwner == chromeWalletAddr) {
             console.log("Current Owner is Chrome wallet address");
@@ -150,6 +151,7 @@ contract ArbitrageTest is Test {
             }
             assertEq(code, 1, "Failed to set new owner");
             newOwner = castFunctions.getOwner(arbitrageAddr);
+            console.log("New Owner is wallet address", newOwner);
             assertEq(newOwner, walletAddr, "Owner should be updated to wallet address");
         }
     }
