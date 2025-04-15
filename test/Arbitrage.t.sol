@@ -156,12 +156,12 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function Xtest_setProfitAddress() public {
+    function test_setProfitAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         console.log("Current Owner:", currentOwner);
         if (currentOwner == walletAddr) {
             (txHash, code) =
-                castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
+                castFunctions.setProfitAddress2(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
             if (code == 1) {
@@ -172,7 +172,7 @@ contract ArbitrageTest is Test {
             assertEq(updatedProfitAddress, walletAddr, "Profit address should be updated to chrome wallet address");
         } else if (currentOwner == chromeWalletAddr) {
             (txHash, code) =
-                castFunctions.setProfitAddress(walletAddr, arbitrageAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
+                castFunctions.setProfitAddress2(walletAddr, arbitrageAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
             if (code == 1) {

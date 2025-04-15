@@ -11,7 +11,7 @@ contract CastFunctions is Test {
     using stdJson for string;
 
     ConversionsTest public conversionsTest;
-    string public rpcUrl;
+    string public rpcUrl = vm.envString("SEPOLIA_HTTP_RPC_URL");
     string public walletAddr;
     string public privateKey;
 
@@ -388,5 +388,55 @@ contract CastFunctions is Test {
         // Decode directly from ABI-encoded return value
         address returnedAddr = abi.decode(castResult, (address));
         return returnedAddr;
+    }
+
+    //Shell scripts from the original code
+    function setProfitAddress2(
+        address _profitAddress,
+        address _contractAddress,
+        address _walletAddress,
+        string memory _privateKey
+    ) external returns (string memory, uint256) {
+        // Build cast send command with stderr redirected to stdout
+        string memory command = string.concat(
+            "cast send ",
+            vm.toString(_contractAddress),
+            " ",
+            "setProfitAddress\\(address\\) ", // escape both parentheses!
+            vm.toString(_profitAddress),
+            " ",
+            "--json ",
+            "--rpc-url ",
+            rpcUrl,
+            " ",
+            "--from ",
+            vm.toString(_walletAddress),
+            " ",
+            "--private-key ",
+            _privateKey,
+            " 2>&1"
+        );
+
+        // Wrap the command in a shell for FFI
+        string[] memory inputs = new string[](3);
+        inputs[0] = "bash";
+        inputs[1] = "-c";
+        inputs[2] = command;
+
+        // Call FFI and capture output
+        bytes memory rawOutput = vm.ffi(inputs);
+        string memory output = string(rawOutput);
+
+        // Check if output looks like valid JSON (starts with `{`)
+        if (bytes(output).length > 0 && bytes(output)[0] == "{") {
+            // Try to parse the tx hash if it’s present
+            string memory txHash = vm.toString(vm.parseJson(output, ".transactionHash"));
+            return (txHash, 1);
+        } else {
+            // Error occurred — log the raw output
+            console.log("cast send error:");
+            console.log(output);
+            return (output, 0);
+        }
     }
 }
