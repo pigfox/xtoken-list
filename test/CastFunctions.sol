@@ -94,10 +94,7 @@ contract CastFunctions is Test {
         return abi.decode(castResult, (address));
     }
 
-    function setFlashLoanAddress(address _contractAddress, address _flashLoanAddress)
-        public
-        returns (string memory, uint256)
-    {
+    function setFlashLoanAddress(address _contractAddress, address _flashLoanAddress) public returns (string memory, uint256) {
         string[] memory inputs = new string[](11);
         inputs[0] = "cast";
         inputs[1] = "send";
@@ -232,10 +229,7 @@ contract CastFunctions is Test {
         return (transactionHashStr, statusInt);
     }
 
-    function approve(address _tokenAddress, address _ownerAddress, uint256 _amount)
-        public
-        returns (string memory, uint256)
-    {
+    function approve(address _tokenAddress, address _ownerAddress, uint256 _amount) public returns (string memory, uint256) {
         //cast send "$XToken" "approve(address,uint256)" "$Dex1" 1000000000000000000 --json --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
@@ -338,10 +332,7 @@ contract CastFunctions is Test {
         return (txHash, statusInt);
     }
 
-    function setTokenPrice(address _dex, address _tokenAddress, uint256 _amount)
-        public
-        returns (string memory, uint256)
-    {
+    function setTokenPrice(address _dex, address _tokenAddress, uint256 _amount) public returns (string memory, uint256) {
         // cast send "$dex1" "setTokenPrice(address,uint256)" "$XToken" 9876 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
@@ -453,13 +444,10 @@ contract CastFunctions is Test {
         return abi.decode(castResult, (address));
     }
 
-    //Shell scripts from the original code
-    function setProfitAddress(
-        address _profitAddress,
-        address _contractAddress,
-        address _walletAddress,
-        string memory _privateKey
-    ) external returns (string memory, uint256) {
+    function setProfitAddress(address _profitAddress, address _contractAddress, address _walletAddress, string memory _privateKey)
+        external
+        returns (string memory, uint256)
+    {
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
         inputs[1] = "send";

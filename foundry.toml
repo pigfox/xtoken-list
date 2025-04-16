@@ -25,7 +25,7 @@ fs_permissions = [
     { access = "read", path = "./reports" },
 ]
 [fmt]
-line_length = 120
+line_length = 140
 tab_width = 4
 bracket_spacing = true
 
