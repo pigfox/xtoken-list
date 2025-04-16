@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./IDex.sol";
 
 contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
-    address public flashLoanProviderAddress;
+    address public flashLoanAddress;
     address public profitAddress;
     address public owner;
 
@@ -19,10 +19,11 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
     event ProfitSent(address indexed recipient, uint256 amount);
     event UpdatedOwner(address indexed newOwner);
     event UpdatedProfitAddress(address indexed newProfitAddress);
+    event UpdatedFlashLoanAddress(address indexed newFlashLoanAddress);
 
-    constructor(address _flashLoanProviderAddress) {
-        require(_flashLoanProviderAddress != address(0), "Invalid flash loan provider");
-        flashLoanProviderAddress = _flashLoanProviderAddress;
+    constructor(address _flashLoanAddress) {
+        require(_flashLoanAddress != address(0), "Invalid flash loan provider");
+        flashLoanAddress = _flashLoanAddress;
         profitAddress = msg.sender;
         owner = msg.sender;
     }
@@ -38,18 +39,16 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
         emit UpdatedOwner(_owner);
     }
 
-    function getOwner() external view returns (address) {
-        return owner;
-    }
-
     function setProfitAddress(address _profitAddress) external onlyOwner {
         require(_profitAddress != address(0), "Invalid profit address");
         profitAddress = _profitAddress;
         emit UpdatedProfitAddress(_profitAddress);
     }
 
-    function getProfitAddress() external view returns (address) {
-        return profitAddress;
+    function setFlashLoanAddress(address _flashLoanAddress) external onlyOwner {
+        require(_flashLoanAddress != address(0), "Invalid flashLoan address");
+        flashLoanAddress = _flashLoanAddress;
+        emit UpdatedFlashLoanAddress(_flashLoanAddress);
     }
 
     function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data)
@@ -58,7 +57,7 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
         nonReentrant
         returns (bytes32)
     {
-        require(msg.sender == flashLoanProviderAddress, "Invalid initiator");
+        require(msg.sender == flashLoanAddress, "Invalid initiator");
         require(token == address(0), "Only ETH flash loans supported");
 
         emit FlashLoanReceived(msg.sender, initiator, amount, fee);
@@ -84,8 +83,8 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
 
         // Repay flash loan
         require(address(this).balance >= totalRepayment, "Insufficient ETH to repay");
-        payable(flashLoanProviderAddress).transfer(totalRepayment);
-        emit LoanRepaid(flashLoanProviderAddress, totalRepayment);
+        payable(flashLoanAddress).transfer(totalRepayment);
+        emit LoanRepaid(flashLoanAddress, totalRepayment);
 
         // Send profit to profitAddress
         uint256 profit = address(this).balance;
