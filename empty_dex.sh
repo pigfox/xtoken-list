@@ -4,7 +4,7 @@ clear
 . ./.env
 
 echo "---------------BEGIN RESET-------------------"
-# Function to enable tracing only for `cast` commands
+# Function to enable tracing only for cast commands
 trace_cast_call() {
     set -x
     "$@"
@@ -55,6 +55,7 @@ empty_dex() {
     local dex=$1
     echo "-------------------------$dex-------------------------"
 
+    # Check token balance of DEX in the token contract
     BALANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
     echo "Raw balance of $dex: $BALANCE_RAW"
 
@@ -84,6 +85,22 @@ empty_dex() {
         return
     fi
 
+    # Check if DEX contract has sufficient tokens (call balanceOf on token contract for DEX)
+    DEX_TOKEN_BALANCE_RAW=$(trace_cast_call cast call "$PIGFOX_TOKEN" "balanceOf(address)" "$dex" --rpc-url "$SEPOLIA_HTTP_RPC_URL")
+    DEX_TOKEN_BALANCE_HEX=$(echo "$DEX_TOKEN_BALANCE_RAW" | tr -d '[:space:]')
+    DEX_TOKEN_BALANCE_DEC=$(cast to-dec "$DEX_TOKEN_BALANCE_HEX")
+    if [[ -z "$DEX_TOKEN_BALANCE_DEC" || ! "$DEX_TOKEN_BALANCE_DEC" =~ ^[0-9]+$ ]]; then
+        echo "Error: Failed to verify DEX token balance: $DEX_TOKEN_BALANCE_HEX"
+        echo "Skipping withdrawal."
+        return
+    fi
+
+    if [[ "$DEX_TOKEN_BALANCE_DEC" -lt "$BALANCE_DECIMAL" ]]; then
+        echo "Error: DEX has insufficient token balance. Reported balance: $BALANCE_DECIMAL, Actual balance: $DEX_TOKEN_BALANCE_DEC"
+        echo "Skipping withdrawal."
+        return
+    fi
+
     echo "Withdrawing $BALANCE_BASE_UNIT tokens from $dex to $WALLET_ADDRESS"
     WITHDRAW_RESULT=$(trace_cast_call cast send "$dex" \
         "withdraw(address,uint256)" \
@@ -91,11 +108,12 @@ empty_dex() {
         "$BALANCE_DECIMAL" \
         --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
         --private-key "$WALLET_PRIVATE_KEY" \
-        --json)
-    WITHDRAW_TX_HASH=$(echo "$WITHDRAW_RESULT" | jq -r '.transactionHash')
+        --json 2>&1 || true)
+    WITHDRAW_TX_HASH=$(echo "$WITHDRAW_RESULT" | jq -r '.transactionHash' 2>/dev/null || echo "null")
     if [ -z "$WITHDRAW_TX_HASH" ] || [ "$WITHDRAW_TX_HASH" == "null" ]; then
         echo "Error during withdrawal: $WITHDRAW_RESULT"
-        exit 1
+        echo "Skipping transfer due to withdrawal failure."
+        return
     fi
     echo "Withdrawal Tx Hash: $WITHDRAW_TX_HASH"
 
