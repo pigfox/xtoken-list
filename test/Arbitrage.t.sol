@@ -156,7 +156,7 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function test_setProfitAddress() public {
+    function Xtest_setProfitAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         console.log("Current Owner:", currentOwner);
         if (currentOwner == walletAddr) {

@@ -34,7 +34,7 @@ contract CastFunctions is Test {
         inputs[4] = vm.toString(_newOwner);
         inputs[5] = "--json";
         inputs[6] = "--rpc-url";
-        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[7] = rpcUrl;
         inputs[8] = "--from";
         inputs[9] = vm.toString(_currentOwner);
         inputs[10] = "--private-key";
@@ -84,7 +84,7 @@ contract CastFunctions is Test {
         inputs[2] = vm.toString(_contractAddress);
         inputs[3] = "getOwner()";
         inputs[4] = "--rpc-url";
-        inputs[5] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[5] = rpcUrl;
 
         bytes memory castResult = vm.ffi(inputs);
         if (castResult.length == 0) {
@@ -94,13 +94,61 @@ contract CastFunctions is Test {
         return abi.decode(castResult, (address));
     }
 
-    function addressBalance(address _contractAddress) public view returns (uint256) {
-        return _contractAddress.balance;
+    function addressBalance(address _contractAddress) public returns (uint256) {
+        string[] memory inputs = new string[](5);
+        inputs[0] = "cast";
+        inputs[1] = "balance";
+        inputs[2] = vm.toString(_contractAddress);
+        inputs[3] = "--rpc-url";
+        inputs[4] = rpcUrl;
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            console.log("Error: cast call returned empty result");
+            return 0;
+        }
+
+        string memory result = string(castResult);
+        bytes memory clean = bytes(result);
+        uint256 len = clean.length;
+        while (len > 0 && (clean[len - 1] == 0x0a || clean[len - 1] == 0x0d)) {
+            len--;
+        }
+        assembly {
+            mstore(clean, len)
+        }
+
+        uint256 balance = vm.parseUint(string(clean));
+        return balance;
     }
 
-    function getTokenBalanceOf(address _holderAddress, address _tokenAddress) public view returns (uint256) {
-        PigfoxToken token = PigfoxToken(_tokenAddress);
-        return token.balanceOf(_holderAddress);
+    function getTokenBalanceOf(address _holderAddress, address _tokenAddress) public returns (uint256) {
+        string[] memory inputs = new string[](7);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = vm.toString(_tokenAddress);
+        inputs[3] = "balanceOf(address)";
+        inputs[4] = vm.toString(_holderAddress);
+        inputs[5] = "--rpc-url";
+        inputs[6] = rpcUrl;
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            console.log("Error: cast call returned empty result");
+            return 0;
+        }
+
+        string memory result = string(abi.encodePacked(string(castResult)));
+
+        uint256 balance;
+        try vm.parseJson(result, ".return") returns (bytes memory balanceData) {
+            balance = abi.decode(balanceData, (uint256));
+        } catch {
+            console.log("Error: failed to parse balance from json");
+            return 0;
+        }
+
+        return balance;
     }
 
     function mint(address _tokenAddress, uint256 _amount) public returns (string memory, uint256) {
@@ -113,7 +161,7 @@ contract CastFunctions is Test {
         inputs[4] = vm.toString(_amount);
         inputs[5] = "--json";
         inputs[6] = "--rpc-url";
-        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[7] = rpcUrl;
         inputs[8] = "--from";
         inputs[9] = vm.envString("WALLET_ADDRESS");
         inputs[10] = "--private-key";
@@ -150,7 +198,7 @@ contract CastFunctions is Test {
         inputs[5] = conversionsTest.uintToString(_amount);
         inputs[6] = "--json";
         inputs[7] = "--rpc-url";
-        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[8] = rpcUrl;
         inputs[9] = "--from";
         inputs[10] = vm.envString("WALLET_ADDRESS");
         inputs[11] = "--private-key";
@@ -183,7 +231,7 @@ contract CastFunctions is Test {
         inputs[4] = vm.toString(_dex);
         inputs[5] = vm.toString(_amount);
         inputs[6] = "--rpc-url";
-        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[7] = rpcUrl;
         inputs[8] = "--from";
         inputs[9] = vm.envString("WALLET_ADDRESS");
         inputs[10] = "--private-key";
@@ -221,7 +269,7 @@ contract CastFunctions is Test {
         inputs[6] = vm.toString(_amount);
         inputs[7] = "--json";
         inputs[8] = "--rpc-url";
-        inputs[9] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[9] = rpcUrl;
         inputs[10] = "--from";
         inputs[11] = vm.envString("WALLET_ADDRESS");
         inputs[12] = "--private-key";
@@ -276,9 +324,35 @@ contract CastFunctions is Test {
         return (txHash, statusInt);
     }
 
-    function getTokenPrice(string calldata _dex, string calldata _tokenAddress) public view returns (uint256) {
-        IDex dex = IDex(conversionsTest.stringToAddress(_dex));
-        uint256 price = dex.getTokenPrice(conversionsTest.stringToAddress(_tokenAddress));
+    function getTokenPrice(string memory _dex, string memory _tokenAddress) public returns (uint256) {
+        address dexAddress = conversionsTest.stringToAddress(_dex);
+        address tokenAddress = conversionsTest.stringToAddress(_tokenAddress);
+
+        string[] memory inputs = new string[](7);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = vm.toString(dexAddress);
+        inputs[3] = "getTokenPrice(address)";
+        inputs[4] = vm.toString(tokenAddress);
+        inputs[5] = "--rpc-url";
+        inputs[6] = rpcUrl;
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            console.log("Error: cast call returned empty result");
+            return 0;
+        }
+
+        string memory result = string(abi.encodePacked(string(castResult)));
+
+        uint256 price;
+        try vm.parseJson(result, ".return") returns (bytes memory priceData) {
+            price = abi.decode(priceData, (uint256));
+        } catch {
+            console.log("Error: failed to parse price from json");
+            return 0;
+        }
+
         return price;
     }
 
@@ -329,7 +403,7 @@ contract CastFunctions is Test {
         inputs[4] = vm.toString(_profitAddress); // function argument
         inputs[5] = "--json";
         inputs[6] = "--rpc-url";
-        inputs[7] = vm.envString("SEPOLIA_HTTP_RPC_URL"); // or use _rpc if passed in
+        inputs[7] = rpcUrl;
         inputs[8] = "--from";
         inputs[9] = vm.toString(_walletAddress);
         inputs[10] = "--private-key";
@@ -376,7 +450,7 @@ contract CastFunctions is Test {
         inputs[2] = vm.toString(_contractAddress); // target contract
         inputs[3] = "getProfitAddress()"; // function signature
         inputs[4] = "--rpc-url";
-        inputs[5] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[5] = rpcUrl;
         inputs[6] = "--json";
 
         bytes memory castResult = vm.ffi(inputs);
