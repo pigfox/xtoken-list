@@ -170,7 +170,9 @@ contract ArbitrageTest is Test {
             }
             assertEq(code, 1, "Failed to set profit address");
             address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
-            assertEq(updatedProfitAddress, walletAddr, "Profit address should be updated to chrome wallet address");
+            assertEq(
+                updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address"
+            );
         } else if (currentOwner == chromeWalletAddr) {
             (txHash, code) =
                 castFunctions.setProfitAddress(walletAddr, arbitrageAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
@@ -181,9 +183,7 @@ contract ArbitrageTest is Test {
             }
             assertEq(code, 1, "Failed to set profit address");
             address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
-            assertEq(
-                updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address"
-            );
+            assertEq(updatedProfitAddress, walletAddr, "Profit address should be updated to chrome wallet address");
         }
     }
 

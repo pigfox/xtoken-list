@@ -460,7 +460,6 @@ contract CastFunctions is Test {
         address _walletAddress,
         string memory _privateKey
     ) external returns (string memory, uint256) {
-        console.log("Profit address: %s", vm.toString(_profitAddress));
         string[] memory inputs = new string[](12);
         inputs[0] = "cast";
         inputs[1] = "send";
@@ -475,12 +474,7 @@ contract CastFunctions is Test {
         inputs[10] = "--private-key";
         inputs[11] = _privateKey;
 
-        for (uint256 i = 0; i < inputs.length; i++) {
-            console.log("inputs[%s]: %s", i, inputs[i]);
-        }
-
         bytes memory castResult = vm.ffi(inputs);
-        console.log("Raw FFI output: %s", string(castResult));
         if (0 == castResult.length) {
             console.log("Error: cast call returned empty result");
             return ("0x0", 0);
