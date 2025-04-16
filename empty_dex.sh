@@ -91,7 +91,6 @@ empty_dex() {
         "$BALANCE_DECIMAL" \
         --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
         --private-key "$WALLET_PRIVATE_KEY" \
-        --gas-limit 200000 \
         --json)
     WITHDRAW_TX_HASH=$(echo "$WITHDRAW_RESULT" | jq -r '.transactionHash')
     if [ -z "$WITHDRAW_TX_HASH" ] || [ "$WITHDRAW_TX_HASH" == "null" ]; then
@@ -107,7 +106,6 @@ empty_dex() {
         "$BALANCE_DECIMAL" \
         --rpc-url "$SEPOLIA_HTTP_RPC_URL" \
         --private-key "$WALLET_PRIVATE_KEY" \
-        --gas-limit 200000 \
         --json)
     TRANSFER_TX_HASH=$(echo "$TRANSFER_RESULT" | jq -r '.transactionHash')
     if [ -z "$TRANSFER_TX_HASH" ] || [ "$TRANSFER_TX_HASH" == "null" ]; then
