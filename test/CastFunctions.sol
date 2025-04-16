@@ -343,7 +343,7 @@ contract CastFunctions is Test {
         inputs[5] = conversionsTest.uintToString(_amount);
         inputs[6] = "--json";
         inputs[7] = "--rpc-url";
-        inputs[8] = vm.envString("SEPOLIA_HTTP_RPC_URL");
+        inputs[8] = rpcUrl;
         inputs[9] = "--from";
         inputs[10] = vm.envString("WALLET_ADDRESS");
         inputs[11] = "--private-key";
