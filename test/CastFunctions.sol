@@ -82,7 +82,55 @@ contract CastFunctions is Test {
         inputs[0] = "cast";
         inputs[1] = "call";
         inputs[2] = vm.toString(_contractAddress);
-        inputs[3] = "getOwner()";
+        inputs[3] = "owner()";
+        inputs[4] = "--rpc-url";
+        inputs[5] = rpcUrl;
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            revert("Error: cast call returned empty result");
+        }
+
+        return abi.decode(castResult, (address));
+    }
+
+    function setFlashLoanAddress(address _contractAddress, address _flashLoanAddress)
+        public
+        returns (string memory, uint256)
+    {
+        string[] memory inputs = new string[](11);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = vm.toString(_contractAddress);
+        inputs[3] = "setFlashLoanAddress(address)";
+        inputs[4] = vm.toString(_flashLoanAddress);
+        inputs[5] = "--rpc-url";
+        inputs[6] = rpcUrl;
+        inputs[7] = "--from";
+        inputs[8] = vm.envString("WALLET_ADDRESS");
+        inputs[9] = "--private-key";
+        inputs[10] = vm.envString("WALLET_PRIVATE_KEY");
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (0 == castResult.length) {
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(abi.encodePacked(string(castResult)));
+
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+        return (txHash, statusInt);
+    }
+
+    function getFlashLoanAddress(address _contractAddress) public returns (address) {
+        string[] memory inputs = new string[](6);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = vm.toString(_contractAddress);
+        inputs[3] = "flashLoanAddress()";
         inputs[4] = "--rpc-url";
         inputs[5] = rpcUrl;
 
@@ -385,70 +433,12 @@ contract CastFunctions is Test {
         return (txHash, statusInt);
     }
 
-    function setProfitAddress(
-        address _profitAddress,
-        address _contractAddress,
-        address _walletAddress,
-        string memory _privateKey
-    ) external returns (string memory, uint256) {
-        require(_profitAddress != address(0), "Invalid profit address");
-        require(_contractAddress != address(0), "Invalid contract address");
-        require(keccak256(bytes(_privateKey)) != keccak256(bytes("")), "Invalid contract private key");
-
-        string[] memory inputs = new string[](12);
-        inputs[0] = "cast";
-        inputs[1] = "send";
-        inputs[2] = vm.toString(_contractAddress); // target contract address
-        inputs[3] = "setProfitAddress(address)"; // function signature
-        inputs[4] = vm.toString(_profitAddress); // function argument
-        inputs[5] = "--json";
-        inputs[6] = "--rpc-url";
-        inputs[7] = rpcUrl;
-        inputs[8] = "--from";
-        inputs[9] = vm.toString(_walletAddress);
-        inputs[10] = "--private-key";
-        inputs[11] = _privateKey;
-
-        bytes memory castResult = vm.ffi(inputs);
-        if (0 == castResult.length) {
-            console.log("Error: cast call returned empty result");
-            return ("0x0", 0); // Fixed: Return 0 as uint256
-        }
-
-        string memory result = string(abi.encodePacked(string(castResult)));
-
-        uint256[] memory values;
-        string memory txHash;
-
-        try vm.parseJson(result, ".status") returns (bytes memory statusData) {
-            values = abi.decode(statusData, (uint256[]));
-        } catch {
-            return ("0x0", 0); // Fixed: Return 0 as uint256
-        }
-
-        uint256 statusInt = values.length > 0 ? values[0] : 0;
-        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-
-        try vm.parseJson(result, ".transactionHash") returns (bytes memory hashData) {
-            txHash = vm.toString(hashData);
-        } catch {
-            return ("0x0", 0); // Fixed: Return 0 as uint256
-        }
-
-        // Check if txHash is empty or not 66 characters (including "0x")
-        if (bytes(txHash).length == 0 || bytes(txHash).length != 66) {
-            return ("0x0", 0); // Fixed: Return 0 as uint256
-        }
-
-        return (txHash, statusInt);
-    }
-
     function getProfitAddress(address _contractAddress) public returns (address) {
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
         inputs[2] = vm.toString(_contractAddress); // target contract
-        inputs[3] = "getProfitAddress()"; // function signature
+        inputs[3] = "profitAddress()"; // function signature
         inputs[4] = "--rpc-url";
         inputs[5] = rpcUrl;
         inputs[6] = "--json";
@@ -460,57 +450,70 @@ contract CastFunctions is Test {
         }
 
         // Decode directly from ABI-encoded return value
-        address returnedAddr = abi.decode(castResult, (address));
-        return returnedAddr;
+        return abi.decode(castResult, (address));
     }
 
     //Shell scripts from the original code
-    function setProfitAddress2(
+    function setProfitAddress(
         address _profitAddress,
         address _contractAddress,
         address _walletAddress,
         string memory _privateKey
     ) external returns (string memory, uint256) {
-        // Build cast send command with stderr redirected to stdout
-        string memory command = string.concat(
-            "cast send ",
-            vm.toString(_contractAddress),
-            " ",
-            "setProfitAddress\\(address\\) ", // escape both parentheses!
-            vm.toString(_profitAddress),
-            " ",
-            "--json ",
-            "--rpc-url ",
-            rpcUrl,
-            " ",
-            "--from ",
-            vm.toString(_walletAddress),
-            " ",
-            "--private-key ",
-            _privateKey,
-            " 2>&1"
-        );
+        console.log("Profit address: %s", vm.toString(_profitAddress));
+        string[] memory inputs = new string[](12);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = vm.toString(_contractAddress);
+        inputs[3] = "setProfitAddress(address)";
+        inputs[4] = vm.toString(_profitAddress);
+        inputs[5] = "--json";
+        inputs[6] = "--rpc-url";
+        inputs[7] = rpcUrl;
+        inputs[8] = "--from";
+        inputs[9] = vm.toString(_walletAddress);
+        inputs[10] = "--private-key";
+        inputs[11] = _privateKey;
 
-        // Wrap the command in a shell for FFI
-        string[] memory inputs = new string[](3);
-        inputs[0] = "bash";
-        inputs[1] = "-c";
-        inputs[2] = command;
-
-        // Call FFI and capture output
-        bytes memory rawOutput = vm.ffi(inputs);
-        string memory output = string(rawOutput);
-
-        // Check if output looks like valid JSON (starts with `{`)
-        if (bytes(output).length > 0 && bytes(output)[0] == "{") {
-            // Try to parse the tx hash if it’s present
-            string memory txHash = vm.toString(vm.parseJson(output, ".transactionHash"));
-            return (txHash, 1);
-        } else {
-            // Error occurred — log the raw output
-            console.log("cast send error:");
-            console.log(output);
-            return (output, 0);
+        for (uint256 i = 0; i < inputs.length; i++) {
+            console.log("inputs[%s]: %s", i, inputs[i]);
         }
+
+        bytes memory castResult = vm.ffi(inputs);
+        console.log("Raw FFI output: %s", string(castResult));
+        if (0 == castResult.length) {
+            console.log("Error: cast call returned empty result");
+            return ("0x0", 0);
+        }
+
+        string memory result = string(abi.encodePacked(string(castResult)));
+
+        uint256[] memory values;
+        string memory txHash;
+
+        try vm.parseJson(result, ".status") returns (bytes memory statusData) {
+            values = abi.decode(statusData, (uint256[]));
+        } catch {
+            console.log("Error: failed to parse status json");
+            return ("0x0", 0);
+        }
+
+        uint256 statusInt = values.length > 0 ? values[0] : 0;
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+
+        try vm.parseJson(result, ".transactionHash") returns (bytes memory hashData) {
+            txHash = vm.toString(hashData);
+        } catch {
+            console.log("Error: failed to parse transactionHash json");
+            return ("0x0", 0);
+        }
+
+        // Check if txHash is empty or not 66 characters (including "0x")
+        if (bytes(txHash).length == 0 || bytes(txHash).length != 66) {
+            console.log("Error: txHash length is invalid");
+            return ("0x0", 0);
+        }
+
+        return (txHash, statusInt);
     }
 }
