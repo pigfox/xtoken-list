@@ -94,19 +94,23 @@ contract CastFunctions is Test {
         return abi.decode(castResult, (address));
     }
 
-    function setFlashLoanAddress(address _contractAddress, address _flashLoanAddress) public returns (string memory, uint256) {
-        string[] memory inputs = new string[](11);
+    function setFlashLoanAddress(address _contractAddress, address _flashLoanAddress, address _currentOwner, string memory _privateKey)
+        public
+        returns (string memory, uint256)
+    {
+        string[] memory inputs = new string[](12);
         inputs[0] = "cast";
         inputs[1] = "send";
         inputs[2] = vm.toString(_contractAddress);
         inputs[3] = "setFlashLoanAddress(address)";
         inputs[4] = vm.toString(_flashLoanAddress);
-        inputs[5] = "--rpc-url";
-        inputs[6] = rpcUrl;
-        inputs[7] = "--from";
-        inputs[8] = vm.envString("WALLET_ADDRESS");
-        inputs[9] = "--private-key";
-        inputs[10] = vm.envString("WALLET_PRIVATE_KEY");
+        inputs[5] = "--json";
+        inputs[6] = "--rpc-url";
+        inputs[7] = rpcUrl;
+        inputs[8] = "--from";
+        inputs[9] = vm.toString(_currentOwner);
+        inputs[10] = "--private-key";
+        inputs[11] = _privateKey;
 
         bytes memory castResult = vm.ffi(inputs);
         if (0 == castResult.length) {

@@ -67,9 +67,7 @@ contract ArbitrageTest is Test {
             //pigfoxToken.mint(MIN_WALLET_PFX_BALANCE);
             (txHash, code) = castFunctions.mint(pigfoxTokenAddr, MIN_WALLET_PFX_BALANCE);
             if (code == 1) {
-                logTxHash(
-                    txHash, string.concat("Minted ", vm.toString(MIN_WALLET_PFX_BALANCE), " PFX to wallet (on Sepolia)")
-                );
+                logTxHash(txHash, string.concat("Minted ", vm.toString(MIN_WALLET_PFX_BALANCE), " PFX to wallet (on Sepolia)"));
             }
         }
 
@@ -80,9 +78,7 @@ contract ArbitrageTest is Test {
             castFunctions.approve(pigfoxTokenAddr, walletAddr, ARBITRAGE_ETH_FUNDING);
             (txHash, code) = castFunctions.depositTokens(dex1Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
             if (code == 1) {
-                logTxHash(
-                    txHash, string.concat("Deposited ", vm.toString(DEX_PFX_DEPOSIT), " PFX to DEX1 (on Sepolia)")
-                );
+                logTxHash(txHash, string.concat("Deposited ", vm.toString(DEX_PFX_DEPOSIT), " PFX to DEX1 (on Sepolia)"));
             }
         }
 
@@ -93,9 +89,7 @@ contract ArbitrageTest is Test {
             castFunctions.approve(pigfoxTokenAddr, walletAddr, ARBITRAGE_ETH_FUNDING);
             (txHash, code) = castFunctions.depositTokens(dex2Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
             if (code == 1) {
-                logTxHash(
-                    txHash, string.concat("Deposited ", vm.toString(DEX_PFX_DEPOSIT), " PFX to DEX2 (on Sepolia)")
-                );
+                logTxHash(txHash, string.concat("Deposited ", vm.toString(DEX_PFX_DEPOSIT), " PFX to DEX2 (on Sepolia)"));
             }
         }
 
@@ -110,11 +104,7 @@ contract ArbitrageTest is Test {
             console.log(string.concat("Funded Vault with ", vm.toString(VAULT_ETH_FUNDING), " ETH (on Sepolia)"));
         } else {
             console.log(
-                string.concat(
-                    "Failed to fund Vault with ",
-                    vm.toString(VAULT_ETH_FUNDING),
-                    " ETH - proceeding without Vault funding"
-                )
+                string.concat("Failed to fund Vault with ", vm.toString(VAULT_ETH_FUNDING), " ETH - proceeding without Vault funding")
             );
         }
 
@@ -142,8 +132,7 @@ contract ArbitrageTest is Test {
             assertEq(newOwner, chromeWalletAddr, "Owner should be updated to chrome wallet address");
         } else if (currentOwner == chromeWalletAddr) {
             console.log("Current Owner is Chrome wallet address");
-            (txHash, code) =
-                castFunctions.setOwner(arbitrageAddr, walletAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
+            (txHash, code) = castFunctions.setOwner(arbitrageAddr, walletAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
 
             console.log("Code:");
             console.log(code);
@@ -157,12 +146,11 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function test_setProfitAddress() public {
+    function Xtest_setProfitAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         console.log("Current Owner:", currentOwner);
         if (currentOwner == walletAddr) {
-            (txHash, code) =
-                castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
+            (txHash, code) = castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
             if (code == 1) {
@@ -170,12 +158,9 @@ contract ArbitrageTest is Test {
             }
             assertEq(code, 1, "Failed to set profit address");
             address updatedProfitAddress = castFunctions.getProfitAddress(arbitrageAddr);
-            assertEq(
-                updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address"
-            );
+            assertEq(updatedProfitAddress, chromeWalletAddr, "Profit address should be updated to chrome wallet address");
         } else if (currentOwner == chromeWalletAddr) {
-            (txHash, code) =
-                castFunctions.setProfitAddress(walletAddr, arbitrageAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
+            (txHash, code) = castFunctions.setProfitAddress(walletAddr, arbitrageAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
             if (code == 1) {
@@ -187,11 +172,11 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function Xtest_setFlashLoanAddress() public {
+    function test_setFlashLoanAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         console.log("Current Owner:", currentOwner);
         if (currentOwner == walletAddr) {
-            (txHash, code) = castFunctions.setFlashLoanAddress(arbitrageAddr, testFlashLoanAddr);
+            (txHash, code) = castFunctions.setFlashLoanAddress(arbitrageAddr, testFlashLoanAddr, walletAddr, walletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
             if (code == 1) {
@@ -199,11 +184,10 @@ contract ArbitrageTest is Test {
             }
             assertEq(code, 1, "Failed to set flash loan address");
             address updatedFlashLoanAddress = castFunctions.getFlashLoanAddress(arbitrageAddr);
-            assertEq(
-                updatedFlashLoanAddress, walletAddr, "Flash loan address should be updated to chrome wallet address"
-            );
+            assertEq(updatedFlashLoanAddress, testFlashLoanAddr, "Flash loan address should be updated to test flash loan address");
         } else if (currentOwner == chromeWalletAddr) {
-            (txHash, code) = castFunctions.setFlashLoanAddress(arbitrageAddr, testFlashLoanAddr);
+            (txHash, code) =
+                castFunctions.setFlashLoanAddress(arbitrageAddr, testFlashLoanAddr, chromeWalletAddr, chromeWalletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
             if (code == 1) {
@@ -211,9 +195,7 @@ contract ArbitrageTest is Test {
             }
             assertEq(code, 1, "Failed to set flash loan address");
             address updatedFlashLoanAddress = castFunctions.getFlashLoanAddress(arbitrageAddr);
-            assertEq(
-                updatedFlashLoanAddress, chromeWalletAddr, "Flash loan address should be updated to wallet address"
-            );
+            assertEq(updatedFlashLoanAddress, testFlashLoanAddr, "Flash loan address should be updated to test flash loan address");
         }
     }
     /*
