@@ -23,16 +23,17 @@ contract ArbitrageTest is Test {
     uint256 constant DEX1_PRICE = 120; // wei/PFX
     uint256 constant DEX2_PRICE = 80; // wei/PFX
 
-    address private pigfoxTokenAddr;
-    address private dex1Addr;
-    address private dex2Addr;
-    address private arbitrageAddr;
-    address private vaultAddr;
-    address private walletAddr;
-    address private chromeWalletAddr;
-    address private testFlashLoanAddr = vm.envAddress("BURN_ADDRESS");
-    string private walletPrivateKeyStr;
-    string private chromeWalletPrivateKeyStr;
+    address private pigfoxTokenAddr = vm.envAddress("PIGFOX_TOKEN");
+    address private dex1Addr = vm.envAddress("DEX1");
+    address private dex2Addr = vm.envAddress("DEX2");
+    address private arbitrageAddr = vm.envAddress("ARBITRAGE");
+    address private vaultAddr = vm.envAddress("VAULT");
+    address private walletAddr = vm.envAddress("WALLET_ADDRESS");
+    address private chromeWalletAddr = vm.envAddress("CHROME_WALLET");
+    address private flashLoanAddr1 = vm.envAddress("FLASHLOAN_1");
+    address private flashLoanAddr2 = vm.envAddress("FLASHLOAN_2");
+    string private walletPrivateKeyStr = vm.envString("WALLET_PRIVATE_KEY");
+    string private chromeWalletPrivateKeyStr = vm.envString("CHROME_WALLET_PRIVATE_KEY");
 
     function logTxHash(string memory _txHash, string memory _action) internal view {
         string memory url = string(abi.encodePacked("https://sepolia.etherscan.io/tx/", _txHash));
@@ -42,15 +43,6 @@ contract ArbitrageTest is Test {
     function setUp() public {
         castFunctions = new CastFunctions();
 
-        walletAddr = vm.envAddress("WALLET_ADDRESS");
-        walletPrivateKeyStr = vm.envString("WALLET_PRIVATE_KEY");
-        chromeWalletAddr = vm.envAddress("CHROME_WALLET");
-        chromeWalletPrivateKeyStr = vm.envString("CHROME_WALLET_PRIVATE_KEY");
-        pigfoxTokenAddr = vm.envAddress("PIGFOX_TOKEN");
-        dex1Addr = vm.envAddress("DEX1");
-        dex2Addr = vm.envAddress("DEX2");
-        arbitrageAddr = vm.envAddress("ARBITRAGE");
-        vaultAddr = vm.envAddress("VAULT");
         /*
         console.log("Wallet Address:", walletAddr);
         console.log("Chrome Wallet Address:", chromeWalletAddr);
@@ -112,7 +104,7 @@ contract ArbitrageTest is Test {
         (txHash, code) = castFunctions.setTokenPrice(dex2Addr, pigfoxTokenAddr, DEX2_PRICE);
     }
 
-    function test_Setup() public view {
+    function Xtest_Setup() public view {
         console.log("Wallet Address:", walletAddr);
         console.log("Chrome Wallet Address:", chromeWalletAddr);
         console.log("PigfoxToken Address:", pigfoxTokenAddr);
@@ -120,7 +112,8 @@ contract ArbitrageTest is Test {
         console.log("DEX2 Address:", dex2Addr);
         console.log("Arbitrage Address:", arbitrageAddr);
         console.log("Vault Address:", vaultAddr);
-        console.log("Test FlashLoan Address:", testFlashLoanAddr);
+        console.log("FlashLoan1 Address:", flashLoanAddr1);
+        console.log("FlashLoan2 Address:", flashLoanAddr2);
     }
 
     function Xtest_switchOwner() public {
@@ -183,9 +176,36 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function Xtest_setFlashLoanAddress() public {
+    function test_setFlashLoanAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         console.log("Current Owner:", currentOwner);
+        string memory currentPrivateKeyStr;
+        if (currentOwner == walletAddr) {
+            currentPrivateKeyStr = walletPrivateKeyStr;
+        } else if (currentOwner == chromeWalletAddr) {
+            currentPrivateKeyStr = chromeWalletPrivateKeyStr;
+        }
+
+        address currentFlashLoanAddr = castFunctions.getFlashLoanAddress(arbitrageAddr);
+        address newFlashLoanAddr;
+
+        if (currentFlashLoanAddr == flashLoanAddr1) {
+            newFlashLoanAddr = flashLoanAddr2;
+        } else if (currentFlashLoanAddr == flashLoanAddr2) {
+            newFlashLoanAddr = flashLoanAddr1;
+        } else {
+            newFlashLoanAddr = flashLoanAddr2;
+        }
+        (txHash, code) = castFunctions.setFlashLoanAddress(arbitrageAddr, newFlashLoanAddr, currentOwner, currentPrivateKeyStr);
+        console.log("Code:");
+        console.log(code);
+        if (code == 1) {
+            console.log("Code is int 1");
+        }
+        assertEq(code, 1, "Failed to set flash loan address");
+        address updatedFlashLoanAddress = castFunctions.getFlashLoanAddress(arbitrageAddr);
+        assertEq(updatedFlashLoanAddress, newFlashLoanAddr, "Flash loan address should be updated to new flash loan address");
+        /*
         if (currentOwner == walletAddr) {
             (txHash, code) = castFunctions.setFlashLoanAddress(arbitrageAddr, testFlashLoanAddr, walletAddr, walletPrivateKeyStr);
             console.log("Code:");
@@ -208,6 +228,7 @@ contract ArbitrageTest is Test {
             address updatedFlashLoanAddress = castFunctions.getFlashLoanAddress(arbitrageAddr);
             assertEq(updatedFlashLoanAddress, testFlashLoanAddr, "Flash loan address should be updated to test flash loan address");
         }
+        */
     }
     /*
     function test_executeArbitrage() public {
