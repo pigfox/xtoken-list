@@ -43,15 +43,6 @@ contract ArbitrageTest is Test {
     function setUp() public {
         castFunctions = new CastFunctions();
 
-        /*
-        console.log("Wallet Address:", walletAddr);
-        console.log("Chrome Wallet Address:", chromeWalletAddr);
-        console.log("PigfoxToken Address:", pigfoxTokenAddr);
-        console.log("DEX1 Address:", dex1Addr);
-        console.log("DEX2 Address:", dex2Addr);
-        console.log("Arbitrage Address:", arbitrageAddr);
-        console.log("Vault Address:", vaultAddr);
-        */
         uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(walletAddr, pigfoxTokenAddr);
         console.log("Wallet PFX Balance:");
         console2.logUint(walletPfxBalance);
