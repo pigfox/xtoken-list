@@ -190,10 +190,6 @@ contract CastFunctions is Test {
         string memory hexString = toHexString(castResult);
         bytes memory hexBytes = bytes(hexString);
 
-        // Log info
-        //console.log("Raw castResult length:", castResult.length);
-        //console.log("Hex string length (with prefix):", hexBytes.length);
-
         // Trim trailing newline or carriage return characters
         uint256 len = hexBytes.length;
         while (len > 0 && (hexBytes[len - 1] == 0x0a || hexBytes[len - 1] == 0x0d)) {
@@ -207,8 +203,6 @@ contract CastFunctions is Test {
 
         hexString = string(trimmed);
         hexBytes = bytes(hexString);
-
-        //console.log("Final hex string length:", hexBytes.length);
 
         // Expect 66 characters: "0x" + 64 hex digits (32 bytes)
         if (hexBytes.length != 66) {
