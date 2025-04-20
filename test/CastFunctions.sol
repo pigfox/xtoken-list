@@ -186,60 +186,38 @@ contract CastFunctions is Test {
             return 0;
         }
 
-        // Log raw castResult length and content
-        console.log("Raw castResult length:", castResult.length);
-        // Convert castResult to hex string manually
+        // Convert to hex string (includes "0x")
         string memory hexString = toHexString(castResult);
         bytes memory hexBytes = bytes(hexString);
-        console.log("Hex string length:", hexBytes.length);
 
-        // Remove trailing newlines or carriage returns
+        // Log info
+        //console.log("Raw castResult length:", castResult.length);
+        //console.log("Hex string length (with prefix):", hexBytes.length);
+
+        // Trim trailing newline or carriage return characters
         uint256 len = hexBytes.length;
         while (len > 0 && (hexBytes[len - 1] == 0x0a || hexBytes[len - 1] == 0x0d)) {
             len--;
         }
-        console.log("Trimmed length:", len);
 
-        // Create trimmed bytes array
         bytes memory trimmed = new bytes(len);
         for (uint256 i = 0; i < len; i++) {
             trimmed[i] = hexBytes[i];
         }
 
-        // Update hexString and hexBytes
         hexString = string(trimmed);
         hexBytes = bytes(hexString);
-        console.log("Hex string length before prefix removal:", hexBytes.length);
 
-        // Remove "0x" prefix if present
-        if (hexBytes.length >= 2 && hexBytes[0] == 0x30 && hexBytes[1] == 0x78) {
-            // "0x"
-            if (hexBytes.length != 66) {
-                console.log("Error: Expected 66 bytes with 0x, got:", hexBytes.length);
-                return 0;
-            }
-            bytes memory noPrefix = new bytes(64);
-            for (uint256 i = 0; i < 64; i++) {
-                noPrefix[i] = hexBytes[i + 2];
-            }
-            hexString = string(noPrefix);
-            hexBytes = bytes(hexString);
-        } else {
-            if (hexBytes.length != 64) {
-                console.log("Error: Expected 64 bytes without 0x, got:", hexBytes.length);
-                return 0;
-            }
-        }
+        //console.log("Final hex string length:", hexBytes.length);
 
-        // Validate final length
-        console.log("Final hex string length:", hexBytes.length);
-        if (hexBytes.length != 64) {
+        // Expect 66 characters: "0x" + 64 hex digits (32 bytes)
+        if (hexBytes.length != 66) {
             console.log("Error: Invalid hex string length:", hexBytes.length);
             return 0;
         }
 
-        // Validate hex characters
-        for (uint256 i = 0; i < hexBytes.length; i++) {
+        // Basic hex character validation (after 0x)
+        for (uint256 i = 2; i < hexBytes.length; i++) {
             bytes1 char = hexBytes[i];
             if (
                 !(char >= 0x30 && char <= 0x39) // 0-9
@@ -251,7 +229,7 @@ contract CastFunctions is Test {
             }
         }
 
-        // Parse the hex string
+        // Parse and return the uint256 balance
         try vm.parseUint(hexString) returns (uint256 balance) {
             return balance;
         } catch {
