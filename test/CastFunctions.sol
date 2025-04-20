@@ -167,8 +167,7 @@ contract CastFunctions is Test {
             mstore(clean, len)
         }
 
-        uint256 balance = vm.parseUint(string(clean));
-        return balance;
+        return vm.parseUint(string(clean));
     }
 
     function getTokenBalanceOf(address _holderAddress, address _tokenAddress) public returns (uint256) {
@@ -187,17 +186,78 @@ contract CastFunctions is Test {
             return 0;
         }
 
-        string memory result = string(abi.encodePacked(string(castResult)));
+        // Log raw castResult length and content
+        console.log("Raw castResult length:", castResult.length);
+        // Convert castResult to hex string manually
+        string memory hexString = toHexString(castResult);
+        bytes memory hexBytes = bytes(hexString);
+        console.log("Hex string length:", hexBytes.length);
 
-        uint256 balance;
-        try vm.parseJson(result, ".return") returns (bytes memory balanceData) {
-            balance = abi.decode(balanceData, (uint256));
-        } catch {
-            console.log("Error: failed to parse balance from json");
+        // Remove trailing newlines or carriage returns
+        uint256 len = hexBytes.length;
+        while (len > 0 && (hexBytes[len - 1] == 0x0a || hexBytes[len - 1] == 0x0d)) {
+            len--;
+        }
+        console.log("Trimmed length:", len);
+
+        // Create trimmed bytes array
+        bytes memory trimmed = new bytes(len);
+        for (uint256 i = 0; i < len; i++) {
+            trimmed[i] = hexBytes[i];
+        }
+
+        // Update hexString and hexBytes
+        hexString = string(trimmed);
+        hexBytes = bytes(hexString);
+        console.log("Hex string length before prefix removal:", hexBytes.length);
+
+        // Remove "0x" prefix if present
+        if (hexBytes.length >= 2 && hexBytes[0] == 0x30 && hexBytes[1] == 0x78) {
+            // "0x"
+            if (hexBytes.length != 66) {
+                console.log("Error: Expected 66 bytes with 0x, got:", hexBytes.length);
+                return 0;
+            }
+            bytes memory noPrefix = new bytes(64);
+            for (uint256 i = 0; i < 64; i++) {
+                noPrefix[i] = hexBytes[i + 2];
+            }
+            hexString = string(noPrefix);
+            hexBytes = bytes(hexString);
+        } else {
+            if (hexBytes.length != 64) {
+                console.log("Error: Expected 64 bytes without 0x, got:", hexBytes.length);
+                return 0;
+            }
+        }
+
+        // Validate final length
+        console.log("Final hex string length:", hexBytes.length);
+        if (hexBytes.length != 64) {
+            console.log("Error: Invalid hex string length:", hexBytes.length);
             return 0;
         }
 
-        return balance;
+        // Validate hex characters
+        for (uint256 i = 0; i < hexBytes.length; i++) {
+            bytes1 char = hexBytes[i];
+            if (
+                !(char >= 0x30 && char <= 0x39) // 0-9
+                    && !(char >= 0x41 && char <= 0x46) // A-F
+                    && !(char >= 0x61 && char <= 0x66) // a-f
+            ) {
+                console.log("Error: Invalid hex character at index:", i);
+                return 0;
+            }
+        }
+
+        // Parse the hex string
+        try vm.parseUint(hexString) returns (uint256 balance) {
+            return balance;
+        } catch {
+            console.log("Error: Failed to parse balance");
+            return 0;
+        }
     }
 
     function mint(address _tokenAddress, uint256 _amount) public returns (string memory, uint256) {
@@ -502,4 +562,17 @@ contract CastFunctions is Test {
 
         return (txHash, statusInt);
     }
+}
+// Helper function to convert bytes to hex string
+
+function toHexString(bytes memory data) pure returns (string memory) {
+    bytes memory alphabet = "0123456789abcdef";
+    bytes memory str = new bytes(2 + data.length * 2);
+    str[0] = "0";
+    str[1] = "x";
+    for (uint256 i = 0; i < data.length; i++) {
+        str[2 + i * 2] = alphabet[uint8(data[i] >> 4)];
+        str[3 + i * 2] = alphabet[uint8(data[i] & 0x0f)];
+    }
+    return string(str);
 }

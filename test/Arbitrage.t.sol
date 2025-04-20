@@ -95,7 +95,7 @@ contract ArbitrageTest is Test {
         (txHash, code) = castFunctions.setTokenPrice(dex2Addr, pigfoxTokenAddr, DEX2_PRICE);
     }
 
-    function Xtest_Setup() public view {
+    function test_Setup() public view {
         console.log("Wallet Address:", walletAddr);
         console.log("Chrome Wallet Address:", chromeWalletAddr);
         console.log("PigfoxToken Address:", pigfoxTokenAddr);
@@ -107,7 +107,7 @@ contract ArbitrageTest is Test {
         console.log("FlashLoan2 Address:", flashLoanAddr2);
     }
 
-    function Xtest_switchOwner() public {
+    function test_switchOwner() public {
         address newOwner;
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         console.log("Current Owner:", currentOwner);
@@ -141,7 +141,7 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function Xtest_setProfitAddress() public {
+    function test_setProfitAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         console.log("Current Owner:", currentOwner);
         if (currentOwner == walletAddr) {
