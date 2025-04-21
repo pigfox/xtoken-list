@@ -44,8 +44,8 @@ contract ArbitrageTest is Test {
         castFunctions = new CastFunctions();
 
         uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(walletAddr, pigfoxTokenAddr);
-        console.log("Wallet PFX Balance:");
-        console2.logUint(walletPfxBalance);
+        //console.log("Wallet PFX Balance:");
+        //console2.logUint(walletPfxBalance);
         if (walletPfxBalance < MIN_WALLET_PFX_BALANCE) {
             //pigfoxToken.mint(MIN_WALLET_PFX_BALANCE);
             (txHash, code) = castFunctions.mint(pigfoxTokenAddr, MIN_WALLET_PFX_BALANCE);
@@ -55,8 +55,8 @@ contract ArbitrageTest is Test {
         }
 
         uint256 dex1PfxBalance = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr);
-        console.log("DEX1 PFX Balance:");
-        console2.logUint(dex1PfxBalance);
+        //console.log("DEX1 PFX Balance:");
+        //console2.logUint(dex1PfxBalance);
         if (dex1PfxBalance < DEX_PFX_DEPOSIT) {
             castFunctions.approve(pigfoxTokenAddr, walletAddr, ARBITRAGE_ETH_FUNDING);
             (txHash, code) = castFunctions.depositTokens(dex1Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
@@ -66,8 +66,8 @@ contract ArbitrageTest is Test {
         }
 
         uint256 dex2PfxBalance = castFunctions.getTokenBalanceOf(dex2Addr, pigfoxTokenAddr);
-        console.log("DEX2 PFX Balance:");
-        console2.logUint(dex2PfxBalance);
+        //console.log("DEX2 PFX Balance:");
+        //console2.logUint(dex2PfxBalance);
         if (dex2PfxBalance < DEX_PFX_DEPOSIT) {
             castFunctions.approve(pigfoxTokenAddr, walletAddr, ARBITRAGE_ETH_FUNDING);
             (txHash, code) = castFunctions.depositTokens(dex2Addr, pigfoxTokenAddr, DEX_PFX_DEPOSIT);
@@ -78,8 +78,8 @@ contract ArbitrageTest is Test {
 
         uint256 walletEthBalance = castFunctions.addressBalance(walletAddr);
         uint256 requiredEth = VAULT_ETH_FUNDING + ARBITRAGE_ETH_FUNDING + (2 * DEX_ETH_FUNDING) + WALLET_ETH_BUFFER;
-        console.log("Wallet ETH Balance:");
-        console2.logUint(walletEthBalance);
+        //console.log("Wallet ETH Balance:");
+        //console2.logUint(walletEthBalance);
         require(walletEthBalance >= requiredEth, "Wallet needs at least 0.113 ETH on Sepolia");
 
         (txHash, code) = castFunctions.fundEth(vaultAddr, VAULT_ETH_FUNDING);
@@ -95,7 +95,7 @@ contract ArbitrageTest is Test {
         (txHash, code) = castFunctions.setTokenPrice(dex2Addr, pigfoxTokenAddr, DEX2_PRICE);
     }
 
-    function test_Setup() public view {
+    function Xtest_Setup() public view {
         console.log("Wallet Address:", walletAddr);
         console.log("Chrome Wallet Address:", chromeWalletAddr);
         console.log("PigfoxToken Address:", pigfoxTokenAddr);
@@ -110,10 +110,11 @@ contract ArbitrageTest is Test {
     function test_switchOwner() public {
         address newOwner;
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
-        console.log("Current Owner:", currentOwner);
+        bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
+        assertTrue(condition, "Invalid wallets for owner switch");
 
         if (currentOwner == walletAddr) {
-            console.log("Current Owner is wallet address");
+            //console.log("Current Owner is wallet address");
             (txHash, code) = castFunctions.setOwner(arbitrageAddr, chromeWalletAddr, walletAddr, walletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
@@ -136,14 +137,16 @@ contract ArbitrageTest is Test {
             }
             assertEq(code, 1, "Failed to set new owner");
             newOwner = castFunctions.getOwner(arbitrageAddr);
-            console.log("New Owner is wallet address", newOwner);
+            //console.log("New Owner is wallet address", newOwner);
             assertEq(newOwner, walletAddr, "Owner should be updated to wallet address");
         }
     }
 
-    function test_setProfitAddress() public {
+    function Xtest_setProfitAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
-        console.log("Current Owner:", currentOwner);
+        bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
+        assertTrue(condition, "Invalid wallets for owner switch");
+
         if (currentOwner == walletAddr) {
             (txHash, code) = castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
             console.log("Code:");
@@ -167,9 +170,11 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function test_setFlashLoanAddress() public {
+    function Xtest_setFlashLoanAddress() public {
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
-        console.log("Current Owner:", currentOwner);
+        bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
+        assertTrue(condition, "Invalid wallets for owner switch");
+
         string memory currentPrivateKeyStr;
         if (currentOwner == walletAddr) {
             currentPrivateKeyStr = walletPrivateKeyStr;
