@@ -30,4 +30,13 @@ echo "Testing $contract::$function..."
 ./empty_dex.sh
 clear
 #forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" -vv
-forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" -vvvv
+#forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" -vvvv
+
+#1 passed
+#forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_setProfitAddress -vvvv
+#2 passed
+#forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_setFlashLoanAddress -vvvv
+#3 passed
+forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_switchOwner -vvvv
+#4 todo
+#forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_executeArbitrage -vvvv

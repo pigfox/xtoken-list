@@ -7,7 +7,6 @@ import "forge-std/console2.sol";
 import "./CastFunctions.sol";
 
 contract ArbitrageTest is Test {
-    CastFunctions public castFunctions;
     string private txHash;
     uint256 private code;
 
@@ -41,7 +40,7 @@ contract ArbitrageTest is Test {
     }
 
     function setUp() public {
-        castFunctions = new CastFunctions();
+        CastFunctions castFunctions = new CastFunctions();
 
         uint256 walletPfxBalance = castFunctions.getTokenBalanceOf(walletAddr, pigfoxTokenAddr);
         //console.log("Wallet PFX Balance:");
@@ -95,7 +94,7 @@ contract ArbitrageTest is Test {
         (txHash, code) = castFunctions.setTokenPrice(dex2Addr, pigfoxTokenAddr, DEX2_PRICE);
     }
 
-    function Xtest_Setup() public view {
+    function test_Setup() public view {
         console.log("Wallet Address:", walletAddr);
         console.log("Chrome Wallet Address:", chromeWalletAddr);
         console.log("PigfoxToken Address:", pigfoxTokenAddr);
@@ -108,6 +107,7 @@ contract ArbitrageTest is Test {
     }
 
     function test_switchOwner() public {
+        CastFunctions castFunctions = new CastFunctions();
         address newOwner;
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
@@ -142,7 +142,8 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function Xtest_setProfitAddress() public {
+    function test_setProfitAddress() public {
+        CastFunctions castFunctions = new CastFunctions();
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
         assertTrue(condition, "Invalid wallets for owner switch");
@@ -170,7 +171,8 @@ contract ArbitrageTest is Test {
         }
     }
 
-    function Xtest_setFlashLoanAddress() public {
+    function test_setFlashLoanAddress() public {
+        CastFunctions castFunctions = new CastFunctions();
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
         assertTrue(condition, "Invalid wallets for owner switch");
