@@ -94,6 +94,8 @@ contract CastFunctions is Test {
         return abi.decode(castResult, (address));
     }
 
+    function flashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data) { }
+
     function setFlashLoanAddress(address _contractAddress, address _flashLoanAddress, address _currentOwner, string memory _privateKey)
         public
         returns (string memory, uint256)
