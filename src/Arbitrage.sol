@@ -51,13 +51,14 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
         emit UpdatedFlashLoanAddress(_flashLoanAddress);
     }
 
+    //https://grok.com/chat/d9b100ff-4937-490a-8c73-bf34c25bff33
     function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data)
         external
         override
+        onlyOwner
         nonReentrant
         returns (bytes32)
     {
-        require(msg.sender == flashLoanAddress, "Invalid initiator");
         require(token == address(0), "Only ETH flash loans supported");
 
         emit FlashLoanReceived(msg.sender, initiator, amount, fee);

@@ -94,7 +94,15 @@ contract CastFunctions is Test {
         return abi.decode(castResult, (address));
     }
 
-    function flashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data) { }
+    function flashLoan(address _contractAddress, address _tokenAddress, uint256 _amount, uint256 _fee, bytes calldata _data) {
+        string[] memory inputs = new string[](6);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = vm.toString(_contractAddress);
+        inputs[3] = "onFlashLoan(address,address,uint256,uint256,bytes)";
+        inputs[4] = "--rpc-url";
+        inputs[5] = rpcUrl;
+    }
 
     function setFlashLoanAddress(address _contractAddress, address _flashLoanAddress, address _currentOwner, string memory _privateKey)
         public
