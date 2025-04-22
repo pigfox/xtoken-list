@@ -146,7 +146,7 @@ contract ArbitrageTest is Test {
         CastFunctions castFunctions = new CastFunctions();
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
-        assertTrue(condition, "Invalid wallets for owner switch");
+        assertTrue(condition, "Invalid wallets for owner check");
 
         if (currentOwner == walletAddr) {
             (txHash, code) = castFunctions.setProfitAddress(chromeWalletAddr, arbitrageAddr, walletAddr, walletPrivateKeyStr);
@@ -175,7 +175,7 @@ contract ArbitrageTest is Test {
         CastFunctions castFunctions = new CastFunctions();
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
         bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
-        assertTrue(condition, "Invalid wallets for owner switch");
+        assertTrue(condition, "Invalid wallets for owner check");
 
         string memory currentPrivateKeyStr;
         if (currentOwner == walletAddr) {
@@ -228,23 +228,28 @@ contract ArbitrageTest is Test {
         }
         */
     }
-    /*
+
     function test_executeArbitrage() public {
-        vm.startBroadcast(walletPrivateKey);
+        uint256 minProfit = 0; // Set minProfit to 0 for testing
+        uint256 fee = 0; // Set fee to 0 for testing
+        CastFunctions castFunctions = new CastFunctions();
+        address currentOwner = castFunctions.getOwner(arbitrageAddr);
+        bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
+        assertTrue(condition, "Invalid wallets for owner check");
 
         // Initial balances
-        uint256 initialArbEth = address(arbitrageContract).balance;
-        uint256 initialWalletEth = walletAddr.balance;
-        uint256 initialDex1Pfx = pigfoxToken.balanceOf(address(dex1Contract));
-        uint256 initialDex2Pfx = pigfoxToken.balanceOf(address(dex2Contract));
+        uint256 initialArbEth = castFunctions.addressBalance(arbitrageAddr); //address(arbitrageContract).balance;
+        uint256 initialWalletEth = castFunctions.addressBalance(walletAddr);
+        uint256 initialDex1Pfx = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr); //pigfoxToken.balanceOf(address(dex1Contract));
+        uint256 initialDex2Pfx = castFunctions.getTokenBalanceOf(dex2Addr, pigfoxTokenAddr);
         console.log("Initial Arbitrage ETH:", initialArbEth);
         console.log("Initial Wallet ETH:", initialWalletEth);
         console.log("Initial DEX1 PFX:", initialDex1Pfx);
         console.log("Initial DEX2 PFX:", initialDex2Pfx);
 
         // Check prices
-        uint256 dex1Price = dex1Contract.getTokenPrice(address(pigfoxToken));
-        uint256 dex2Price = dex2Contract.getTokenPrice(address(pigfoxToken));
+        uint256 dex1Price = castFunctions.getTokenPrice(dex1Addr, pigfoxTokenAddr); //dex1Contract.getTokenPrice(address(pigfoxToken));
+        uint256 dex2Price = castFunctions.getTokenPrice(dex2Addr, pigfoxTokenAddr);
         console.log("DEX1 Price (wei/PFX):", dex1Price);
         console.log("DEX2 Price (wei/PFX):", dex2Price);
         require(dex2Price < dex1Price, "No arbitrage opportunity");
@@ -253,8 +258,9 @@ contract ArbitrageTest is Test {
         uint256 tradeAmount = TRADE_AMOUNT; // 10 PFX
         uint256 ethToBorrow = VAULT_ETH_FUNDING; // Borrow 0.01 ETH
 
-        ---
-        So minProfit should be computed off-chain by your bot or script that detects arbitrage opportunities and triggers the contract. It looks at:
+        /*
+        So minProfit should be computed off-chain by your bot or script that detects arbitrage opportunities and triggers the contract.
+        It looks at:
 
         Prices on both DEXs
 
@@ -263,16 +269,16 @@ contract ArbitrageTest is Test {
         Expected slippage
 
         Gas cost estimate
-        ----
+        */
 
         // Prepare flash loan data
-        bytes memory data = abi.encode(pigfoxTokenAddrStr, dex2AddrStr, dex1AddrStr, tradeAmount, minProfit);
+        bytes memory data = abi.encode(pigfoxTokenAddr, dex2Addr, dex1Addr, tradeAmount, minProfit);
 
         // Execute flash loan
-        vaultContract.flashLoan(address(arbitrageContract), address(0), ethToBorrow, data);
-
+        //vaultContract.flashLoan(address(arbitrageAddr), address(0), ethToBorrow, data);
+        castFunctions.flashLoan(arbitrageAddr, pigfoxTokenAddr, ethToBorrow, fee, data);
         // Final balances
-        uint256 finalArbEth = address(arbitrageContract).balance;
+        uint256 finalArbEth = castFunctions.addressBalance(arbitrageAddr);
         uint256 finalWalletEth = walletAddr.balance;
         console.log("Final Arbitrage ETH:", finalArbEth);
         console.log("Final Wallet ETH:", finalWalletEth);
@@ -281,7 +287,5 @@ contract ArbitrageTest is Test {
         uint256 profit = finalWalletEth - initialWalletEth;
         assertGt(profit, 0, "No profit made");
         console.log("Profit (ETH wei):", profit);
-
     }
-    */
 }
