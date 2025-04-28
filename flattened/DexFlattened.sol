@@ -80,7 +80,7 @@ interface IERC20 {
     function transferFrom(address from, address to, uint256 value) external returns (bool);
 }
 
-// src/Dex.sol
+// src/Dex0.sol
 
 contract Dex {
     mapping(address => uint256) public tokenBalance;
@@ -99,7 +99,7 @@ contract Dex {
         _;
     }
 
-    function setTokenPrice(address _address, uint256 _newPrice) public onlyOwner{
+    function setTokenPrice(address _address, uint256 _newPrice) public onlyOwner {
         tokenPrice[_address] = _newPrice;
         emit TokenPriceSet(_address, _newPrice);
     }
@@ -121,7 +121,7 @@ contract Dex {
         emit TokensDeposited(_token, _amount);
     }
 
-    function withdrawTokens(address _token, address _destination, uint256 _amount) external onlyOwner{
+    function withdrawTokens(address _token, address _destination, uint256 _amount) external onlyOwner {
         require(_amount > 0 && tokenBalance[_token] >= _amount, "Insufficient balance");
         tokenBalance[_token] -= _amount;
 
@@ -130,7 +130,8 @@ contract Dex {
     }
 
     // Allow the contract to receive ETH
-    receive() external payable {}
+    receive() external payable { }
+
     function getBalance() public view returns (uint256) {
         return address(this).balance;
     }

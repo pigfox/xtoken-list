@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-
+/*
 import { ConversionsTest } from "./Conversions.sol";
 import { Dex } from "../src/Dex.sol";
 import { Test, console } from "../lib/forge-std/src/Test.sol";
@@ -74,9 +74,7 @@ contract CastFunctionsTest is Test {
         uint256 balance = abi.decode(result, (uint256));
 
         // Emit an event with the decoded balance and addresses
-        emit GetTokenBalanceOfEvent(
-            conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_dexAddress)
-        );
+        emit GetTokenBalanceOfEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_dexAddress));
 
         return balance;
     }
@@ -149,17 +147,12 @@ contract CastFunctionsTest is Test {
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
 
-        emit ApproveEvent(
-            conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_ownerAddress), _amount
-        );
+        emit ApproveEvent(conversionsTest.stringToAddress(_tokenAddress), conversionsTest.stringToAddress(_ownerAddress), _amount);
 
         return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
-    function depositTokens(string calldata _dex, string calldata _token, uint256 _amount)
-        public
-        returns (string memory, string memory)
-    {
+    function depositTokens(string calldata _dex, string calldata _token, uint256 _amount) public returns (string memory, string memory) {
         //cast send "$PIGFOX_TOKEN" "supplyTokenTo(address,uint256)" "$DEX1" 1000000000000000000 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY" --json
         string[] memory inputs = new string[](13);
         inputs[0] = "cast";
@@ -225,9 +218,7 @@ contract CastFunctionsTest is Test {
         uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
         uint256 statusInt = values[0];
         statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
-        emit SetTokenPriceEvent(
-            conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress), _amount
-        );
+        emit SetTokenPriceEvent(conversionsTest.stringToAddress(_dex), conversionsTest.stringToAddress(_tokenAddress), _amount);
         return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 
@@ -252,10 +243,7 @@ contract CastFunctionsTest is Test {
         return abi.decode(result, (uint256));
     }
 
-    function getAllowance(string calldata _token, string calldata _owner, string calldata _spender)
-        public
-        returns (uint256)
-    {
+    function getAllowance(string calldata _token, string calldata _owner, string calldata _spender) public returns (uint256) {
         // cast call "$XToken" "allowance(address,address)" "$owner" "$spender" --rpc-url "$rpc_url"
         string[] memory inputs = new string[](9);
         inputs[0] = "cast";
@@ -273,9 +261,7 @@ contract CastFunctionsTest is Test {
             revert("Error: cast call returned empty result");
         }
         emit GetAllowanceEvent(
-            conversionsTest.stringToAddress(_token),
-            conversionsTest.stringToAddress(_owner),
-            conversionsTest.stringToAddress(_spender)
+            conversionsTest.stringToAddress(_token), conversionsTest.stringToAddress(_owner), conversionsTest.stringToAddress(_spender)
         );
         return abi.decode(result, (uint256));
     }
@@ -321,3 +307,4 @@ contract CastFunctionsTest is Test {
         return (vm.toString(result.parseRaw(".transactionHash")), conversionsTest.toHexString(statusInt));
     }
 }
+*/

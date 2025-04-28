@@ -3,27 +3,16 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-interface IUniswapV2Router {
-    function swapExactTokensForTokens(uint256 amountIn, uint256 amountOutMin, address[] calldata path, address to, uint256 deadline)
-        external
-        returns (uint256[] memory amounts);
-}
-
 contract Dex {
-    address public admin;
-
-    mapping(address => uint256) public tokenBalances;
-    mapping(address => uint256) public tokenPrices;
-
-    IUniswapV2Router public uniswapRouter;
-    IUniswapV2Router public sushiswapRouter;
+    address public admin; // Admin address for the DEX
+    mapping(address => uint256) public tokenBalances; // Token balances held by the DEX
+    mapping(address => uint256) public tokenPrices; // Token prices in wei per token unit
 
     event Deposited(address indexed token, address indexed sender, uint256 amount);
     event Bought(address indexed token, address indexed buyer, uint256 amount, uint256 ethSpent);
     event Sold(address indexed token, address indexed seller, uint256 amount, uint256 ethReceived);
     event PriceSet(address indexed token, uint256 price);
     event Withdrawn(address indexed token, address indexed to, uint256 amount);
-    event Swapped(address indexed router, address indexed fromToken, address indexed toToken, uint256 amountIn, uint256 amountOut);
 
     constructor() {
         admin = msg.sender;
@@ -34,8 +23,7 @@ contract Dex {
         _;
     }
 
-    // --- Core DEX Functions ---
-
+    // Deposit tokens into the DEX
     function depositTokens(address token, uint256 amount) external {
         require(amount > 0, "Amount must be greater than 0");
         require(IERC20(token).transferFrom(msg.sender, address(this), amount), "Transfer failed");
@@ -43,6 +31,7 @@ contract Dex {
         emit Deposited(token, msg.sender, amount);
     }
 
+    // Buy tokens from the DEX with ETH
     function buyTokens(address token, uint256 amount) external payable returns (uint256) {
         uint256 price = tokenPrices[token];
         require(price > 0, "Token price not set");
@@ -54,6 +43,7 @@ contract Dex {
         tokenBalances[token] -= amount;
         require(IERC20(token).transfer(msg.sender, amount), "Transfer failed");
 
+        // Refund excess ETH if any
         if (msg.value > ethRequired) {
             (bool refundSuccess,) = msg.sender.call{ value: msg.value - ethRequired }("");
             require(refundSuccess, "ETH refund failed");
@@ -63,6 +53,7 @@ contract Dex {
         return amount;
     }
 
+    // Sell tokens to the DEX for ETH
     function sellTokens(address token, uint256 amount) external returns (uint256) {
         uint256 price = tokenPrices[token];
         require(price > 0, "Token price not set");
@@ -73,6 +64,7 @@ contract Dex {
         require(IERC20(token).transferFrom(msg.sender, address(this), amount), "Transfer failed");
         tokenBalances[token] += amount;
 
+        // Send ETH with a gas limit to ensure receiver can execute minimal logic
         (bool success,) = msg.sender.call{ value: ethToSend, gas: 30000 }("");
         require(success, "ETH transfer failed");
 
@@ -80,22 +72,27 @@ contract Dex {
         return ethToSend;
     }
 
+    // Set the price of a token
     function setTokenPrice(address token, uint256 price) external onlyAdmin {
         require(price > 0, "Price must be greater than 0");
         tokenPrices[token] = price;
         emit PriceSet(token, price);
     }
 
+    // Get the price of a token
     function getTokenPrice(address token) external view returns (uint256) {
         return tokenPrices[token];
     }
 
-    function withdraw(address token, uint256 amount) external onlyAdmin {
+    // Withdraw tokens or ETH from the DEX (for testing or admin purposes)
+    function withdraw(address token, uint256 amount) external {
         if (token == address(0)) {
+            // Withdraw ETH
             require(address(this).balance >= amount, "Insufficient ETH balance");
             (bool success,) = msg.sender.call{ value: amount }("");
             require(success, "ETH withdrawal failed");
         } else {
+            // Withdraw tokens
             require(tokenBalances[token] >= amount, "Insufficient token balance");
             tokenBalances[token] -= amount;
             require(IERC20(token).transfer(msg.sender, amount), "Transfer failed");
@@ -103,58 +100,6 @@ contract Dex {
         emit Withdrawn(token, msg.sender, amount);
     }
 
-    // --- Router Swap Functions ---
-
-    function swapTokensWithRouter(
-        address routerAddress,
-        address fromToken,
-        address toToken,
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address recipient
-    ) public onlyAdmin returns (uint256[] memory amounts) {
-        require(routerAddress != address(0), "Router address cannot be zero");
-        require(fromToken != address(0) && toToken != address(0), "Token addresses cannot be zero");
-
-        IERC20(fromToken).approve(routerAddress, amountIn);
-        // Declare path here
-        address[] memory path = new address[](2);
-        path[0] = fromToken;
-        path[1] = toToken;
-
-        amounts = IUniswapV2Router(routerAddress).swapExactTokensForTokens(amountIn, amountOutMin, path, recipient, block.timestamp);
-
-        emit Swapped(routerAddress, fromToken, toToken, amountIn, amounts[amounts.length - 1]);
-        return amounts;
-    }
-
-    function swapTokensViaUniswap(address fromToken, address toToken, uint256 amountIn, uint256 amountOutMin, address recipient)
-        external
-        onlyAdmin
-        returns (uint256[] memory amounts)
-    {
-        return swapTokensWithRouter(address(uniswapRouter), fromToken, toToken, amountIn, amountOutMin, recipient);
-    }
-
-    function swapTokensViaSushiswap(address fromToken, address toToken, uint256 amountIn, uint256 amountOutMin, address recipient)
-        external
-        onlyAdmin
-        returns (uint256[] memory amounts)
-    {
-        return swapTokensWithRouter(address(sushiswapRouter), fromToken, toToken, amountIn, amountOutMin, recipient);
-    }
-
-    // --- Set Router Functions ---
-
-    function setUniswapRouter(address _uniswapRouter) external onlyAdmin {
-        require(_uniswapRouter != address(0), "Uniswap router address cannot be zero");
-        uniswapRouter = IUniswapV2Router(_uniswapRouter);
-    }
-
-    function setSushiswapRouter(address _sushiswapRouter) external onlyAdmin {
-        require(_sushiswapRouter != address(0), "Sushiswap router address cannot be zero");
-        sushiswapRouter = IUniswapV2Router(_sushiswapRouter);
-    }
-
+    // Accept ETH deposits
     receive() external payable { }
 }

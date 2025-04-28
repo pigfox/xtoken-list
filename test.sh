@@ -1,7 +1,7 @@
 #!/bin/bash
 #set -x
 set -e
-
+#https://chatgpt.com/c/680ed4e7-3c34-8000-911c-f8853ebf1a83
 clear
 forge clean
 #. ./.env

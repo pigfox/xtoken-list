@@ -94,7 +94,7 @@ contract CastFunctions is Test {
         return abi.decode(castResult, (address));
     }
 
-    function flashLoan(address _contractAddress, address _tokenAddress, uint256 _amount, uint256 _fee, bytes calldata _data) {
+    function flashLoan(address _contractAddress, address _tokenAddress, uint256 _amount, uint256 _fee, bytes calldata _data) public {
         string[] memory inputs = new string[](6);
         inputs[0] = "cast";
         inputs[1] = "call";
@@ -432,16 +432,13 @@ contract CastFunctions is Test {
         return (txHash, statusInt);
     }
 
-    function getTokenPrice(string memory _dex, string memory _tokenAddress) public returns (uint256) {
-        address dexAddress = conversionsTest.stringToAddress(_dex);
-        address tokenAddress = conversionsTest.stringToAddress(_tokenAddress);
-
+    function getTokenPrice(address _dexAddress, address _tokenAddress) public returns (uint256) {
         string[] memory inputs = new string[](7);
         inputs[0] = "cast";
         inputs[1] = "call";
-        inputs[2] = vm.toString(dexAddress);
+        inputs[2] = vm.toString(_dexAddress);
         inputs[3] = "getTokenPrice(address)";
-        inputs[4] = vm.toString(tokenAddress);
+        inputs[4] = vm.toString(_tokenAddress);
         inputs[5] = "--rpc-url";
         inputs[6] = rpcUrl;
 

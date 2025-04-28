@@ -230,62 +230,56 @@ contract ArbitrageTest is Test {
     }
 
     function test_executeArbitrage() public {
-        uint256 minProfit = 0; // Set minProfit to 0 for testing
-        uint256 fee = 0; // Set fee to 0 for testing
+        uint256 minProfit = 0; // Minimum profit set to 0 for this test
+        uint256 fee = 0; // No fee for mock testing
         CastFunctions castFunctions = new CastFunctions();
+
         address currentOwner = castFunctions.getOwner(arbitrageAddr);
-        bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
-        assertTrue(condition, "Invalid wallets for owner check");
+        bool isAuthorized = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
+        assertTrue(isAuthorized, "Owner must be a trusted wallet");
 
-        // Initial balances
-        uint256 initialArbEth = castFunctions.addressBalance(arbitrageAddr); //address(arbitrageContract).balance;
+        // Snapshot initial balances
+        uint256 initialArbEth = castFunctions.addressBalance(arbitrageAddr);
         uint256 initialWalletEth = castFunctions.addressBalance(walletAddr);
-        uint256 initialDex1Pfx = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr); //pigfoxToken.balanceOf(address(dex1Contract));
+        uint256 initialDex1Pfx = castFunctions.getTokenBalanceOf(dex1Addr, pigfoxTokenAddr);
         uint256 initialDex2Pfx = castFunctions.getTokenBalanceOf(dex2Addr, pigfoxTokenAddr);
-        console.log("Initial Arbitrage ETH:", initialArbEth);
+
+        console.log("Initial Arbitrage Contract ETH:", initialArbEth);
         console.log("Initial Wallet ETH:", initialWalletEth);
-        console.log("Initial DEX1 PFX:", initialDex1Pfx);
-        console.log("Initial DEX2 PFX:", initialDex2Pfx);
+        console.log("Initial DEX1 Pigfox:", initialDex1Pfx);
+        console.log("Initial DEX2 Pigfox:", initialDex2Pfx);
 
-        // Check prices
-        uint256 dex1Price = castFunctions.getTokenPrice(dex1Addr, pigfoxTokenAddr); //dex1Contract.getTokenPrice(address(pigfoxToken));
+        // Check arbitrage opportunity
+        uint256 dex1Price = castFunctions.getTokenPrice(dex1Addr, pigfoxTokenAddr);
         uint256 dex2Price = castFunctions.getTokenPrice(dex2Addr, pigfoxTokenAddr);
-        console.log("DEX1 Price (wei/PFX):", dex1Price);
-        console.log("DEX2 Price (wei/PFX):", dex2Price);
-        require(dex2Price < dex1Price, "No arbitrage opportunity");
 
-        // Flash loan amount
-        uint256 tradeAmount = TRADE_AMOUNT; // 10 PFX
-        uint256 ethToBorrow = VAULT_ETH_FUNDING; // Borrow 0.01 ETH
+        console.log("DEX1 Price (wei per PFX):", dex1Price);
+        console.log("DEX2 Price (wei per PFX):", dex2Price);
 
-        /*
-        So minProfit should be computed off-chain by your bot or script that detects arbitrage opportunities and triggers the contract.
-        It looks at:
+        require(dex2Price < dex1Price, "No arbitrage opportunity: DEX2 price must be lower than DEX1 price");
 
-        Prices on both DEXs
+        uint256 tradeAmount = TRADE_AMOUNT; // Amount of Pigfox tokens to trade
+        uint256 ethToBorrow = VAULT_ETH_FUNDING; // Amount of ETH to borrow for flash loan
 
-        Flash loan fee
-
-        Expected slippage
-
-        Gas cost estimate
-        */
-
-        // Prepare flash loan data
+        // Encode flash loan data
         bytes memory data = abi.encode(pigfoxTokenAddr, dex2Addr, dex1Addr, tradeAmount, minProfit);
 
-        // Execute flash loan
-        //vaultContract.flashLoan(address(arbitrageAddr), address(0), ethToBorrow, data);
+        // Execute flash loan and arbitrage
         castFunctions.flashLoan(arbitrageAddr, pigfoxTokenAddr, ethToBorrow, fee, data);
-        // Final balances
+
+        // Snapshot final balances
         uint256 finalArbEth = castFunctions.addressBalance(arbitrageAddr);
-        uint256 finalWalletEth = walletAddr.balance;
-        console.log("Final Arbitrage ETH:", finalArbEth);
+        uint256 finalWalletEth = castFunctions.addressBalance(walletAddr);
+
+        console.log("Final Arbitrage Contract ETH:", finalArbEth);
         console.log("Final Wallet ETH:", finalWalletEth);
 
-        // Verify profit
+        // Calculate profit
+        require(finalWalletEth > initialWalletEth, "Expected final wallet ETH > initial wallet ETH");
+
         uint256 profit = finalWalletEth - initialWalletEth;
-        assertGt(profit, 0, "No profit made");
-        console.log("Profit (ETH wei):", profit);
+        console.log("Profit (wei):", profit);
+
+        assertGt(profit, 0, "Arbitrage did not generate a profit");
     }
 }
