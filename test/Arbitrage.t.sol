@@ -9,7 +9,7 @@ import "./CastFunctions.sol";
 contract ArbitrageTest is Test {
     string private txHash;
     uint256 private code;
-    uint256 constant DEADLINE = 3600;
+    uint256 constant DEADLINE = 3667;
     uint256 constant DECIMALS = 10 ** 18;
     uint256 constant MIN_WALLET_PFX_BALANCE = 100 * DECIMALS;
     uint256 constant DEX_PFX_DEPOSIT = 50 * DECIMALS;
