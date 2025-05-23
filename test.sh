@@ -39,7 +39,7 @@ clear
 #forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_setFlashLoanAddress #-vvvv
 #3 passed
 #forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_switchOwner #-vvvv
-#4 ip
-forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_setDeadline #-vvvv
+#4 passed
+#forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_setDeadline #-vvvv
 #5 todo
-#forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_executeArbitrage -vvvv
+forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_executeArbitrage -vvvv

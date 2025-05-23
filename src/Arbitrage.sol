@@ -66,7 +66,6 @@ contract Arbitrage is ReentrancyGuard {
         bytes calldata data
     )
         external
-        onlyOwner
         nonReentrant
         returns (bytes32)
     {
