@@ -148,23 +148,22 @@ contract ArbitrageTest is Test {
         bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
         assertTrue(condition, "Invalid wallets for owner check");
 
-        uint256 newDeadline = 3600; // set deadline 1 hour into the future
         uint256 retrievedDeadline;
 
         if (currentOwner == walletAddr) {
-            (txHash, code) = castFunctions.setDeadline(arbitrageAddr, newDeadline, walletAddr, walletPrivateKeyStr);
+            (txHash, code) = castFunctions.setDeadline(arbitrageAddr, DEADLINE, walletAddr, walletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
             assertEq(code, 1, "Failed to set deadline");
             retrievedDeadline = castFunctions.getDeadline(arbitrageAddr);
-            assertEq(retrievedDeadline, newDeadline, "Deadline should be updated correctly");
+            assertEq(retrievedDeadline, DEADLINE, "Deadline should be updated correctly");
         } else if (currentOwner == chromeWalletAddr) {
-            (txHash, code) = castFunctions.setDeadline(arbitrageAddr, newDeadline, chromeWalletAddr, chromeWalletPrivateKeyStr);
+            (txHash, code) = castFunctions.setDeadline(arbitrageAddr, DEADLINE, chromeWalletAddr, chromeWalletPrivateKeyStr);
             console.log("Code:");
             console.log(code);
             assertEq(code, 1, "Failed to set deadline");
             retrievedDeadline = castFunctions.getDeadline(arbitrageAddr);
-            assertEq(retrievedDeadline, newDeadline, "Deadline should be updated correctly");
+            assertEq(retrievedDeadline, DEADLINE, "Deadline should be updated correctly");
         }
     }
 
