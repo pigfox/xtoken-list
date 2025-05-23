@@ -94,14 +94,68 @@ contract CastFunctions is Test {
         return abi.decode(castResult, (address));
     }
 
-    function flashLoan(address _contractAddress, address _tokenAddress, uint256 _amount, uint256 _fee, bytes calldata _data) public {
-        string[] memory inputs = new string[](6);
+    function flashLoan(address _contractAddress, address _tokenAddress, uint256 _amount, uint256 _fee, bytes calldata _data)
+        public
+        returns (string memory, uint256)
+    {
+        // AAVE lending pool address (hardcoded or configurable via env)
+        address lendingPool = vm.envAddress("AAVE_LENDING_POOL_ADDRESS");
+
+        // Encode _data as hex string for cast
+        string memory dataHex = toHexString(_data);
+
+        string[] memory inputs = new string[](14);
         inputs[0] = "cast";
-        inputs[1] = "call";
-        inputs[2] = vm.toString(_contractAddress);
-        inputs[3] = "onFlashLoan(address,address,uint256,uint256,bytes)";
-        inputs[4] = "--rpc-url";
-        inputs[5] = rpcUrl;
+        inputs[1] = "send";
+        inputs[2] = vm.toString(lendingPool);
+        inputs[3] = "flashLoanSimple(address,address,uint256,bytes,uint16)";
+        inputs[4] = vm.toString(_contractAddress); // receiver (Arbitrage.sol)
+        inputs[5] = vm.toString(_tokenAddress);   // asset (address(0) for ETH)
+        inputs[6] = vm.toString(_amount);         // amount
+        inputs[7] = dataHex;                      // params (arbitrage data)
+        inputs[8] = "0";                          // referralCode
+        inputs[9] = "--json";
+        inputs[10] = "--rpc-url";
+        inputs[11] = rpcUrl;
+        inputs[12] = "--private-key";
+        inputs[13] = privateKey;
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            console.log("Error: cast call returned empty result");
+            return ("0x0", 0);
+        }
+
+        string memory result = string(abi.encodePacked(string(castResult)));
+
+        uint256[] memory values;
+        string memory txHash;
+
+        try vm.parseJson(result, ".status") returns (bytes memory statusData) {
+            values = abi.decode(statusData, (uint256[]));
+        } catch {
+            console.log("Error: failed to parse status json");
+            return ("0x0", 0);
+        }
+
+        uint256 statusInt = values.length > 0 ? values[0] : 0;
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8); // Right shift to remove padding
+
+        try vm.parseJson(result, ".transactionHash") returns (bytes memory hashData) {
+            txHash = vm.toString(hashData);
+        } catch {
+            console.log("Error: failed to parse transactionHash json");
+            return ("0x0", 0);
+        }
+
+        // Check if txHash is empty or not 66 characters (including "0x")
+        if (bytes(txHash).length == 0 || bytes(txHash).length != 66) {
+            console.log("Error: txHash length is invalid");
+            return ("0x0", 0);
+        }
+
+        // Note: _fee is passed for validation but not used in AAVE call (AAVE calculates fee)
+        return (txHash, statusInt);
     }
 
     function setFlashLoanAddress(address _contractAddress, address _flashLoanAddress, address _currentOwner, string memory _privateKey)
@@ -460,6 +514,60 @@ contract CastFunctions is Test {
 
         return price;
     }
+
+    function setDeadline(address _contractAddress, uint256 _deadline, address _currentOwner, string memory _privateKey) public returns (string memory, uint256) {
+        // cast send "$contract" "setDeadline(uint256)" 12345 --rpc-url "$rpc_url" --from "$WALLET_ADDRESS" --private-key "$PRIVATE_KEY"
+        string[] memory inputs = new string[](12);
+        inputs[0] = "cast";
+        inputs[1] = "send";
+        inputs[2] = vm.toString(_contractAddress);
+        inputs[3] = "setDeadline(uint256)";
+        inputs[4] = vm.toString(_deadline);
+        inputs[5] = "--json";
+        inputs[6] = "--rpc-url";
+        inputs[7] = rpcUrl;
+        inputs[8] = "--from";
+        inputs[9] = vm.toString(_currentOwner);
+        inputs[10] = "--private-key";
+        inputs[11] = _privateKey;
+
+
+        console.log("logging inputs[4]");//<----- not printing to console
+        console.log(inputs[4]);//<----- not printing to console
+        console.log("logging inputs[4]");//<----- not printing to console
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            revert("Error: cast call returned empty result");
+        }
+
+        string memory result = string(abi.encodePacked(string(castResult)));
+        console.log(inputs[5]);
+        uint256[] memory values = abi.decode(result.parseRaw(".status"), (uint256[]));
+        uint256 statusInt = values[0];
+        statusInt = statusInt == 0 ? 0 : statusInt >> (256 - 8);
+        string memory txHash = vm.toString(result.parseRaw(".transactionHash"));
+        return (txHash, statusInt);
+    }
+
+    function getDeadline(address _contract) public returns (uint256) {
+        // cast call "$contract" "deadLine()" --rpc-url "$rpc_url"
+        string[] memory inputs = new string[](6);
+        inputs[0] = "cast";
+        inputs[1] = "call";
+        inputs[2] = vm.toString(_contract);
+        inputs[3] = "deadLine()";
+        inputs[4] = "--rpc-url";
+        inputs[5] = rpcUrl;
+
+        bytes memory castResult = vm.ffi(inputs);
+        if (castResult.length == 0) {
+            revert("Error: cast call returned empty result");
+        }
+
+        return abi.decode(castResult, (uint256));
+    }
+
 
     function fundEth(address _to, uint256 _amount) public returns (string memory, uint256) {
         string[] memory inputs = new string[](12);

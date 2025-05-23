@@ -9,7 +9,7 @@ import "./CastFunctions.sol";
 contract ArbitrageTest is Test {
     string private txHash;
     uint256 private code;
-
+    uint256 constant DEADLINE = 3600;
     uint256 constant DECIMALS = 10 ** 18;
     uint256 constant MIN_WALLET_PFX_BALANCE = 100 * DECIMALS;
     uint256 constant DEX_PFX_DEPOSIT = 50 * DECIMALS;
@@ -141,6 +141,33 @@ contract ArbitrageTest is Test {
             assertEq(newOwner, walletAddr, "Owner should be updated to wallet address");
         }
     }
+
+    function test_setDeadline() public {
+        CastFunctions castFunctions = new CastFunctions();
+        address currentOwner = castFunctions.getOwner(arbitrageAddr);
+        bool condition = (currentOwner == walletAddr) || (currentOwner == chromeWalletAddr);
+        assertTrue(condition, "Invalid wallets for owner check");
+
+        uint256 newDeadline = 3600; // set deadline 1 hour into the future
+        uint256 retrievedDeadline;
+
+        if (currentOwner == walletAddr) {
+            (txHash, code) = castFunctions.setDeadline(arbitrageAddr, newDeadline, walletAddr, walletPrivateKeyStr);
+            console.log("Code:");
+            console.log(code);
+            assertEq(code, 1, "Failed to set deadline");
+            retrievedDeadline = castFunctions.getDeadline(arbitrageAddr);
+            assertEq(retrievedDeadline, newDeadline, "Deadline should be updated correctly");
+        } else if (currentOwner == chromeWalletAddr) {
+            (txHash, code) = castFunctions.setDeadline(arbitrageAddr, newDeadline, chromeWalletAddr, chromeWalletPrivateKeyStr);
+            console.log("Code:");
+            console.log(code);
+            assertEq(code, 1, "Failed to set deadline");
+            retrievedDeadline = castFunctions.getDeadline(arbitrageAddr);
+            assertEq(retrievedDeadline, newDeadline, "Deadline should be updated correctly");
+        }
+    }
+
 
     function test_setProfitAddress() public {
         CastFunctions castFunctions = new CastFunctions();

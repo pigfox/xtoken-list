@@ -1,7 +1,8 @@
 #!/bin/bash
 #set -x
 set -e
-#https://chatgpt.com/c/680ed4e7-3c34-8000-911c-f8853ebf1a83
+#Uniswap
+#https://grok.com/chat/46620043-e68f-4d97-86db-2f711bcce05c
 clear
 forge clean
 #. ./.env
@@ -27,7 +28,7 @@ echo "Testing $contract::$function..."
 #echo test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" --match-test "$function" -vvvv
 
 #exit;
-./empty_dex.sh
+#./empty_dex.sh
 clear
 #forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" -vv
 #forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract "$contract" -vvvv
@@ -38,5 +39,7 @@ clear
 #forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_setFlashLoanAddress #-vvvv
 #3 passed
 #forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_switchOwner #-vvvv
-#4 todo
-forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_executeArbitrage -vvvv
+#4 ip
+forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_setDeadline #-vvvv
+#5 todo
+#forge test --rpc-url "$SEPOLIA_HTTP_RPC_URL" --gas-report --verbosity --ffi --etherscan-api-key "$ETHERSCAN_API_KEY" --match-contract Arbitrage --match-test test_executeArbitrage -vvvv

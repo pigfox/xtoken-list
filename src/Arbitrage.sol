@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import "@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol";
-import "@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./IDex.sol";
 
-contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
+contract Arbitrage is ReentrancyGuard {
     address public flashLoanAddress;
     address public profitAddress;
     address public owner;
+    uint256 public deadLine;
 
     // Events for debugging and monitoring
     event FlashLoanReceived(address indexed sender, address indexed initiator, uint256 amount, uint256 fee);
@@ -20,12 +18,15 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
     event UpdatedOwner(address indexed newOwner);
     event UpdatedProfitAddress(address indexed newProfitAddress);
     event UpdatedFlashLoanAddress(address indexed newFlashLoanAddress);
+    event UpdatedDeadline(uint256 newDeadline);
+    event SwapFailed(address indexed dex, address indexed token, string reason);
 
     constructor(address _flashLoanAddress) {
         require(_flashLoanAddress != address(0), "Invalid flash loan provider");
         flashLoanAddress = _flashLoanAddress;
         profitAddress = msg.sender;
         owner = msg.sender;
+        deadLine = 60; // Set deadline to 1 minute from now
     }
 
     modifier onlyOwner() {
@@ -51,43 +52,119 @@ contract Arbitrage is IERC3156FlashBorrower, ReentrancyGuard {
         emit UpdatedFlashLoanAddress(_flashLoanAddress);
     }
 
-    //https://grok.com/chat/d9b100ff-4937-490a-8c73-bf34c25bff33
-    function onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes calldata data)
+    function setDeadline(uint256 _deadline) external onlyOwner {
+        require(_deadline > 0, "Invalid deadline");
+        deadLine = _deadline;
+        emit UpdatedDeadline(_deadline);
+    }
+
+    function onFlashLoan(
+        address initiator,
+        address token,
+        uint256 amount,
+        uint256 fee,
+        bytes calldata data
+    )
         external
-        override
         onlyOwner
         nonReentrant
         returns (bytes32)
     {
+        // Validate caller and initiator
+        require(msg.sender == flashLoanAddress, "Caller must be flash loan provider");
+        require(initiator == address(this), "Initiator must be this contract");
         require(token == address(0), "Only ETH flash loans supported");
 
         emit FlashLoanReceived(msg.sender, initiator, amount, fee);
 
-        // Decode arbitrage parameters from flash loan `data`
-        (address tokenToTrade, address dex2, address dex1, uint256 tradeAmount, uint256 minProfit) =
-            abi.decode(data, (address, address, address, uint256, uint256));
+        // Decode arbitrage parameters
+        (
+            address tokenToTrade,
+            address dex1,
+            address dex2,
+            uint256 tradeAmount,
+            uint256 minProfit,
+            uint256 minTokensBought,
+            uint256 minEthReceived
+        ) = abi.decode(data, (address, address, address, uint256, uint256, uint256, uint256));
 
-        // Step 1: Buy tokens on dex2 (cheap)
-        IERC20(tokenToTrade).approve(dex2, tradeAmount);
-        uint256 tokensBought = IDex(dex2).buyTokens{ value: amount }(tokenToTrade, tradeAmount);
-        emit ArbitrageStep(dex2, tokenToTrade, amount, tokensBought);
+        // Input validation
+        require(tokenToTrade != address(0), "Invalid token address");
+        require(dex1 != address(0) && dex2 != address(0), "Invalid DEX address");
+        require(tradeAmount > 0 && tradeAmount <= amount, "Invalid trade amount");
+        require(minTokensBought > 0, "Invalid min tokens bought");
+        require(minEthReceived > 0, "Invalid min ETH received");
 
-        // Step 2: Sell tokens on dex1 (expensive)
-        IERC20(tokenToTrade).approve(dex1, tokensBought);
-        uint256 ethReceived = IDex(dex1).sellTokens(tokenToTrade, tokensBought);
-        IERC20(tokenToTrade).approve(dex1, 0); // Reset allowance for safety
-        emit ArbitrageStep(dex1, tokenToTrade, tokensBought, ethReceived);
+        // Step 1: Buy tokens on dex1 (cheaper DEX)
+        IERC20(tokenToTrade).approve(dex1, tradeAmount);
+        address[] memory path1 = new address[](2);
+        path1[0] = address(0); // ETH
+        path1[1] = tokenToTrade;
+        (bool success1, bytes memory result1) = dex1.call{value: tradeAmount}(
+            abi.encodeWithSignature(
+                "swapExactETHForTokens(uint256,address[],address,uint256)",
+                minTokensBought,
+                path1,
+                address(this),
+                block.timestamp + deadLine
+            )
+        );
+        if (!success1) {
+            emit SwapFailed(dex1, tokenToTrade, "dex1 swap execution failed");
+            revert("dex1 swap failed");
+        }
+        uint256[] memory amounts1 = abi.decode(result1, (uint256[]));
+        uint256 tokensBought = amounts1[amounts1.length - 1]; // Last amount is output
+        if (tokensBought < minTokensBought) {
+            emit SwapFailed(dex1, tokenToTrade, "Slippage: too few tokens bought");
+            revert("Slippage: too few tokens bought");
+        }
+        emit ArbitrageStep(dex1, tokenToTrade, tradeAmount, tokensBought);
 
-        // Check profitability
+        // Step 2: Sell tokens on dex2 (more expensive DEX)
+        IERC20(tokenToTrade).approve(dex2, tokensBought);
+        address[] memory path2 = new address[](2);
+        path2[0] = tokenToTrade;
+        path2[1] = address(0); // ETH
+        (bool success2, bytes memory result2) = dex2.call(
+            abi.encodeWithSignature(
+                "swapExactTokensForETH(uint256,uint256,address[],address,uint256)",
+                tokensBought,
+                minEthReceived,
+                path2,
+                address(this),
+                block.timestamp + deadLine
+            )
+        );
+        if (!success2) {
+            emit SwapFailed(dex2, tokenToTrade, "dex2 swap execution failed");
+            revert("dex2 swap failed");
+        }
+        uint256[] memory amounts2 = abi.decode(result2, (uint256[]));
+        uint256 ethReceived = amounts2[amounts2.length - 1]; // Last amount is output
+        if (ethReceived < minEthReceived) {
+            emit SwapFailed(dex2, tokenToTrade, "Slippage: too little ETH received");
+            revert("Slippage: too little ETH received");
+        }
+        IERC20(tokenToTrade).approve(dex2, 0); // Reset allowance
+        emit ArbitrageStep(dex2, tokenToTrade, tokensBought, ethReceived);
+
+        // Verify profitability
         uint256 totalRepayment = amount + fee;
-        require(ethReceived >= totalRepayment + minProfit, "Not profitable");
+        if (ethReceived < totalRepayment + minProfit) {
+            emit SwapFailed(address(0), tokenToTrade, "Arbitrage not profitable");
+            revert("Arbitrage not profitable");
+        }
 
         // Repay flash loan
-        require(address(this).balance >= totalRepayment, "Insufficient ETH to repay");
+        if (address(this).balance < totalRepayment) {
+            emit SwapFailed(address(0), tokenToTrade, "Insufficient ETH for repayment");
+            revert("Insufficient ETH for repayment");
+        }
         payable(flashLoanAddress).transfer(totalRepayment);
         emit LoanRepaid(flashLoanAddress, totalRepayment);
 
-        // Send profit to profitAddress
+        // Transfer remaining profit
         uint256 profit = address(this).balance;
         if (profit > 0) {
             payable(profitAddress).transfer(profit);
