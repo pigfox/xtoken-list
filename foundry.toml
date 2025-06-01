@@ -13,7 +13,7 @@ rpc_url = "${SEPOLIA_HTTP_RPC_URL}"
 etherscan_api_key = "${ETHERSCAN_API_KEY}"
 private_key = "${PRIVATE_KEY}"
 auto_detect_remappings = true # recursive auto-detection of remappings
-remappings = []
+remappings = ["@openzeppelin/=lib/openzeppelin-contracts/"]
 broadcast = 'broadcast'
 show_progress = true
 build_info = true

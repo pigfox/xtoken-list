@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.25;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 
 contract Arbitrage is ReentrancyGuard {
+    using SafeERC20 for IERC20;
     address public flashLoanAddress;
     address public profitAddress;
     address public owner;
@@ -95,7 +97,8 @@ contract Arbitrage is ReentrancyGuard {
         require(minEthReceived > 0, "Invalid min ETH received");
 
         // Step 1: Buy tokens on dex1 (cheaper DEX)
-        IERC20(tokenToTrade).approve(dex1, tradeAmount);
+        IERC20 approveToken = IERC20(tokenToTrade);
+        approveToken.safeApprove(dex1, tradeAmount);
         address[] memory path1 = new address[](2);
         path1[0] = address(0); // ETH
         path1[1] = tokenToTrade;
@@ -121,7 +124,8 @@ contract Arbitrage is ReentrancyGuard {
         emit ArbitrageStep(dex1, tokenToTrade, tradeAmount, tokensBought);
 
         // Step 2: Sell tokens on dex2 (more expensive DEX)
-        IERC20(tokenToTrade).approve(dex2, tokensBought);
+        //IERC20(tokenToTrade).safeApprove(dex2, tokensBought);
+        approveToken.safeApprove(dex2, tokensBought);
         address[] memory path2 = new address[](2);
         path2[0] = tokenToTrade;
         path2[1] = address(0); // ETH
@@ -145,7 +149,7 @@ contract Arbitrage is ReentrancyGuard {
             emit SwapFailed(dex2, tokenToTrade, "Slippage: too little ETH received");
             revert("Slippage: too little ETH received");
         }
-        IERC20(tokenToTrade).approve(dex2, 0); // Reset allowance
+        approveToken.safeApprove(dex2, 0); // Reset allowance
         emit ArbitrageStep(dex2, tokenToTrade, tokensBought, ethReceived);
 
         // Verify profitability

@@ -4,6 +4,7 @@ set -e
 clear
 
 #tree -L 2
+cat src/AAVE.sol
 cat src/Arbitrage.sol
 cat src/Dex.sol
 cat src/PigfoxToken.sol
